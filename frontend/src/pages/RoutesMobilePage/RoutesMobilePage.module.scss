@@ -1,32 +1,32 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  gap: 20px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
+	width: 100%;
+	gap: 20px;
 }
 
 .headerRoutes {
-  width: 100%;
-  display: flex;
-  align-items: center;
+	width: 100%;
+	display: flex;
+	align-items: center;
 }
 
 .position {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
 }
 
 .positionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
 
-  @media (max-width: 1075px) {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+	@media (max-width: 1075px) {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
 }

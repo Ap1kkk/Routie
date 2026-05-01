@@ -10,7 +10,7 @@ import {
 } from '../../../utils/validator';
 import { Avatar, Input, Button, Select } from '@ui';
 import { DatePicker } from '../../../ui/DataPicker';
-import { useDeviceType } from '../../../utils/hooks/useDeviceType';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 
 import { ReactComponent as IconAdd } from '../../../assets/icons/IconAdd.svg';
 

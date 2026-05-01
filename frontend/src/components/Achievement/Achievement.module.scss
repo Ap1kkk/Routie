@@ -1,29 +1,29 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 30px;
 
-  @media (max-width: 760px) {
-    gap: 20px;
-  }
+	@media (max-width: 760px) {
+		gap: 20px;
+	}
 }
 
 .achievementTitle {
-  font-size: var(--text-h2-size);
+	font-size: var(--text-h2-size);
 }
 
 .achievementContent {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  justify-content: center;
-  gap: 20px;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	justify-content: center;
+	gap: 20px;
 
-  @media (max-width: 760px)  {
-    grid-template-columns: repeat(3, 1fr);
-  }
+	@media (max-width: 760px) {
+		grid-template-columns: repeat(3, 1fr);
+	}
 
-  @media (max-width: 555px)  {
-    grid-template-columns: repeat(2, 1fr);
-  }
+	@media (max-width: 555px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }

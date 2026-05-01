@@ -1,61 +1,61 @@
 .container {
-  width: 100%;
-  max-width: 500px;
-  margin: auto auto;
-  padding: 0 20px;
+	width: 100%;
+	max-width: 500px;
+	margin: auto auto;
+	padding: 0 20px;
 
-  @media (max-width: 768px) {
-    padding: 55px 16px 16px;
-  }
+	@media (max-width: 768px) {
+		padding: 55px 16px 16px;
+	}
 
-  @media (max-width: 480px) {
-    padding: 55px 12px 12px;
-  }
+	@media (max-width: 480px) {
+		padding: 55px 12px 12px;
+	}
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
 
-  @media (max-width: 768px) {
-    gap: 32px;
-  }
+	@media (max-width: 768px) {
+		gap: 32px;
+	}
 
-  @media (max-width: 480px) {
-    gap: 24px;
-  }
+	@media (max-width: 480px) {
+		gap: 24px;
+	}
 }
 
 .tagTitle {
-  display: flex;
-  justify-content: center;
-  font-family: var(--font-body);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h3-size);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	display: flex;
+	justify-content: center;
+	font-family: var(--font-body);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h3-size);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 
-  @media (max-width: 768px) {
-    font-size: calc(var(--text-h3-size) * 0.9);
-  }
+	@media (max-width: 768px) {
+		font-size: calc(var(--text-h3-size) * 0.9);
+	}
 
-  @media (max-width: 480px) {
-    font-size: calc(var(--text-h3-size) * 0.8);
-  }
+	@media (max-width: 480px) {
+		font-size: calc(var(--text-h3-size) * 0.8);
+	}
 }
 
 .tagsButtons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 16px;
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 16px;
 
-  @media (max-width: 768px) {
-    gap: 12px;
-  }
+	@media (max-width: 768px) {
+		gap: 12px;
+	}
 
-  @media (max-width: 480px) {
-    gap: 8px;
-  }
+	@media (max-width: 480px) {
+		gap: 8px;
+	}
 }

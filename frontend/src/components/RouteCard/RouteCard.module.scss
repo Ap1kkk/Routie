@@ -1,191 +1,190 @@
 .compactCard {
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: var(--text-color);
-  font-family: var(--font-body);
-  font-size: var(--text-h4-size);
-  font-weight: var(--font-medium);
-  letter-spacing: var(--letter-spacing);
-  text-align: center;
-  background-color: var(--color-card);
-  box-shadow:
-          0 6px 12px rgba(0, 0, 0, 0.15),
-          0 0 40px rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 5px;
-  transition: all 0.2s ease;
+	width: 200px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-decoration: none;
+	color: var(--text-color);
+	font-family: var(--font-body);
+	font-size: var(--text-h4-size);
+	font-weight: var(--font-medium);
+	letter-spacing: var(--letter-spacing);
+	text-align: center;
+	background-color: var(--color-card);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
+		0 0 40px rgba(255, 255, 255, 0.05);
+	border-radius: 12px;
+	padding: 5px;
+	transition: all 0.2s ease;
 
-  @media (max-width: 925px) {
-    width: 180px;
-    font-size: calc(var(--text-h4-size) * 0.9);
-  }
+	@media (max-width: 925px) {
+		width: 180px;
+		font-size: calc(var(--text-h4-size) * 0.9);
+	}
 
-  @media (max-width: 768px) {
-    width: 160px;
-    font-size: calc(var(--text-h4-size) * 0.85);
-  }
+	@media (max-width: 768px) {
+		width: 160px;
+		font-size: calc(var(--text-h4-size) * 0.85);
+	}
 
-  @media (max-width: 480px) {
-    width: 140px;
-    padding: 4px;
-  }
+	@media (max-width: 480px) {
+		width: 140px;
+		padding: 4px;
+	}
 }
 
 .compactRouteImage {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 5px;
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 12px;
+	margin-bottom: 5px;
 
-  @media (max-width: 925px) {
-    height: 110px;
-  }
+	@media (max-width: 925px) {
+		height: 110px;
+	}
 
-  @media (max-width: 768px) {
-    height: 100px;
-  }
+	@media (max-width: 768px) {
+		height: 100px;
+	}
 
-  @media (max-width: 480px) {
-    height: 85px;
-  }
+	@media (max-width: 480px) {
+		height: 85px;
+	}
 }
 
 .standartCard {
-  position: relative;
-  display: flex;
-  gap: 16px;
-  background-color: var(--color-card);
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  padding: 5px;
-  color: var(--text-color);
-  text-decoration: none;
-  font-family: var(--font-body);
-  font-size: var(--text-h4-size);
-  letter-spacing: var(--letter-spacing);
+	position: relative;
+	display: flex;
+	gap: 16px;
+	background-color: var(--color-card);
+	border-radius: 12px;
+	transition: all 0.2s ease;
+	padding: 5px;
+	color: var(--text-color);
+	text-decoration: none;
+	font-family: var(--font-body);
+	font-size: var(--text-h4-size);
+	letter-spacing: var(--letter-spacing);
 
-  @media (max-width: 925px) {
-    gap: 10px;
-  }
+	@media (max-width: 925px) {
+		gap: 10px;
+	}
 
-  @media (max-width: 480px) {
-    gap: 6px;
-  }
+	@media (max-width: 480px) {
+		gap: 6px;
+	}
 }
 
 .standartImage {
-  width: 200px;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
+	width: 200px;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 12px;
 
-  @media (max-width: 1075px) {
-    width: 180px;
-  }
+	@media (max-width: 1075px) {
+		width: 180px;
+	}
 
-  @media (max-width: 925px) {
-    width: 160px;
-  }
+	@media (max-width: 925px) {
+		width: 160px;
+	}
 
-  @media (max-width: 480px) {
-    width: 140px;
-  }
+	@media (max-width: 480px) {
+		width: 140px;
+	}
 }
 
 .standartContent {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: flex-start;
-  padding: 10px;
-  width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+	padding: 10px;
+	width: 100%;
 }
 
 .standartCardTitle {
-  font-size: var(--text-h3-size);
-  font-weight: var(--font-medium);
+	font-size: var(--text-h3-size);
+	font-weight: var(--font-medium);
 
-  @media (max-width: 925px) {
-    font-size: calc(var(--text-h3-size) * 0.9);
-  }
+	@media (max-width: 925px) {
+		font-size: calc(var(--text-h3-size) * 0.9);
+	}
 
-  @media (max-width: 480px) {
-    font-size: calc(var(--text-h3-size) * 0.8);
-  }
+	@media (max-width: 480px) {
+		font-size: calc(var(--text-h3-size) * 0.8);
+	}
 }
 
 .standartDistance {
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
 
-  @media (max-width: 925px) {
-    font-size: calc(var(--text-body-size) * 0.9);
-  }
+	@media (max-width: 925px) {
+		font-size: calc(var(--text-body-size) * 0.9);
+	}
 
-  @media (max-width: 480px) {
-    font-size: calc(var(--text-body-size) * 0.8);
-  }
+	@media (max-width: 480px) {
+		font-size: calc(var(--text-body-size) * 0.8);
+	}
 }
 
 .compactTags {
-  width: 100%;
+	width: 100%;
 }
 
 .standartLike {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: var(--text-color);
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 24px;
-  height: 24px;
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	color: var(--text-color);
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	width: 24px;
+	height: 24px;
 
-  &:hover {
-    transform: scale(1.1);
-  }
+	&:hover {
+		transform: scale(1.1);
+	}
 
-  &:active {
-    transform: scale(0.95);
-  }
+	&:active {
+		transform: scale(0.95);
+	}
 
-  &.liked {
-    animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
+	&.liked {
+		animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+	}
 }
 
 .likeWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
 
-  &.liked {
-    animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
+	&.liked {
+		animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+	}
 
-  &.animating {
-    animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
+	&.animating {
+		animation: likeAnimation 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+	}
 }
 
 @keyframes likeAnimation {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.2);
-  }
-  70% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(1.2);
+	}
+	70% {
+		transform: scale(0.95);
+	}
+	100% {
+		transform: scale(1);
+	}
 }

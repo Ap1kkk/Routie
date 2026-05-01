@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { mockRoutes } from '../../types/mockData';
+import { mockRoutes } from '../../mocks/route';
 import { Route } from '../../types/route';
 import styles from './RoutesMobilePage.module.scss';
 import { RouteCard } from '@components';

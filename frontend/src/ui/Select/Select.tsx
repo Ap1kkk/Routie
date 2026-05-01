@@ -142,7 +142,7 @@ export const Select: React.FC<SelectProps> = ({
 					})}
 				</ul>
 			)}
-			{(error) && (
+			{error && (
 				<div className={styles['message-container']}>
 					{error && (
 						<p className={styles['error-message']}>{error}</p>

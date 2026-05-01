@@ -1,236 +1,235 @@
 .container {
-  width: 100%;
-  display: flex;
-  gap: 0 !important;
+	width: 100%;
+	display: flex;
+	gap: 0 !important;
 }
 
 .container :global(.ant-space-item) {
-  font-family: var(--font-body);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 
-  @media (max-width: 925px) {
-    font-size: var(--text-body-size-mobile);
-  }
+	@media (max-width: 925px) {
+		font-size: var(--text-body-size-mobile);
+	}
 }
 
 .container :global(.ant-picker) {
-  width: 100%;
-  border-radius: 12px;
-  padding: 8px 16px;
-  border: 1px solid var(--color-caption);
-  background-color: var(--color-card);
-  color: var(--color-text);
-  transition: all 0.2s ease;
+	width: 100%;
+	border-radius: 12px;
+	padding: 8px 16px;
+	border: 1px solid var(--color-caption);
+	background-color: var(--color-card);
+	color: var(--color-text);
+	transition: all 0.2s ease;
 
-  &:hover {
-    border-color: var(--color-accent);
-  }
+	&:hover {
+		border-color: var(--color-accent);
+	}
 
-  &:focus-within {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.1);
-  }
+	&:focus-within {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.1);
+	}
 }
 
 .container :global(.ant-picker-status-error) {
-  border-color: var(--color-error) !important;
+	border-color: var(--color-error) !important;
 
-  &:focus-within {
-    box-shadow: 0 0 0 2px rgba(var(--color-error-rgb), 0.1);
-  }
+	&:focus-within {
+		box-shadow: 0 0 0 2px rgba(var(--color-error-rgb), 0.1);
+	}
 }
 
 .container :global(.ant-picker-suffix) {
-  color: var(--color-toggle);
-  margin: 0;
+	color: var(--color-toggle);
+	margin: 0;
 }
 
 .container :global(.ant-picker-input) {
-  input {
-    flex: 1;
-    padding: 0;
-    font-family: var(--font-body);
-    font-size: var(--text-body-size);
-    color: var(--color-text);
-    background: transparent;
-    border: none;
-    outline: none;
+	input {
+		flex: 1;
+		padding: 0;
+		font-family: var(--font-body);
+		font-size: var(--text-body-size);
+		color: var(--color-text);
+		background: transparent;
+		border: none;
+		outline: none;
 
-    @media (max-width: 925px) {
-      font-size: var(--text-body-size-mobile);
-    }
+		@media (max-width: 925px) {
+			font-size: var(--text-body-size-mobile);
+		}
 
-    &::placeholder {
-      color: var(--color-disabled-text);
-      opacity: 0.5;
-    }
-  }
+		&::placeholder {
+			color: var(--color-disabled-text);
+			opacity: 0.5;
+		}
+	}
 
-  .ant-picker-clear {
-    background-color: var(--color-card);
-    color: var(--color-caption);
+	.ant-picker-clear {
+		background-color: var(--color-card);
+		color: var(--color-caption);
 
-    &:hover {
-      color: var(--color-error);
-    }
-  }
+		&:hover {
+			color: var(--color-error);
+		}
+	}
 }
 
 /* Календарь и ячейки */
 .popup {
-  min-width: 0 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 0 !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .popup :global(.ant-picker-panel-container) {
-  border-radius: 12px;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
-  0 0 40px rgba(255, 255, 255, 0.05);
-  background: transparent;
-  border: 1px solid var(--color-card);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+	border-radius: 12px;
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
+		0 0 40px rgba(255, 255, 255, 0.05);
+	background: transparent;
+	border: 1px solid var(--color-card);
+	transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .popup :global(.ant-picker-panel) {
-  color: var(--color-text);
+	color: var(--color-text);
 }
 
 .popup :global(.ant-picker-header) {
-  border: none;
-  padding: 0 12px;
-  color: var(--color-text);
+	border: none;
+	padding: 0 12px;
+	color: var(--color-text);
 }
 
 .popup :global(.ant-picker-header-super-prev-btn) {
-  color: var(--color-text) !important;
+	color: var(--color-text) !important;
 }
 
 .popup :global(.ant-picker-header-super-prev-btn),
 :global(.ant-picker-header-prev-btn),
 :global(.ant-picker-header-next-btn),
-:global(.ant-picker-header-super-next-btn),
-{
-  color: var(--color-text) !important;
+:global(.ant-picker-header-super-next-btn) {
+	color: var(--color-text) !important;
 }
 
 .popup :global(.ant-picker-body) {
-  padding: 10px;
+	padding: 10px;
 
-  @media (max-width: 925px) {
-    padding: 0 4px !important;
-  }
+	@media (max-width: 925px) {
+		padding: 0 4px !important;
+	}
 }
 
 .popup :global(.ant-picker-content) {
-  color: var(--color-text)
+	color: var(--color-text);
 }
 
 .popup :global(.ant-picker-content th) {
-  font-family: var(--font-body);
-  font-weight: var(--font-medium);
-  color: var(--color-text);
-  height: 0;
+	font-family: var(--font-body);
+	font-weight: var(--font-medium);
+	color: var(--color-text);
+	height: 0;
 }
 
 .popup :global(.ant-picker-cell) {
-  color: var(--color-disabled-text);
-  padding: 4px 0;
+	color: var(--color-disabled-text);
+	padding: 4px 0;
 }
 
 .popup :global(.ant-picker-cell-in-view) {
-  border-radius: 50% !important;
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--color-text);
-  transition: all 0.2s ease;
+	border-radius: 50% !important;
+	font-family: var(--font-body);
+	font-size: 13px;
+	color: var(--color-text);
+	transition: all 0.2s ease;
 }
 
 .popup :global(.ant-picker-cell-inner) {
-  border-radius: 12px !important;
+	border-radius: 12px !important;
 }
 
 .popup :global(.ant-picker-cell-selected .ant-picker-cell-inner) {
-  color: var(--color-text) !important;
-  border: 1px solid var(--color-button-hover) !important;
+	color: var(--color-text) !important;
+	border: 1px solid var(--color-button-hover) !important;
 
-  &:hover {
-    background-color: var(--color-button-hover) !important;
-  }
+	&:hover {
+		background-color: var(--color-button-hover) !important;
+	}
 }
 
 .popup :global(.ant-picker-cell-selected .ant-picker-cell-inner) {
-  background: var(--color-accent) !important;
+	background: var(--color-accent) !important;
 }
 
 .popup :global(.ant-picker-cell-today .ant-picker-cell-inner::before) {
-  border: none !important;
+	border: none !important;
 }
 
 .popup :global(.ant-picker-cell-today .ant-picker-cell-inner) {
-  border-bottom: 1px solid var(--color-text) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+	border-bottom: 1px solid var(--color-text) !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
 }
 
 .popup :global(.ant-picker-footer) {
-  padding: 0;
-  border: none;
+	padding: 0;
+	border: none;
 }
 
 .customFooter {
-  background: transparent;
+	background: transparent;
 }
 
 .customFooter {
-  padding: 15px 10px;
-  background: transparent;
+	padding: 15px 10px;
+	background: transparent;
 
-  @media (max-width: 925px) {
-    padding: 5px 0;
-  }
+	@media (max-width: 925px) {
+		padding: 5px 0;
+	}
 }
 
 .customFooterButtons {
-  display: flex;
-  gap: 12px;
+	display: flex;
+	gap: 12px;
 }
 
 .footerBtn {
-  flex: 1;
-  font-size: 13px;
-  height: 32px;
+	flex: 1;
+	font-size: 13px;
+	height: 32px;
 }
 
 .message-container {
-  min-height: 25px;
-  width: 100%;
-  white-space: wrap;
+	min-height: 25px;
+	width: 100%;
+	white-space: wrap;
 }
 
 .helperText {
-  font-size: var(--text-caption-size);
-  color: var(--color-caption);
-  margin: 0;
+	font-size: var(--text-caption-size);
+	color: var(--color-caption);
+	margin: 0;
 }
 
 .errorText {
-  font-size: var(--text-caption-size);
-  color: var(--color-alarm);
-  white-space: normal;
-  word-wrap: break-word;
-  word-break: break-word;
-  margin: 0;
-  line-height: 1.4;
+	font-size: var(--text-caption-size);
+	color: var(--color-alarm);
+	white-space: normal;
+	word-wrap: break-word;
+	word-break: break-word;
+	margin: 0;
+	line-height: 1.4;
 }
 
 .error-message {
-  font-family: var(--font-body);
-  font-size: var(--text-caption-size);
-  color: var(--color-error);
-  margin: 0;
+	font-family: var(--font-body);
+	font-size: var(--text-caption-size);
+	color: var(--color-error);
+	margin: 0;
 }

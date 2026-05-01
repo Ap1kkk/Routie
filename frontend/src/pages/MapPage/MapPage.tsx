@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import {
-	getMockRouteById,
-	mockRouteKremlin,
-	mockRoutes,
-} from '../../types/mockData';
-
-import styles from './MapPage.module.scss';
+import { useParams } from 'react-router-dom';
+import { getMockRouteById, mockRouteKremlin } from '../../mocks/route';
 import { RouteOnMap } from '@components';
-import { Route } from '../../types/route';
+import styles from './MapPage.module.scss';
 
 export const MapPage = () => {
 	const { routeId } = useParams();
-	const navigate = useNavigate();
-
-	const [routeData, setRouteData] = useState<Route | null>(null);
-	const [userLocation, setUserLocation] = useState<[number, number] | null>(
-		null
-	);
+	const [routeData, setRouteData] = useState<any>(null);
+	const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -25,57 +15,49 @@ export const MapPage = () => {
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
-					console.log('Got user location:', position.coords);
-					setUserLocation([
-						position.coords.latitude,
-						position.coords.longitude,
-					]);
+					setUserLocation([position.coords.latitude, position.coords.longitude]);
 				},
-				(error) => {
-					console.error('Geolocation error:', error);
+				(err) => {
+					console.log('Ошибка геолокации:', err);
 					setUserLocation([56.326, 44.006]);
 				},
-				{
-					enableHighAccuracy: true,
-					timeout: 5000,
-					maximumAge: 0,
-				}
+				{ enableHighAccuracy: true, timeout: 5000 }
 			);
 		} else {
-			console.log('Geolocation not supported');
 			setUserLocation([56.326, 44.006]);
 		}
 	}, []);
 
+	// Загружаем данные маршрута
 	useEffect(() => {
-		const loadRouteData = async () => {
+		const loadRoute = async () => {
+			setIsLoading(true);
+			setError(null);
+
 			try {
-				setIsLoading(true);
-				setError(null);
+				await new Promise(resolve => setTimeout(resolve, 500));
 
-				await new Promise((resolve) => setTimeout(resolve, 500));
-
-				const id = routeId ? parseInt(routeId) : undefined;
-				let mockData = id ? getMockRouteById(id) : mockRouteKremlin;
-
-				if (!mockData) {
-					console.warn(`Mock route not found for ID: ${id}`);
-					mockData = mockRouteKremlin;
-					setError(`Маршрут с ID ${id} не найден`);
+				let data;
+				if (routeId) {
+					data = getMockRouteById(routeId);
 				}
 
-				console.log('Route data loaded:', mockData.name);
-				setRouteData(mockData);
+				if (!data) {
+					data = mockRouteKremlin;
+				}
+
+				setRouteData(data);
+				console.log('Загружен маршрут:', data.name);
 			} catch (err) {
-				console.error('Error loading route:', err);
-				setError('Ошибка загрузки маршрута');
+				console.error('Ошибка загрузки:', err);
+				setError('Не удалось загрузить маршрут');
 				setRouteData(mockRouteKremlin);
 			} finally {
 				setIsLoading(false);
 			}
 		};
 
-		loadRouteData();
+		loadRoute();
 	}, [routeId]);
 
 	if (isLoading) {
@@ -89,16 +71,28 @@ export const MapPage = () => {
 		);
 	}
 
+	if (error && !routeData) {
+		return (
+			<section className={styles.container}>
+				<div className={styles.error}>
+					<p>{error}</p>
+					<button onClick={() => window.location.reload()}>Повторить</button>
+				</div>
+			</section>
+		);
+	}
+
 	return (
 		<section className={styles.container}>
 			<div className={styles.mapWrapper}>
-				<RouteOnMap
-					key={routeData?.id}
-					routeData={routeData}
-					userLocation={userLocation}
-					showUserMarker={true}
-					showRoute={true}
-				/>
+				{routeData && (
+					<RouteOnMap
+						routeData={routeData}
+						userLocation={userLocation}
+						showUserMarker={true}
+						showRoute={true}
+					/>
+				)}
 			</div>
 		</section>
 	);

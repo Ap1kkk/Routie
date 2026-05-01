@@ -3,6 +3,7 @@ import { Layout, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
 	AuthorizationPage,
+	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
 	FilterMobilePage,
@@ -10,6 +11,7 @@ import {
 	MapPage,
 	NotFoundPage,
 	ProfilePage,
+	RecoveryPasswordPage,
 	RegistrationPage,
 	RoutesMobilePage,
 	SettingsPage,
@@ -37,6 +39,10 @@ export const router = createBrowserRouter([
 			{
 				path: '/registration',
 				element: <RegistrationPage />,
+			},
+			{
+				path: '/recovery-page',
+				element: <RecoveryPasswordPage />,
 			},
 			{
 				element: <ProtectedRoute isAuthenticated={true} />,
@@ -85,6 +91,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/achievement',
 						element: <AchievementPage />,
+					},
+					{
+						path: '/profile/edit',
+						element: <EditProfilePage />,
 					},
 				],
 			},

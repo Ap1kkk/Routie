@@ -1,38 +1,38 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-  border-radius: 12px;
-  padding: 17px;
-  gap: 10px;
-  background-color: var(--color-card);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: center;
+	border-radius: 12px;
+	padding: 17px;
+	gap: 10px;
+	background-color: var(--color-card);
 }
 
 .cardTitle {
-  display: flex;
-  text-align: center;
-  font-family: var(--font-body);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	display: flex;
+	text-align: center;
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 
-  @media (max-width: 750px) {
-    font-size: var(--text-body-size-mobile);
-  }
+	@media (max-width: 750px) {
+		font-size: var(--text-body-size-mobile);
+	}
 }
 
 .cardContent {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 12px;
-  background-color: var(--color-accent);
-  padding: 5px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 12px;
+	background-color: var(--color-accent);
+	padding: 5px;
 
-  @media (max-width: 750px) {
-    font-size: var(--text-body-size-mobile);
-  }
+	@media (max-width: 750px) {
+		font-size: var(--text-body-size-mobile);
+	}
 }

@@ -1,87 +1,87 @@
 .section {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 40px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 40px;
 }
 
 .errorBanner {
-  position: relative;
-  z-index: 1;
-  background-color: var(--color-card);
-  color: var(--color-alarm);
-  border-radius: 12px;
-  border: 1px solid var(--color-accent);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  font-family: var(--font-body);
-  letter-spacing: var(--letter-spacing);
-  text-align: center;
+	position: relative;
+	z-index: 1;
+	background-color: var(--color-card);
+	color: var(--color-alarm);
+	border-radius: 12px;
+	border: 1px solid var(--color-accent);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	font-family: var(--font-body);
+	letter-spacing: var(--letter-spacing);
+	text-align: center;
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
 .containerHeader {
-  width: 100%;
+	width: 100%;
 
-  @media (max-width: 10000000px) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+	@media (max-width: 10000000px) {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-  @media (max-width: 925px) {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
+	@media (max-width: 925px) {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
 }
 
 .title {
-  font-family: var(--font-body);
-  font-size: var(--text-h2-size);
-  font-weight: var(--font-medium);
-  color: var(--color-tetx);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-body);
+	font-size: var(--text-h2-size);
+	font-weight: var(--font-medium);
+	color: var(--color-tetx);
+	letter-spacing: var(--letter-spacing);
 
-  @media (max-width: 925px) {
-    font-size: var(--text-h2-size-mobile);
-  }
+	@media (max-width: 925px) {
+		font-size: var(--text-h2-size-mobile);
+	}
 }
 
 .button {
-  display: flex;
-  justify-content: flex-end;
+	display: flex;
+	justify-content: flex-end;
 }
 
 .containerHeaderButton {
-  display: flex;
-  background-color: var(--color-card);
+	display: flex;
+	background-color: var(--color-card);
 
-  @media (max-width: 925px) {
-    padding: 4px 8px;
-  }
+	@media (max-width: 925px) {
+		padding: 4px 8px;
+	}
 }
 
 .position {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
 }
 
 .positionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
 
-  @media (max-width: 1075px) {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+	@media (max-width: 1075px) {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
 }

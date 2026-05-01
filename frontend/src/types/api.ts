@@ -1,10 +1,10 @@
-import { TUser } from './user';
+import { User } from './user';
 
 export type TApiResponse = {
 	success: boolean;
 	data?: any;
 	message?: string;
-	user?: TUser;
+	user?: User;
 	refreshToken?: string;
 	accessToken?: string;
 };

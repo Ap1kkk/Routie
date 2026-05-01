@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { useDeviceType } from '../../utils/hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { Header } from '../Header/DesktopHeader';
 import { Footer } from '../Footer/DesktopFooter';
 import { MobileFooter } from '../Footer/MobileFooter';

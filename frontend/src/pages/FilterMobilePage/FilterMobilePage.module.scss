@@ -1,19 +1,19 @@
 .container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
 }
 
 .routesContainer {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }
 
 .positionGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }

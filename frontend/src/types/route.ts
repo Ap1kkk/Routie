@@ -1,45 +1,44 @@
+import { Tags } from './tags';
+import { Checkpoint } from './checkpoint';
+
+export type UUIDRoute = string;
+
 export interface Route {
-	id: number;
+	id: UUIDRoute;
 	name: string;
-	imagePath: string;
 	distance: number;
 	checkpoints: Checkpoint[];
 	tags: Tags[];
+	createdAt?: string;
+	updatedAt?: string;
 }
 
-export interface Tags {
-	id: number;
-	name: string;
-}
-
-export interface Checkpoint {
-	latitude: number;
-	longitude: number;
+export interface RouteImage {
+	id: string;
+	routeId: UUIDRoute;
+	imagePath: string;
 }
 
 export interface CreateRouteData {
 	name: string;
 	distance: number;
-	imagePath?: string;
-	checkpoints: Checkpoint[];
-	tagIds: number[];
+	checkpoints: Omit<Checkpoint, 'id'>[];
+	tagIds: string[];
 }
 
 export interface UpdateRouteData {
-	id: number;
 	name?: string;
 	distance?: number;
-	imagePath?: string;
-	checkpoints?: Checkpoint[];
-	tagIds?: number[];
+	checkpoints?: Omit<Checkpoint, 'id'>[];
+	tagIds?: string[];
 }
 
 export interface RouteFilters {
 	name?: string;
-	tagIds?: number[];
+	search?: string;
 	minDistance?: number;
 	maxDistance?: number;
-	search?: string;
+	tagIds?: string[];
 }
 
 export interface RoutesResponse {
@@ -47,4 +46,5 @@ export interface RoutesResponse {
 	total: number;
 	page: number;
 	limit: number;
+	totalPages: number;
 }

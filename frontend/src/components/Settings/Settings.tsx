@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styles from './Settings.module.scss';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button } from '@ui';
+import { useTheme } from '../../hooks/useTheme';
 
 import { ReactComponent as User } from '../../assets/icons/user-circle.svg';
 import { ReactComponent as Edit } from '../../assets/icons/edit.svg';
@@ -15,29 +16,9 @@ interface SettingsProps {
 	onLogout?: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({
-	onLogout,
-}) => {
+export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
 	const navigate = useNavigate();
-
-	const [theme, setTheme] = useState<boolean>(() => {
-		const saved = localStorage.getItem('theme');
-		return saved === 'light';
-	});
-
-	useEffect(() => {
-		if (theme) {
-			document.body.classList.remove('dark-theme');
-			localStorage.setItem('theme', 'light');
-		} else {
-			document.body.classList.add('dark-theme');
-			localStorage.setItem('theme', 'dark');
-		}
-	}, [theme]);
-
-	const toggleTheme = () => {
-		setTheme(!theme);
-	};
+	const { isLight, toggleTheme } = useTheme();
 
 	const handleLogout = () => {
 		if (onLogout) {
@@ -106,8 +87,8 @@ export const Settings: React.FC<SettingsProps> = ({
 					<Button
 						onClick={toggleTheme}
 						variant={'tertiary'}
-						iconLeft={theme ? <Moon /> : <Sun />}
-						children={theme ? 'Тёмная тема' : 'Светлая тема'}
+						iconLeft={isLight ? <Moon /> : <Sun />}
+						children={isLight ? 'Тёмная тема' : 'Светлая тема'}
 						className={styles.buttons}
 					/>
 				</article>

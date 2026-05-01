@@ -1,0 +1,1 @@
+export { RecoveryPasswordPage } from './RecoveryPasswordPage';

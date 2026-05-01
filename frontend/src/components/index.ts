@@ -1,6 +1,7 @@
-export * from './Achievement'
-export * from './AchievementCard'
+export * from './Achievement';
+export * from './AchievementCard';
 export * from './AuthorizationForm';
+export * from './EditProfileForm';
 export * from './Filter';
 export * from './Footer/DesktopFooter';
 export * from './Footer/MobileFooter';
@@ -8,11 +9,13 @@ export * from './Header/DesktopHeader';
 export * from './Header/MobileHeader';
 export * from './Layout';
 export * from './Profile';
-export * from './ProtectedRoute'
+export * from './ProtectedRoute';
 export * from './RegistrationForm';
 export * from './RouteCard';
 export * from './RouteOfDay';
 export * from './RoutesOnMap';
-export * from './Settings'
-export * from './Statistic'
-export * from './StatisticCard'
+export * from './Settings';
+export * from './Statistic';
+export * from './StatisticCard';
+
+export * from './RecoveryPasswordForm';

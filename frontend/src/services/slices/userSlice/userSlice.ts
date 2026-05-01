@@ -8,7 +8,7 @@ import {
 	TLoginData,
 	TRegisterData,
 	TUpdateUserData,
-	TUser,
+	User,
 } from '../../../types/user';
 import { clearTokens, storeTokens } from '../../../utils/auth';
 import {
@@ -27,7 +27,7 @@ type TUserState = {
 	isAuthenticated: boolean;
 	loginError?: SerializedError;
 	registerError?: SerializedError;
-	data: TUser;
+	data: User | null; // Изменили на null
 	isLoading: boolean;
 };
 
@@ -35,16 +35,11 @@ const initialState: TUserState = {
 	isAuthChecked: false,
 	isAuthenticated: false,
 	isLoading: false,
-	data: {
-		id: undefined,
-		username: '',
-		email: '',
-		role: 'USER',
-	},
+	data: null, // Начальное состояние null
 };
 
 export const register = createAsyncThunk<
-	TUser,
+	User,
 	TRegisterData,
 	{ rejectValue: string }
 >('user/register', async (data, { rejectWithValue }) => {
@@ -65,7 +60,7 @@ export const register = createAsyncThunk<
 });
 
 export const login = createAsyncThunk<
-	TUser,
+	User,
 	TLoginData,
 	{ rejectValue: string }
 >('user/login', async (data, { rejectWithValue }) => {
@@ -128,7 +123,7 @@ export const forgotPassword = createAsyncThunk<
 	return true;
 });
 
-export const fetchUser = createAsyncThunk<TUser, void, { rejectValue: string }>(
+export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
 	'user/fetch',
 	async (_, { rejectWithValue }) => {
 		const response: TApiResponse = await getUserApi();
@@ -148,7 +143,7 @@ export const fetchUser = createAsyncThunk<TUser, void, { rejectValue: string }>(
 );
 
 export const updateUser = createAsyncThunk<
-	TUser,
+	User,
 	TUpdateUserData,
 	{ rejectValue: string }
 >('user/update', async (data, { rejectWithValue }) => {
@@ -219,12 +214,7 @@ const userSlice = createSlice({
 			.addCase(logout.fulfilled, (state) => {
 				state.isAuthenticated = false;
 				state.isLoading = false;
-				state.data = {
-					id: undefined,
-					username: '',
-					email: '',
-					role: 'USER',
-				};
+				state.data = null; // Изменили на null
 			})
 			.addCase(logout.rejected, (state) => {
 				state.isLoading = false;
@@ -243,12 +233,7 @@ const userSlice = createSlice({
 				state.isAuthChecked = true;
 				state.isAuthenticated = false;
 				state.isLoading = false;
-				state.data = {
-					id: undefined,
-					username: '',
-					email: '',
-					role: 'USER',
-				};
+				state.data = null; // Изменили на null
 			})
 			.addCase(updateUser.pending, (state) => {
 				state.isLoading = true;

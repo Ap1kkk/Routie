@@ -1,67 +1,65 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--color-card);
-  gap: 5px;
-  padding: 10px 20px;
-  border-radius: var(--border-radius);
-  box-shadow:
-          0 6px 12px rgba(0, 0, 0, 0.15),
-          0 0 40px rgba(255, 255, 255, 0.05);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: var(--color-card);
+	gap: 5px;
+	padding: 10px 20px;
+	border-radius: var(--border-radius);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15),
+		0 0 40px rgba(255, 255, 255, 0.05);
 }
 
 .cardImage {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .cardTitle {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	width: 100%;
 
-  font-family: var(--font-body);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 }
 
 .cardCaption {
-  text-align: center;
-  width: 100%;
+	text-align: center;
+	width: 100%;
 
-  font-family: var(--font-body);
-  font-size: var(--text-caption-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-caption-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 }
 
 .cardContent {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 
-  width: 100%;
-  background-color: var(--color-accent);
-  border-radius: var(--border-radius);
+	width: 100%;
+	background-color: var(--color-accent);
+	border-radius: var(--border-radius);
 
-  padding: 2px 0;
+	padding: 2px 0;
 
-  font-family: var(--font-body);
-  font-size: var(--text-caption-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-caption-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 }
 
 .cardContentValue {
-  padding: 1px 5px;
-  background-color: #fff;
-  border-radius: var(--border-radius);
+	padding: 1px 5px;
+	background-color: var(--color-card);
+	border-radius: var(--border-radius);
 }
-

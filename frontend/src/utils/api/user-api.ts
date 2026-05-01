@@ -2,7 +2,12 @@ import {
 	TLoginData,
 	TRegisterData,
 	TUpdateUserData,
-	TUser,
+	User,
+	AvatarUser,
+	UserTags,
+	RoleUser,
+	FriendsUser,
+	RoutesHistoryUser,
 } from '../../types/user';
 import {
 	clearSession,
@@ -15,6 +20,17 @@ import {
 import { TApiResponse } from '../../types/api';
 
 const API_URL = 'http://localhost:3001';
+
+const generateUUID = (): string => {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+		/[xy]/g,
+		function (c) {
+			const r = (Math.random() * 16) | 0;
+			const v = c === 'x' ? r : (r & 0x3) | 0x8;
+			return v.toString(16);
+		}
+	);
+};
 
 /** Регистрация нового пользователя */
 export const registerUserApi = async (
@@ -33,13 +49,22 @@ export const registerUserApi = async (
 			};
 		}
 
-		const userData = {
+		const userId = generateUUID();
+		const now = new Date().toISOString();
+
+		const userData: User = {
+			id: userId,
 			username: data.username,
+			name: data.name || '',
 			email: data.email,
+			number: data.number || '',
 			password: data.password,
-			role: data.role || 'USER',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
+			level: 1,
+			gender: data.gender || 'other',
+			height: data.height || 0,
+			weight: data.weight || 0,
+			birthday: data.birthday || '',
+			isAuthenticated: true,
 		};
 
 		const response = await fetch(`${API_URL}/users`, {
@@ -48,9 +73,63 @@ export const registerUserApi = async (
 			body: JSON.stringify(userData),
 		});
 
-		const user = await handleResponse<any>(response);
+		const user = await handleResponse<User>(response);
 
-		const { password, ...userWithoutPassword } = user;
+		const avatarData: AvatarUser = {
+			id: '',
+			user_id: userId,
+			avatar: '',
+		};
+
+		await fetch(`${API_URL}/avatars`, {
+			method: 'POST',
+			headers: getHeaders(),
+			body: JSON.stringify(avatarData),
+		});
+
+		const roleData: RoleUser = {
+			user_id: userId,
+			role: data.role || 'USER',
+		};
+
+		await fetch(`${API_URL}/roles`, {
+			method: 'POST',
+			headers: getHeaders(),
+			body: JSON.stringify(roleData),
+		});
+
+		const userTagsData: UserTags = {
+			user_id: userId,
+			tags: [],
+		};
+
+		await fetch(`${API_URL}/user-tags`, {
+			method: 'POST',
+			headers: getHeaders(),
+			body: JSON.stringify(userTagsData),
+		});
+
+		const friendsData: FriendsUser = {
+			user_id: userId,
+			friends: [],
+		};
+
+		await fetch(`${API_URL}/friends`, {
+			method: 'POST',
+			headers: getHeaders(),
+			body: JSON.stringify(friendsData),
+		});
+
+		const routesHistoryData: RoutesHistoryUser = {
+			user_id: userId,
+			historyRoutes: [],
+		};
+
+		await fetch(`${API_URL}/routes-history`, {
+			method: 'POST',
+			headers: getHeaders(),
+			body: JSON.stringify(routesHistoryData),
+		});
 
 		const accessToken = `mock-access-token-${Date.now()}-${user.id}`;
 		const refreshToken = `mock-refresh-token-${Date.now()}-${user.id}`;
@@ -63,9 +142,11 @@ export const registerUserApi = async (
 
 		saveSession(accessToken, refreshToken);
 
+		const { password, ...userWithoutPassword } = user;
+
 		return {
 			success: true,
-			user: userWithoutPassword as TUser,
+			user: userWithoutPassword as User,
 			accessToken,
 			refreshToken,
 		};
@@ -83,7 +164,7 @@ export const loginUserApi = async (data: TLoginData): Promise<TApiResponse> => {
 		const response = await fetch(
 			`${API_URL}/users?email=${encodeURIComponent(data.email)}`
 		);
-		const users = await handleResponse<any[]>(response);
+		const users = await handleResponse<User[]>(response);
 
 		if (users.length === 0) {
 			return {
@@ -101,7 +182,12 @@ export const loginUserApi = async (data: TLoginData): Promise<TApiResponse> => {
 			};
 		}
 
-		const { password, ...userWithoutPassword } = user;
+		// Обновляем статус аутентификации
+		await fetch(`${API_URL}/users/${user.id}`, {
+			method: 'PATCH',
+			headers: getHeaders(),
+			body: JSON.stringify({ isAuthenticated: true }),
+		});
 
 		const accessToken = `mock-access-token-${Date.now()}-${user.id}`;
 		const refreshToken = `mock-refresh-token-${Date.now()}-${user.id}`;
@@ -114,9 +200,11 @@ export const loginUserApi = async (data: TLoginData): Promise<TApiResponse> => {
 
 		saveSession(accessToken, refreshToken);
 
+		const { password, ...userWithoutPassword } = user;
+
 		return {
 			success: true,
-			user: userWithoutPassword as TUser,
+			user: userWithoutPassword as User,
 			accessToken,
 			refreshToken,
 		};
@@ -192,7 +280,7 @@ export const getUserApi = async (): Promise<TApiResponse> => {
 
 		return {
 			success: true,
-			user: userWithoutPassword as TUser,
+			user: userWithoutPassword as User,
 		};
 	} catch (error: any) {
 		return {
@@ -244,7 +332,7 @@ export const updateUserApi = async (
 
 		return {
 			success: true,
-			user: userWithoutPassword as TUser,
+			user: userWithoutPassword as User,
 		};
 	} catch (error: any) {
 		return {

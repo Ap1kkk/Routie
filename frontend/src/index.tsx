@@ -1,7 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { StrictMode } from 'react';
-import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { RouterProvider } from 'react-router-dom';
 
 import store from '@store';
 import { router } from './App';
@@ -14,7 +15,9 @@ const root = createRoot(domNode);
 root.render(
 	<StrictMode>
 		<Provider store={store}>
-			<RouterProvider router={router}></RouterProvider>
+			<ThemeProvider>
+				<RouterProvider router={router}></RouterProvider>
+			</ThemeProvider>
 		</Provider>
 	</StrictMode>
 );

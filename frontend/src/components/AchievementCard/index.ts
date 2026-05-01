@@ -1,1 +1,1 @@
-export { AchievementCard } from './AchievementCard'
+export { AchievementCard } from './AchievementCard';

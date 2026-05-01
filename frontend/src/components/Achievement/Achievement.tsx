@@ -1,16 +1,7 @@
-import styles from './Achievement.module.scss';
-import { AchievementCard } from '../AchievementCard';
 import React from 'react';
-
-export interface AchievementItem {
-	id: number;
-	title: string;
-	value: string;
-	caption: string;
-	image?: React.ReactNode;
-	progress?: number;
-	isLocked?: boolean;
-}
+import { AchievementCard } from '../AchievementCard';
+import { AchievementItem } from '../../types/achievments';
+import styles from './Achievement.module.scss';
 
 interface AchievementProps {
 	achievementsData?: AchievementItem[];
@@ -23,14 +14,14 @@ export const Achievement: React.FC<AchievementProps> = ({
 		<div className={styles.container}>
 			<h2 className={styles.achievementTitle}>Достижения</h2>
 			<div className={styles.achievementContent}>
-				{achievementsData.map((achievement) => (
+				{achievementsData.map((achievement, index) => (
 					<AchievementCard
 						key={achievement.id}
+						index={index}
 						title={achievement.title}
-						image={achievement.image}
-						caption={achievement.caption}>
-						{achievement.value}
-					</AchievementCard>
+						caption={achievement.caption}
+						children={achievement.value}
+					/>
 				))}
 			</div>
 		</div>

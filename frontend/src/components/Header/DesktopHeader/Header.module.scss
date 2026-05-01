@@ -1,81 +1,81 @@
 .header {
-  width: 100%;
-  padding: 20px 20px 10px;
+	width: 100%;
+	padding: 20px 20px 10px;
 }
 
 .navigation_auth {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  gap: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+	gap: 20px;
 }
 
 .logoContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  gap: 3px;
-  color: var(--color-text);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	gap: 3px;
+	color: var(--color-text);
 
-  &:focus-visible {
-    border-radius: 12px;
-    outline: 2px solid var(--color-link-pressed);
-    outline-offset: 2px;
-  }
+	&:focus-visible {
+		border-radius: 12px;
+		outline: 2px solid var(--color-link-pressed);
+		outline-offset: 2px;
+	}
 }
 
 .logoLight {
-  fill: #abd27a;
-  stroke: #253017;
+	fill: #abd27a;
+	stroke: #253017;
 }
 
 .logoDark {
-  fill: #abd27a;
+	fill: #abd27a;
 }
 
 .logoTitle {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h1-size);
-  letter-spacing: var(--letter-spacing);
-  white-space: nowrap;
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h1-size);
+	letter-spacing: var(--letter-spacing);
+	white-space: nowrap;
 }
 
 .closeButton {
-  background-color: var(--color-card);
+	background-color: var(--color-card);
 }
 
 .typeSelector {
-  min-width: 90px;
-  padding: 0;
-  cursor: pointer;
-  color: var(--color-text);
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-body-size);
-  letter-spacing: var(--letter-spacing);
-  white-space: nowrap;
+	min-width: 90px;
+	padding: 0;
+	cursor: pointer;
+	color: var(--color-text);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-body-size);
+	letter-spacing: var(--letter-spacing);
+	white-space: nowrap;
 }
 
 .themeButton {
-  width: 24px;
-  height: 24px;
+	width: 24px;
+	height: 24px;
 }
 
 .userCard {
-  padding: 0;
+	padding: 0;
 }
 
 .authContainer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }

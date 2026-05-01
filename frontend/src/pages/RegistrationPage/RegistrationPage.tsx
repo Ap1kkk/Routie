@@ -10,4 +10,3 @@ export const RegistrationPage: React.FC = () => {
 		</section>
 	);
 };
-

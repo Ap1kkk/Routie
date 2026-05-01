@@ -4,11 +4,7 @@ import 'dayjs/locale/ru';
 dayjs.locale('ru');
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-	ConfigProvider,
-	DatePicker as AntdDatePicker,
-	Space,
-} from 'antd';
+import { ConfigProvider, DatePicker as AntdDatePicker, Space } from 'antd';
 import ruRU from 'antd/locale/ru_RU';
 import ruPickerLocale from 'antd/es/date-picker/locale/ru_RU';
 

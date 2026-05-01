@@ -1,1 +1,1 @@
-export { Statistic } from './Statistic'
+export { Statistic } from './Statistic';

@@ -1,41 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Route, Tags } from '../../types/route';
-import { Filter } from '../../components/Filter';
-import { RouteCard } from '@components';
-import { mockRoutes } from '../../types/mockData';
+import React, { useState } from 'react';
+import { Tags } from '../../types/tags';
+import { Filters } from '../../types/filters';
+import { Filter } from '@components';
+import { mockRoutes } from '../../mocks/route';
 
 import styles from './FilterMobilePage.module.scss';
-
-interface Filters {
-	distance: {
-		min: number;
-		max: number;
-	};
-	checkpointsCount: {
-		min: number;
-		max: number;
-	};
-	categoryIds: number[];
-	duration: {
-		min: number;
-		max: number;
-	};
-	difficulty: string[];
-	rating: number;
-}
 
 export const FilterMobilePage: React.FC = () => {
 	const [activeFilters, setActiveFilters] = useState<Filters | null>(null);
 
 	const tags: Tags[] = [
-		{ id: 1, name: 'Исторический' },
-		{ id: 2, name: 'Природный' },
-		{ id: 3, name: 'Городской' },
-		{ id: 4, name: 'Водный' },
-		{ id: 5, name: 'Горный' },
-		{ id: 6, name: 'Архитектурный' },
-		{ id: 7, name: 'Религиозный' },
-		{ id: 8, name: 'Современный' },
+		{ id: '1', label: 'Исторический' },
+		{ id: '2', label: 'Природный' },
+		{ id: '3', label: 'Городской' },
+		{ id: '4', label: 'Водный' },
+		{ id: '5', label: 'Горный' },
+		{ id: '6', label: 'Архитектурный' },
+		{ id: '7', label: 'Религиозный' },
+		{ id: '8', label: 'Современный' },
 	];
 
 	const handleApplyFilters = (filters: Filters) => {

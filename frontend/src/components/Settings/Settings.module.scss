@@ -1,92 +1,91 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
+	display: flex;
+	flex-direction: column;
+	gap: 25px;
 }
 
 .headerContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
 }
 
 .profileUsername {
-  font-size: var(--text-h2-size-mobile);
-  font-weight: var(--font-medium);
-  font-family: var(--font-body);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
-  display: flex;
-  align-items: center;
-  gap: 5px;
+	font-size: var(--text-h2-size-mobile);
+	font-weight: var(--font-medium);
+	font-family: var(--font-body);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
+	display: flex;
+	align-items: center;
+	gap: 5px;
 }
 
 .level {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-sm-caption-size-mobile);
-  background: linear-gradient(135deg, #36f470 0%, #2f5928 100%);
-  border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--text-sm-caption-size-mobile);
+	background: linear-gradient(135deg, #36f470 0%, #2f5928 100%);
+	border-radius: 50%;
 }
 
 .profileEmail {
-  font-size: var(--text-body-size-mobile);
-  font-weight: var(--font-regular);
-  font-family: var(--font-body);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-caption);
+	font-size: var(--text-body-size-mobile);
+	font-weight: var(--font-regular);
+	font-family: var(--font-body);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-caption);
 }
 
 .sectionCards {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }
 
 .card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  border-radius: 26px;
-  background-color: var(--color-card);
-  box-shadow: var(--shadow-soft);
-  padding: 10px 20px;
-  gap: 12px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	border-radius: 26px;
+	background-color: var(--color-card);
+	box-shadow: var(--shadow-soft);
+	padding: 10px 20px;
+	gap: 12px;
 }
 
 .separator {
-  border-bottom: 1px solid var(--color-text);
-  opacity: 0.2;
+	border-bottom: 1px solid var(--color-text);
+	opacity: 0.2;
 }
 
 .buttonCard {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: center;
 }
 
 .buttonMenu {
-  display: flex;
-  justify-content: space-between;
-  padding: 0;
-  width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 0;
+	width: 100%;
 }
 
 .buttons {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: start;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: start;
 }
 
 .exit {
-  color: var(--color-alarm);
-  justify-content: center;
+	color: var(--color-alarm);
+	justify-content: center;
 }
-

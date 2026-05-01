@@ -22,6 +22,7 @@ import {
 	UpdateRouteData,
 	RouteFilters,
 } from '../../types/route';
+import { Tags } from '../../types/tags';
 import './RoutesList.scss';
 
 export const RoutesList: React.FC = () => {
@@ -37,8 +38,8 @@ export const RoutesList: React.FC = () => {
 		limit,
 	} = useSelector((state: RootState) => state.routes);
 
-	const [selectedRouteId, setSelectedRouteId] = useState<number>(0);
-	const [tagId, setTagId] = useState<number>(1);
+	const [selectedRouteId, setSelectedRouteId] = useState<string>(''); // Изменено с number на string
+	const [tagId, setTagId] = useState<string>('1'); // Изменено с number на string
 	const [minDistance, setMinDistance] = useState<number>(0);
 	const [maxDistance, setMaxDistance] = useState<number>(100);
 	const [searchTerm, setSearchTerm] = useState<string>('');
@@ -47,11 +48,17 @@ export const RoutesList: React.FC = () => {
 	const [newRoute, setNewRoute] = useState<CreateRouteData>({
 		name: '',
 		distance: 0,
-		checkpoints: [{ latitude: 56.328, longitude: 44.002 }],
-		tagIds: [1],
+		checkpoints: [
+			{
+				latitude: 56.328,
+				longitude: 44.002,
+				order: 1,
+			},
+		],
+		tagIds: ['1'],
 	});
 
-	const [editData, setEditData] = useState<Omit<UpdateRouteData, 'id'>>({
+	const [editData, setEditData] = useState<UpdateRouteData>({
 		name: '',
 		distance: 0,
 		tagIds: [],
@@ -59,7 +66,7 @@ export const RoutesList: React.FC = () => {
 
 	useEffect(() => {
 		dispatch(fetchAllRoutes({ page, limit, filters }));
-	}, [dispatch, page, limit]);
+	}, [dispatch, page, limit, filters]);
 
 	const handleFetchAllRoutes = () => {
 		dispatch(fetchAllRoutes({ page, limit, filters }));
@@ -82,7 +89,11 @@ export const RoutesList: React.FC = () => {
 	};
 
 	const handleFilterByTag = () => {
-		dispatch(fetchRoutesByTag(tagId));
+		if (tagId) {
+			dispatch(fetchRoutesByTag(tagId));
+		} else {
+			alert('Введите ID тега');
+		}
 	};
 
 	const handleFilterByDistance = () => {
@@ -104,8 +115,14 @@ export const RoutesList: React.FC = () => {
 			setNewRoute({
 				name: '',
 				distance: 0,
-				checkpoints: [{ latitude: 56.328, longitude: 44.002 }],
-				tagIds: [1],
+				checkpoints: [
+					{
+						latitude: 56.328,
+						longitude: 44.002,
+						order: 1,
+					},
+				],
+				tagIds: ['1'],
 			});
 			handleFetchAllRoutes();
 		} catch (error) {
@@ -123,7 +140,7 @@ export const RoutesList: React.FC = () => {
 			await dispatch(
 				editRoute({
 					id: selectedRouteId,
-					data: editData as UpdateRouteData,
+					data: editData,
 				})
 			).unwrap();
 			setEditData({
@@ -131,14 +148,14 @@ export const RoutesList: React.FC = () => {
 				distance: 0,
 				tagIds: [],
 			});
-			setSelectedRouteId(0);
+			setSelectedRouteId('');
 			handleFetchAllRoutes();
 		} catch (error) {
 			console.error('Update error:', error);
 		}
 	};
 
-	const handleDeleteRoute = async (id: number) => {
+	const handleDeleteRoute = async (id: string) => {
 		if (window.confirm(`Вы уверены, что хотите удалить маршрут ${id}?`)) {
 			try {
 				await dispatch(removeRoute(id)).unwrap();
@@ -215,12 +232,10 @@ export const RoutesList: React.FC = () => {
 					<h3>Получение маршрута по ID</h3>
 					<div className='input-group'>
 						<input
-							type='number'
-							placeholder='ID маршрута'
-							value={selectedRouteId || ''}
-							onChange={(e) =>
-								setSelectedRouteId(Number(e.target.value))
-							}
+							type='text'
+							placeholder='ID маршрута (UUID)'
+							value={selectedRouteId}
+							onChange={(e) => setSelectedRouteId(e.target.value)}
 						/>
 						<button
 							onClick={handleFetchRouteById}
@@ -282,14 +297,14 @@ export const RoutesList: React.FC = () => {
 						/>
 						<input
 							type='text'
-							placeholder='ID тегов (через запятую)'
+							placeholder='ID тегов (через запятую, UUID)'
 							value={newRoute.tagIds?.join(',') || ''}
 							onChange={(e) =>
 								setNewRoute({
 									...newRoute,
 									tagIds: e.target.value
 										.split(',')
-										.map(Number)
+										.map((id) => id.trim())
 										.filter(Boolean),
 								})
 							}
@@ -306,12 +321,10 @@ export const RoutesList: React.FC = () => {
 					<h3>Редактирование маршрута</h3>
 					<div className='form-group'>
 						<input
-							type='number'
-							placeholder='ID маршрута для редактирования'
-							value={selectedRouteId || ''}
-							onChange={(e) =>
-								setSelectedRouteId(Number(e.target.value))
-							}
+							type='text'
+							placeholder='ID маршрута для редактирования (UUID)'
+							value={selectedRouteId}
+							onChange={(e) => setSelectedRouteId(e.target.value)}
 						/>
 						<input
 							type='text'
@@ -337,14 +350,14 @@ export const RoutesList: React.FC = () => {
 						/>
 						<input
 							type='text'
-							placeholder='ID тегов (через запятую)'
+							placeholder='ID тегов (через запятую, UUID)'
 							value={editData.tagIds?.join(',') || ''}
 							onChange={(e) =>
 								setEditData({
 									...editData,
 									tagIds: e.target.value
 										.split(',')
-										.map(Number)
+										.map((id) => id.trim())
 										.filter(Boolean),
 								})
 							}
@@ -362,12 +375,10 @@ export const RoutesList: React.FC = () => {
 					<div className='filter-group'>
 						<div className='input-group'>
 							<input
-								type='number'
-								placeholder='ID тега'
+								type='text'
+								placeholder='ID тега (UUID)'
 								value={tagId}
-								onChange={(e) =>
-									setTagId(Number(e.target.value))
-								}
+								onChange={(e) => setTagId(e.target.value)}
 							/>
 							<button
 								onClick={handleFilterByTag}
@@ -422,7 +433,7 @@ export const RoutesList: React.FC = () => {
 							<p>
 								<strong>Теги:</strong>{' '}
 								{currentRoute.tags
-									.map((t) => t.name)
+									.map((t) => t.label)
 									.join(', ')}
 							</p>
 						)}
@@ -470,13 +481,13 @@ export const RoutesList: React.FC = () => {
 											route.tags.length > 0 && (
 												<div className='tags'>
 													<strong>Теги:</strong>
-													<div className='tag-tags'>
+													<div className='tag-list'>
 														{route.tags.map(
 															(tag) => (
 																<span
 																	key={tag.id}
-																	className='tag-tag'>
-																	{tag.name}
+																	className='tag-item'>
+																	{tag.label}
 																</span>
 															)
 														)}

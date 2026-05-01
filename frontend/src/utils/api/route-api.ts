@@ -42,8 +42,8 @@ export const getAllRoutes = async (
 	}
 };
 
-// Получение маршрута по ID
-export const getRouteById = async (id: number): Promise<Route> => {
+// Получение маршрута по ID (UUID)
+export const getRouteById = async (id: string): Promise<Route> => {
 	try {
 		const response = await fetch(`${API_URL}/routes/${id}`, {
 			method: 'GET',
@@ -71,7 +71,7 @@ export const createRoute = async (data: CreateRouteData): Promise<Route> => {
 
 // Обновление маршрута
 export const updateRoute = async (
-	id: number,
+	id: string,
 	data: UpdateRouteData
 ): Promise<Route> => {
 	try {
@@ -88,7 +88,7 @@ export const updateRoute = async (
 
 // Удаление маршрута
 export const deleteRoute = async (
-	id: number
+	id: string
 ): Promise<{ success: boolean; message: string }> => {
 	try {
 		const response = await fetch(`${API_URL}/routes/${id}`, {
@@ -107,7 +107,7 @@ export const deleteRoute = async (
 };
 
 // Получение маршрутов по тегу
-export const getRoutesByTag = async (tagId: number): Promise<Route[]> => {
+export const getRoutesByTag = async (tagId: string): Promise<Route[]> => {
 	try {
 		const response = await fetch(`${API_URL}/routes?tagIds=${tagId}`, {
 			method: 'GET',
@@ -156,5 +156,92 @@ export const searchRoutes = async (searchTerm: string): Promise<Route[]> => {
 		return result.data;
 	} catch (error: any) {
 		throw new Error(error.message || 'Ошибка поиска маршрутов');
+	}
+};
+
+// Получение маршрутов с пагинацией (улучшенная версия)
+export const getRoutesPaginated = async (
+	page: number = 1,
+	limit: number = 10,
+	filters?: RouteFilters
+): Promise<RoutesResponse> => {
+	try {
+		const params = new URLSearchParams();
+		params.append('page', page.toString());
+		params.append('limit', limit.toString());
+
+		if (filters?.name) params.append('name', filters.name);
+		if (filters?.search) params.append('search', filters.search);
+		if (filters?.minDistance)
+			params.append('minDistance', filters.minDistance.toString());
+		if (filters?.maxDistance)
+			params.append('maxDistance', filters.maxDistance.toString());
+		if (filters?.tagIds && filters.tagIds.length > 0) {
+			filters.tagIds.forEach((tagId) =>
+				params.append('tagIds', tagId.toString())
+			);
+		}
+
+		const response = await fetch(`${API_URL}/routes?${params.toString()}`, {
+			method: 'GET',
+			headers: getHeaders(),
+		});
+		return await handleResponse<RoutesResponse>(response);
+	} catch (error: any) {
+		throw new Error(error.message || 'Ошибка загрузки маршрутов');
+	}
+};
+
+// Получение количества маршрутов
+export const getRoutesCount = async (
+	filters?: RouteFilters
+): Promise<number> => {
+	try {
+		const params = new URLSearchParams();
+
+		if (filters?.name) params.append('name', filters.name);
+		if (filters?.search) params.append('search', filters.search);
+		if (filters?.minDistance)
+			params.append('minDistance', filters.minDistance.toString());
+		if (filters?.maxDistance)
+			params.append('maxDistance', filters.maxDistance.toString());
+		if (filters?.tagIds && filters.tagIds.length > 0) {
+			filters.tagIds.forEach((tagId) =>
+				params.append('tagIds', tagId.toString())
+			);
+		}
+
+		const response = await fetch(
+			`${API_URL}/routes/count?${params.toString()}`,
+			{
+				method: 'GET',
+				headers: getHeaders(),
+			}
+		);
+		const result = await handleResponse<{ count: number }>(response);
+		return result.count;
+	} catch (error: any) {
+		throw new Error(
+			error.message || 'Ошибка получения количества маршрутов'
+		);
+	}
+};
+
+// Получение популярных маршрутов
+export const getPopularRoutes = async (limit: number = 5): Promise<Route[]> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/routes/popular?limit=${limit}`,
+			{
+				method: 'GET',
+				headers: getHeaders(),
+			}
+		);
+		const result = await handleResponse<RoutesResponse>(response);
+		return result.data;
+	} catch (error: any) {
+		throw new Error(
+			error.message || 'Ошибка загрузки популярных маршрутов'
+		);
 	}
 };

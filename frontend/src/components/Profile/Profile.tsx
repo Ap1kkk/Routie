@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from '../../components/Profile/Profile.module.scss';
 import { Avatar, Button } from '@ui';
 import { useNavigate } from 'react-router-dom';
-import { useDeviceType } from '../../utils/hooks/useDeviceType';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { RouteCard } from '../RouteCard';
 import { Route } from '../../types/route';
 
@@ -169,6 +169,13 @@ export const Profile: React.FC<ProfileProps> = ({
 								)}
 							</div>
 						</div>
+					</div>
+					<div className={styles.containerButtons}>
+						<Button
+							variant='secondary'
+							onClick={() => navigate('/recovery-page')}>
+							Редактировать
+						</Button>
 					</div>
 				</div>
 			) : (

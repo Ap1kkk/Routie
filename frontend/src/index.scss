@@ -1,214 +1,213 @@
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 /* Yandex */
 @font-face {
-  font-family: 'Yandex';
-  src: url('assets/fonts/YandexSansText-RegularItalic.woff2') format('woff2'),
-  url('assets/fonts/YandexSansText-RegularItalic.woff') format('woff');
-  font-weight: normal;
-  font-style: italic;
+	font-family: 'Yandex';
+	src: url('assets/fonts/YandexSansText-RegularItalic.woff2') format('woff2'),
+		url('assets/fonts/YandexSansText-RegularItalic.woff') format('woff');
+	font-weight: normal;
+	font-style: italic;
 }
 
 @font-face {
-  font-family: 'Yandex';
-  src: url('assets/fonts/YandexSansText-Regular.woff2') format('woff2'),
-  url('assets/fonts/YandexSansText-Regular.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+	font-family: 'Yandex';
+	src: url('assets/fonts/YandexSansText-Regular.woff2') format('woff2'),
+		url('assets/fonts/YandexSansText-Regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
 }
 
 @font-face {
-  font-family: 'Yandex';
-  src: url('assets/fonts/YandexSansText-Bold.woff2') format('woff2'),
-  url('assets/fonts/YandexSansText-Bold.woff') format('woff');
-  font-weight: bold;
-  font-style: normal;
+	font-family: 'Yandex';
+	src: url('assets/fonts/YandexSansText-Bold.woff2') format('woff2'),
+		url('assets/fonts/YandexSansText-Bold.woff') format('woff');
+	font-weight: bold;
+	font-style: normal;
 }
 
 @font-face {
-  font-family: 'Yandex';
-  src: url('assets/fonts/YandexSansText-Medium.woff2') format('woff2'),
-  url('assets/fonts/YandexSansText-Medium.woff') format('woff');
-  font-weight: 500;
-  font-style: normal;
+	font-family: 'Yandex';
+	src: url('assets/fonts/YandexSansText-Medium.woff2') format('woff2'),
+		url('assets/fonts/YandexSansText-Medium.woff') format('woff');
+	font-weight: 500;
+	font-style: normal;
 }
 
 :root {
-  /* Текст */
-  --color-text: #253017;
-  --color-caption: #69735d;
-  --color-disabled-text: #9ca197;
-  --color-toggle: #b2b9a9;
+	/* Текст */
+	--color-text: #253017;
+	--color-caption: #69735d;
+	--color-disabled-text: #9ca197;
+	--color-toggle: #b2b9a9;
 
-  /* Фоны и поверхности */
-  --color-disabled: #e4e8df;
-  --color-card: #fff;
-  --color-background: #f9faf7;
+	/* Фоны и поверхности */
+	--color-disabled: #e4e8df;
+	--color-card: #fff;
+	--color-background: #f9faf7;
 
-  /* Акценты и кнопки */
-  --color-link-pressed: #508826;
-  --color-accent: #abd27a;
-  --color-button-hover: #deebc5;
+	/* Акценты и кнопки */
+	--color-link-pressed: #508826;
+	--color-accent: #abd27a;
+	--color-button-hover: #deebc5;
 
-  /* Статусы */
-  --color-alarm: #e0796e;
-  --color-error: #bf3920;
+	/* Статусы */
+	--color-alarm: #e0796e;
+	--color-error: #bf3920;
 
-  /* Тени */
-  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-blur: 0 8px 20px rgba(0, 0, 0, 0.08);
-  --shadow-card: 0 6px 12px rgba(0, 0, 0, 0.15);
+	/* Тени */
+	--shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
+	--shadow-blur: 0 8px 20px rgba(0, 0, 0, 0.08);
+	--shadow-card: 0 6px 12px rgba(0, 0, 0, 0.15);
 
-  /* Теги (категории) */
-  --color-tag-business: #eee7f7;
-  --color-tag-creative: #f7e7f2;
-  --color-tag-languages: #ebe5c5;
-  --color-tag-education: #e7f2f6;
-  --color-tag-home: #f7ebe5;
-  --color-tag-health: #e9f7e7;
-  --color-tag-other: #ebecf7;
+	/* Теги (категории) */
+	--color-tag-business: #eee7f7;
+	--color-tag-creative: #f7e7f2;
+	--color-tag-languages: #ebe5c5;
+	--color-tag-education: #e7f2f6;
+	--color-tag-home: #f7ebe5;
+	--color-tag-health: #e9f7e7;
+	--color-tag-other: #ebecf7;
 
-  /* -------------------- ТИПОГРАФИКА -------------------- */
+	/* -------------------- ТИПОГРАФИКА -------------------- */
 
-  /* Шрифты */
-  --font-heading: Yandex;
-  --font-body: Yandex;
+	/* Шрифты */
+	--font-heading: Yandex;
+	--font-body: Yandex;
 
-  /* Веса шрифтов */
-  --font-regular: 400;
-  --font-medium: 500;
+	/* Веса шрифтов */
+	--font-regular: 400;
+	--font-medium: 500;
 
-  /* Размеры и интерлиньяж */
-  --text-h1-size: 32px;
-  --text-h2-size: 28px;
-  --text-h3-size: 24px;
-  --text-h4-size: 20px;
-  --text-h5-size: 18px;
-  --text-h6-size: 16px;
-  --text-body-size: 16px;
-  --text-caption-size: 12px;
-  --text-sm-caption-size: 11px;
+	/* Размеры и интерлиньяж */
+	--text-h1-size: 32px;
+	--text-h2-size: 28px;
+	--text-h3-size: 24px;
+	--text-h4-size: 20px;
+	--text-h5-size: 18px;
+	--text-h6-size: 16px;
+	--text-body-size: 16px;
+	--text-caption-size: 12px;
+	--text-sm-caption-size: 11px;
 
-  // Мобильные размеры
-  --text-h1-size-mobile: 28px;
-  --text-h2-size-mobile: 24px;
-  --text-h3-size-mobile: 20px;
-  --text-h4-size-mobile: 18px;
-  --text-h5-size-mobile: 16px;
-  --text-h6-size-mobile: 14px;
-  --text-body-size-mobile: 14px;
-  --text-caption-size-mobile: 12px;
-  --text-sm-caption-size-mobile: 10px;
+	// Мобильные размеры
+	--text-h1-size-mobile: 28px;
+	--text-h2-size-mobile: 24px;
+	--text-h3-size-mobile: 20px;
+	--text-h4-size-mobile: 18px;
+	--text-h5-size-mobile: 16px;
+	--text-h6-size-mobile: 14px;
+	--text-body-size-mobile: 14px;
+	--text-caption-size-mobile: 12px;
+	--text-sm-caption-size-mobile: 10px;
 
-  // Межбуквенный интервал
-  --letter-spacing: 0.02em;
+	// Межбуквенный интервал
+	--letter-spacing: 0.02em;
 
-  // Радиус обводки
-  --border-radius: 12px;
+	// Радиус обводки
+	--border-radius: 12px;
 }
 
 .dark-theme {
-  /* Текст */
-  --color-text: #e8ede0;
-  --color-caption: #a1aa94;
-  --color-disabled-text: #6b7262;
-  --color-toggle: #5a614f;
+	/* Текст */
+	--color-text: #e8ede0;
+	--color-caption: #a1aa94;
+	--color-disabled-text: #6b7262;
+	--color-toggle: #5a614f;
 
-  /* Фоны и поверхности */
-  --color-disabled: #2a2f24;
-  --color-card: #1a1e16;
-  --color-background: #0f120c;
+	/* Фоны и поверхности */
+	--color-disabled: #2a2f24;
+	--color-card: #1a1e16;
+	--color-background: #0f120c;
 
-  /* Акценты и кнопки */
-  --color-link-pressed: #8fbc5e;
-  --color-accent: #4a6b2e;
-  --color-button-hover: #2a3a1c;
+	/* Акценты и кнопки */
+	--color-link-pressed: #8fbc5e;
+	--color-accent: #4a6b2e;
+	--color-button-hover: #2a3a1c;
 
-  /* Тени */
-  --shadow-soft: 0 2px 6px rgba(255, 255, 255, 0.05);
-  --shadow-blur: 0 8px 20px rgba(255, 255, 255, 0.08);
-  --shadow-card: 0 0 20px rgba(255, 255, 255, 0.04);
+	/* Тени */
+	--shadow-soft: 0 2px 6px rgba(255, 255, 255, 0.05);
+	--shadow-blur: 0 8px 20px rgba(255, 255, 255, 0.08);
+	--shadow-card: 0 0 20px rgba(255, 255, 255, 0.04);
 
-  /* Статусы */
-  --color-alarm: #e0796e;
-  --color-error: #bf3920;
+	/* Статусы */
+	--color-alarm: #e0796e;
+	--color-error: #bf3920;
 
-  /* Теги (категории) */
-  --color-tag-business: #2a2542;
-  --color-tag-creative: #3d2535;
-  --color-tag-languages: #2e2a1c;
-  --color-tag-education: #1c2f3d;
-  --color-tag-home: #3d2a25;
-  --color-tag-health: #1e3d1c;
-  --color-tag-other: #25263d;
+	/* Теги (категории) */
+	--color-tag-business: #2a2542;
+	--color-tag-creative: #3d2535;
+	--color-tag-languages: #2e2a1c;
+	--color-tag-education: #1c2f3d;
+	--color-tag-home: #3d2a25;
+	--color-tag-health: #1e3d1c;
+	--color-tag-other: #25263d;
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-weight: var(--font-regular);
-  font-size: var(--text-body-size);
-  letter-spacing: var(--letter-spacing);
+	background-color: var(--color-background);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	font-weight: var(--font-regular);
+	font-size: var(--text-body-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h1 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h1-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h1-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h2 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h2-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h2-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h3 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h3-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h3-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h4 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h4-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h4-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h5 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h5-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h5-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 h6 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-medium);
-  font-size: var(--text-h6-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-heading);
+	font-weight: var(--font-medium);
+	font-size: var(--text-h6-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 p {
-  font-family: var(--font-body);
-  font-weight: var(--font-regular);
-  font-size: var(--text-body-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-body);
+	font-weight: var(--font-regular);
+	font-size: var(--text-body-size);
+	letter-spacing: var(--letter-spacing);
 }
 
 span {
-  font-family: var(--font-body);
-  font-weight: var(--font-regular);
-  font-size: var(--text-body-size);
-  letter-spacing: var(--letter-spacing);
+	font-family: var(--font-body);
+	font-weight: var(--font-regular);
+	font-size: var(--text-body-size);
+	letter-spacing: var(--letter-spacing);
 }
-

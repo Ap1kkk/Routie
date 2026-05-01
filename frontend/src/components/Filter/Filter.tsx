@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Tags } from '../../types/route';
+import { Tags } from '../../types/tags';
+import { Filters } from '../../types/filters';
 import { Button, Input, Tag } from '@ui';
 import Slider from 'rc-slider';
 
@@ -12,24 +13,6 @@ interface FilterModalProps {
 	onApply: (filters: Filters) => void;
 	onReset: () => void;
 	tags?: Tags[];
-}
-
-interface Filters {
-	distance: {
-		min: number;
-		max: number;
-	};
-	checkpointsCount: {
-		min: number;
-		max: number;
-	};
-	categoryIds: number[];
-	duration: {
-		min: number;
-		max: number;
-	};
-	difficulty: string[];
-	rating: number;
 }
 
 export const Filter: React.FC<FilterModalProps> = ({
@@ -144,7 +127,7 @@ export const Filter: React.FC<FilterModalProps> = ({
 		}
 	};
 
-	const handleCategoryToggle = (categoryId: number) => {
+	const handleCategoryToggle = (categoryId: string) => {
 		setTempFilters((prev) => ({
 			...prev,
 			categoryIds: prev.categoryIds.includes(categoryId)
@@ -201,7 +184,7 @@ export const Filter: React.FC<FilterModalProps> = ({
 	// Преобразуем теги в формат, который ожидает компонент Tag
 	const tagItems = tags.map((tag) => ({
 		id: tag.id,
-		label: tag.name,
+		label: tag.label,
 	}));
 
 	return (
@@ -344,7 +327,7 @@ export const Filter: React.FC<FilterModalProps> = ({
 							items={tagItems}
 							selectedIds={tempFilters.categoryIds}
 							onTagClick={(id) => {
-								if (id && typeof id === 'number') {
+								if (id && typeof id === 'string') {
 									handleCategoryToggle(id);
 								}
 							}}

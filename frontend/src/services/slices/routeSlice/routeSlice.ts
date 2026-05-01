@@ -18,7 +18,7 @@ import {
 	searchRoutes,
 } from '../../../utils/api/route-api';
 
-type RoutesState = {
+interface RoutesState {
 	routes: Route[];
 	currentRoute: Route | null;
 	loading: boolean;
@@ -27,7 +27,7 @@ type RoutesState = {
 	total: number;
 	page: number;
 	limit: number;
-};
+}
 
 const initialState: RoutesState = {
 	routes: [],
@@ -64,7 +64,7 @@ export const fetchAllRoutes = createAsyncThunk(
 /** Загрузка маршрута по ID */
 export const fetchRouteById = createAsyncThunk(
 	'routes/fetchRouteById',
-	async (id: number, { rejectWithValue }) => {
+	async (id: string, { rejectWithValue }) => {
 		try {
 			return await getRouteById(id);
 		} catch (error: any) {
@@ -89,7 +89,7 @@ export const addNewRoute = createAsyncThunk(
 export const editRoute = createAsyncThunk(
 	'routes/editRoute',
 	async (
-		{ id, data }: { id: number; data: UpdateRouteData },
+		{ id, data }: { id: string; data: UpdateRouteData },
 		{ rejectWithValue }
 	) => {
 		try {
@@ -105,7 +105,7 @@ export const editRoute = createAsyncThunk(
 /** Удаление маршрута */
 export const removeRoute = createAsyncThunk(
 	'routes/removeRoute',
-	async (id: number, { rejectWithValue }) => {
+	async (id: string, { rejectWithValue }) => {
 		try {
 			const response = await deleteRoute(id);
 			return { id, ...response };
@@ -118,7 +118,7 @@ export const removeRoute = createAsyncThunk(
 /** Загрузка маршрутов по тегу */
 export const fetchRoutesByTag = createAsyncThunk(
 	'routes/fetchRoutesByTag',
-	async (tagId: number, { rejectWithValue }) => {
+	async (tagId: string, { rejectWithValue }) => {
 		try {
 			return await getRoutesByTag(tagId);
 		} catch (error: any) {
@@ -274,7 +274,7 @@ const routesSlice = createSlice({
 				removeRoute.fulfilled,
 				(
 					state,
-					action: PayloadAction<{ id: number; message: string }>
+					action: PayloadAction<{ id: string; message: string }> // Изменено id с number на string
 				) => {
 					state.loading = false;
 					state.routes = state.routes.filter(

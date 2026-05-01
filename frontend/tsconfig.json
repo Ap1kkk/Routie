@@ -1,36 +1,70 @@
 {
   "compilerOptions": {
-		"target": "es5",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
-		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
-		"strict": true,
-		"forceConsistentCasingInFileNames": true,
-		"noFallthroughCasesInSwitch": true,
-		"module": "esnext",
-		"moduleResolution": "node",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"noEmit": false,
-		"jsx": "react-jsx",
-		"types": ["node", "cypress"],
-		"baseUrl": ".",
-		"paths": {
-			"@fonts": ["src/assets/fonts"],
-			"@icons": ["src/assets/icons"],
-			"@images": ["src/assets/images"],
-			"@components": ["src/components"],
-			"@ui": ["src/ui"],
-			"@pages": ["src/pages"],
-			"@selectors": ["src/services/selectors"],
-			"@slices": ["src/services/slices"],
-			"@store": ["src/services/store"],
-			"@types": ["src/types"],
-			"@utils": ["src/utils"]
-		}
-	},
-  "include": ["src/**/*", "src/custom.d.ts"],
-  "exclude": ["node_modules"]
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "types": [
+      "node",
+      "cypress"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@fonts": [
+        "src/assets/fonts"
+      ],
+      "@icons": [
+        "src/assets/icons"
+      ],
+      "@images": [
+        "src/assets/images"
+      ],
+      "@components": [
+        "src/components"
+      ],
+      "@ui": [
+        "src/ui"
+      ],
+      "@pages": [
+        "src/pages"
+      ],
+      "@selectors": [
+        "src/services/selectors"
+      ],
+      "@slices": [
+        "src/services/slices"
+      ],
+      "@store": [
+        "src/services/store"
+      ],
+      "@types": [
+        "src/types"
+      ],
+      "@utils": [
+        "src/utils"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "src/custom.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -1,150 +1,149 @@
 .filter {
-  max-width: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+	max-width: 300px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
 }
 
 .filterMainTitle {
-  font-family: var(--font-body);
-  font-size: var(--text-h2-size);
-  font-weight: var(--font-medium);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: var(--text-h2-size);
+	font-weight: var(--font-medium);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
 }
 
 .filterSection {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
 }
 
 .filterTitle {
-  font-family: var(--font-body);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
-  margin-bottom: 2px;
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
+	margin-bottom: 2px;
 }
 
 .rangeInputs {
-  display: flex;
-  gap: 12px;
+	display: flex;
+	gap: 12px;
 }
 
 .rangeSlider {
-
 }
 
 .rangeValue {
-  font-size: 13px;
-  color: var(--color-disabled-text);
-  text-align: center;
+	font-size: 13px;
+	color: var(--color-disabled-text);
+	text-align: center;
 }
 
 .categoriesList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
 }
 
 .categoryCheckbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border-radius: 20px;
-  transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	padding: 8px 16px;
+	background: #f5f5f5;
+	border-radius: 20px;
+	transition: all 0.2s;
 
-  &:hover {
-    background: #e8e8e8;
-  }
+	&:hover {
+		background: #e8e8e8;
+	}
 
-  input {
-    cursor: pointer;
-  }
+	input {
+		cursor: pointer;
+	}
 
-  span {
-    font-size: 14px;
-  }
+	span {
+		font-size: 14px;
+	}
 }
 
 .ratingButtons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
 }
 
 .ratingStar {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 4px 10px;
-  background: var(--color-card);
-  border: none;
-  border-radius: 24px;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: var(--text-body-size);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  color: var(--color-text);
-  color: var(--color-text);
-  transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	padding: 4px 10px;
+	background: var(--color-card);
+	border: none;
+	border-radius: 24px;
+	cursor: pointer;
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
+	color: var(--color-text);
+	transition: all 0.2s;
 
-  &.active {
-    background: var(--color-accent);
-  }
+	&.active {
+		background: var(--color-accent);
+	}
 
-  &:hover {
-    transform: scale(1.05);
-  }
+	&:hover {
+		transform: scale(1.05);
+	}
 }
 
 .star {
-  margin-bottom: 2px;
-  stroke-color: gold;
+	margin-bottom: 2px;
+	stroke-color: gold;
 }
 
 .ratingClear {
-  padding: 5px 10px;
-  border-radius: 24px;
+	padding: 5px 10px;
+	border-radius: 24px;
 }
 
 .filterModalFooter {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: center;
 }
 
 .actionButtons {
-  display: flex;
-  gap: 12px;
+	display: flex;
+	gap: 12px;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+	from {
+		transform: translateY(50px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }

@@ -1,76 +1,76 @@
 .tags_container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
 
-  &.wrap {
-    flex-wrap: wrap;
-  }
+	&.wrap {
+		flex-wrap: wrap;
+	}
 
-  &.nowrap {
-    flex-wrap: nowrap;
-    overflow: hidden;
-  }
+	&.nowrap {
+		flex-wrap: nowrap;
+		overflow: hidden;
+	}
 }
 
 .tag_item {
-  padding: 6px 12px;
-  border-radius: 12px;
-  background-color: transparent;
-  border: 1px solid var(--color-caption);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+	padding: 6px 12px;
+	border-radius: 12px;
+	background-color: transparent;
+	border: 1px solid var(--color-caption);
+	white-space: nowrap;
+	transition: all 0.2s ease;
+	flex-shrink: 0;
 
-  &:hover {
-    background-color: var(--color-bg-hover, #f5f5f5);
-  }
+	&:hover {
+		background-color: var(--color-bg-hover, #f5f5f5);
+	}
 
-  &.small {
-    padding: 4px 12px;
-    font-size: 12px;
-  }
+	&.small {
+		padding: 4px 12px;
+		font-size: 12px;
+	}
 
-  &.large {
-    padding: 12px 24px;
-    font-size: 16px;
-  }
+	&.large {
+		padding: 12px 24px;
+		font-size: 16px;
+	}
 
-  &.selected {
-    background-color: var(--color-accent);
-    border-color: var(--color-accent);
+	&.selected {
+		background-color: var(--color-accent);
+		border-color: var(--color-accent);
 
-    .button_label {
-      color: white;
-    }
-  }
+		.button_label {
+			color: white;
+		}
+	}
 
-  &:hover {
-    background-color: rgba(var(--color-accent-rgb), 0.1);
-  }
+	&:hover {
+		background-color: rgba(var(--color-accent-rgb), 0.1);
+	}
 
-  &:active {
-    transform: scale(0.95);
-  }
+	&:active {
+		transform: scale(0.95);
+	}
 }
 
 .button_label {
-  font-size: var(--text-caption-size);
-  font-family: var(--font-body);
-  color: var(--color-text);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
+	font-size: var(--text-caption-size);
+	font-family: var(--font-body);
+	color: var(--color-text);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
 }
 
 .moreTag {
-  flex-shrink: 0;
-  font-size: var(--text-caption-size);
-  font-family: var(--font-body);
-  color: var(--color-text);
-  font-weight: var(--font-regular);
-  letter-spacing: var(--letter-spacing);
-  border: 1px solid var(--color-caption);
-  border-radius: 50%;
-  padding: 4px;
+	flex-shrink: 0;
+	font-size: var(--text-caption-size);
+	font-family: var(--font-body);
+	color: var(--color-text);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	border: 1px solid var(--color-caption);
+	border-radius: 50%;
+	padding: 4px;
 }

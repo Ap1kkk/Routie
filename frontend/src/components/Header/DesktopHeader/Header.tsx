@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Button, Input } from '@ui';
+import { useTheme } from '../../../hooks/useTheme';
 
 import { ReactComponent as Search } from '../../../assets/icons/search.svg';
 import { ReactComponent as Cross } from '../../../assets/icons/cross.svg';
@@ -10,7 +11,7 @@ import { ReactComponent as Global } from '../../../assets/icons/global.svg';
 import { ReactComponent as Moon } from '../../../assets/icons/moon.svg';
 import { ReactComponent as Sun } from '../../../assets/icons/sun.svg';
 
-import { MOCK_USER } from '../../../mocks/mock';
+import { MOCK_USER, MOCK_USER_AVATAR } from '../../../mocks/users';
 
 import styles from './Header.module.scss';
 
@@ -19,29 +20,9 @@ type Mode = 'sport' | 'tourism';
 export const Header = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const { isLight, toggleTheme } = useTheme();
 
-	const [theme, setTheme] = useState<boolean>(() => {
-		const saved = localStorage.getItem('theme');
-		return saved === 'light';
-	});
-
-	useEffect(() => {
-		if (theme) {
-			document.body.classList.remove('dark-theme');
-			localStorage.setItem('theme', 'light');
-		} else {
-			document.body.classList.add('dark-theme');
-			localStorage.setItem('theme', 'dark');
-		}
-	}, [theme]);
-
-	const toggleTheme = () => {
-		setTheme(!theme);
-	};
-
-	const [isAuthenticated] = useState(
-		MOCK_USER.isAuthenticated
-	);
+	const [isAuthenticated] = useState(MOCK_USER.isAuthenticated);
 
 	const [mode, setMode] = useState<Mode>(() => {
 		const saved = localStorage.getItem('appMode');
@@ -67,7 +48,7 @@ export const Header = () => {
 					<Link to='/routie' className={styles.logoContainer}>
 						<Compass
 							className={
-								theme ? styles.logoLight : styles.logoDark
+								isLight ? styles.logoLight : styles.logoDark
 							}
 						/>
 						<span className={styles.logoTitle}>Routie</span>
@@ -90,7 +71,7 @@ export const Header = () => {
 			<nav className={styles.navigation}>
 				<Link to='/routie' className={styles.logoContainer}>
 					<Compass
-						className={theme ? styles.logoLight : styles.logoDark}
+						className={isLight ? styles.logoLight : styles.logoDark}
 					/>
 					<span className={styles.logoTitle}>Routie</span>
 				</Link>
@@ -107,14 +88,17 @@ export const Header = () => {
 					inputPadding='7px 16px'
 				/>
 				<div className={styles.themeButton} onClick={toggleTheme}>
-					{theme ? <Moon /> : <Sun />}
+					{isLight ? <Moon /> : <Sun />}
 				</div>
 				{isAuthenticated ? (
 					<Button
 						type={'button'}
 						variant={'tertiary'}
 						iconRight={
-							<Avatar src={MOCK_USER.avatar} size={'small'} />
+							<Avatar
+								src={MOCK_USER_AVATAR.avatar}
+								size={'small'}
+							/>
 						}
 						children={MOCK_USER.name}
 						onClick={() => navigate('/profile')}

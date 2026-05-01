@@ -34,7 +34,6 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
 	return await response.json();
 };
 
-// Дополнительные полезные функции
 export const setAccessToken = (token: string): void => {
 	document.cookie = `accessToken=${token}; path=/; max-age=3600; SameSite=Lax`;
 };

@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Route } from '../../types/route';
 import { Button } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
-import { mockRoutes, getRandomMockRoute } from '../../types/mockData';
+import {
+	mockRoutes,
+	getRandomMockRoute,
+	getRouteImage,
+} from '../../mocks/route';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
 
 import styles from './MainPage.module.scss';
-import { useDeviceType } from '../../utils/hooks/useDeviceType';
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -16,11 +20,10 @@ export const MainPage: React.FC = () => {
 	const isMobile = deviceType === 'mobile';
 	const [popularRoutes, setPopularRoutes] = useState<Route[]>([]);
 	const [recommendedRoutes, setRecommendedRoutes] = useState<Route[]>([]);
-	const [likedRoutes, setLikedRoutes] = useState<Record<number, boolean>>({});
+	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
 
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [routeOfTheDay, setRouteOfTheDay] = useState<Route | null>(null);
@@ -28,8 +31,9 @@ export const MainPage: React.FC = () => {
 	useEffect(() => {
 		const checkAuth = () => {
 			try {
-				const user = JSON.parse(localStorage.getItem('user') || '{}');
-				setIsAuthenticated(!!user?.token);
+				const token = localStorage.getItem('accessToken');
+				const refreshToken = localStorage.getItem('refreshToken');
+				setIsAuthenticated(!!(token && refreshToken));
 			} catch {
 				setIsAuthenticated(false);
 			}
@@ -69,12 +73,7 @@ export const MainPage: React.FC = () => {
 		}
 	};
 
-	const handleToggleLike = (routeId: number) => {
-		if (!isAuthenticated) {
-			setIsModalOpen(true);
-			return;
-		}
-
+	const handleToggleLike = (routeId: string) => {
 		setLikedRoutes((prev) => ({
 			...prev,
 			[routeId]: !prev[routeId],
@@ -127,6 +126,7 @@ export const MainPage: React.FC = () => {
 						{popularRoutes.map((route) => (
 							<RouteCard
 								key={route.id}
+								imageUrl={getRouteImage(route.id)}
 								route={route}
 								isLiked={likedRoutes[route.id] || false}
 								onToggleLike={handleToggleLike}
@@ -161,6 +161,7 @@ export const MainPage: React.FC = () => {
 						{recommendedRoutes.map((route) => (
 							<RouteCard
 								key={route.id}
+								imageUrl={getRouteImage(route.id)}
 								route={route}
 								isLiked={likedRoutes[route.id] || false}
 								onToggleLike={handleToggleLike}

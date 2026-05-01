@@ -2,31 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tag } from '@ui';
 import { Route } from '../../types/route';
+import { Tags } from '../../types/tags';
 
 import { ReactComponent as Like } from '../../assets/icons/like.svg';
 import { ReactComponent as LikeActive } from '../../assets/icons/like-green.svg';
 
 import styles from './RouteCard.module.scss';
 
-interface TagItem {
-	id: number;
-	label: string;
-}
-
 interface RouteCardProps {
 	route: Route;
+	imageUrl?: string;
 	isLiked?: boolean;
-	tags?: TagItem[];
-	selectedTagIds?: number[];
-	onToggleLike?: (id: number) => void;
+	tags?: Tags[];
+	onToggleLike?: (id: string) => void;
 	variant?: 'standard' | 'compact';
 }
 
 export const RouteCard: React.FC<RouteCardProps> = ({
 	route,
+	imageUrl,
 	isLiked = false,
 	tags = [],
-	selectedTagIds = [],
 	onToggleLike,
 	variant = 'standard',
 }) => {
@@ -48,10 +44,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		e.preventDefault();
 		e.stopPropagation();
 
-		console.log('Клик по лайку');
-		console.log('Текущее isLiked из пропсов:', isLiked);
-		console.log('Локальное состояние:', localLiked);
-
 		setIsAnimating(true);
 		setTimeout(() => setIsAnimating(false), 400);
 
@@ -63,14 +55,13 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		}
 	};
 
-	const getTagsToShow = (): TagItem[] => {
-		if (tags && tags.length > 0) return tags;
+	const getTagsToShow = (): Tags[] => {
+		if (tags && tags.length > 0) {
+			return tags;
+		}
 
 		if (route.tags && route.tags.length > 0) {
-			return route.tags.map((tag) => ({
-				id: tag.id,
-				label: tag.name,
-			}));
+			return route.tags;
 		}
 
 		return [];
@@ -82,12 +73,12 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		return (
 			<Link className={styles.compactCard} to={`/map/${route.id}`}>
 				<img
-					src={route.imagePath || '/placeholder-image.jpg'}
+					src={imageUrl}
 					alt={route.name}
 					className={styles.compactRouteImage}
 					loading='lazy'
 				/>
-				{route.name}
+				<span className={styles.compactRouteName}>{route.name}</span>
 			</Link>
 		);
 	}
@@ -96,7 +87,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		return (
 			<Link className={styles.standartCard} to={`/map/${route.id}`}>
 				<img
-					src={route.imagePath || '/placeholder-image.jpg'}
+					src={imageUrl}
 					alt={route.name}
 					className={styles.standartImage}
 					loading='lazy'
@@ -130,5 +121,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 			</Link>
 		);
 	}
+
 	return null;
 };
