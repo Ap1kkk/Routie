@@ -2,18 +2,8 @@ import React, { useState } from 'react';
 import styles from './Statistic.module.scss';
 import { StatisticCard } from '../StatisticCard';
 import { Button } from '@ui';
-
-const periods = [
-	{ key: 'day', label: 'За день' },
-	{ key: 'week', label: 'За неделю' },
-	{ key: 'month', label: 'За месяц' },
-	{ key: 'year', label: 'За год' },
-];
-
-interface StatisticCardData {
-	title: string;
-	value: string | number;
-}
+import { StatisticCardData } from '../../types/statistic';
+import { PeriodKey, PERIODS } from '../../types/constants/periods';
 
 interface StatisticProps {
 	title?: string;
@@ -21,10 +11,9 @@ interface StatisticProps {
 }
 
 export const Statistic: React.FC<StatisticProps> = ({ statisticData = [] }) => {
-	const [activePeriod, setActivePeriod] =
-		useState<(typeof periods)[number]['key']>('day');
+	const [activePeriod, setActivePeriod] = useState<PeriodKey>('day')
 
-	const handlePeriodChange = (period: (typeof periods)[number]['key']) => {
+	const handlePeriodChange = (period: PeriodKey) => {
 		setActivePeriod(period);
 		console.log(`Выбран период: ${period}`);
 	};
@@ -33,7 +22,7 @@ export const Statistic: React.FC<StatisticProps> = ({ statisticData = [] }) => {
 		<div className={styles.statisticContainer}>
 			<h2 className={styles.statisticTitle}>Статистика</h2>
 			<div className={styles.statisticFilterContainer}>
-				{periods.map((period) => (
+				{PERIODS.map((period) => (
 					<Button
 						key={period.key}
 						variant='primary'
