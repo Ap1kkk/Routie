@@ -8,6 +8,7 @@ import store from '@store';
 import { router } from './App';
 
 import './index.scss';
+import { YMaps } from '@pbe/react-yandex-maps';
 
 const domNode = document.getElementById('root') as HTMLDivElement;
 const root = createRoot(domNode);
