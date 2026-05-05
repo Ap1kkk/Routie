@@ -52,7 +52,9 @@ export const MobileFooter = () => {
 			<nav className={styles.navigation}>
 				<div ref={indicatorRef} className={styles.indicator} />
 				<button
-					ref={(el) => (buttonsRef.current[0] = el)}
+					ref={(el) => {
+						buttonsRef.current[0] = el;
+					}}
 					onClick={() => navigate('/routie')}
 					className={styles.button}>
 					<Home />
@@ -60,7 +62,9 @@ export const MobileFooter = () => {
 				</button>
 
 				<button
-					ref={(el) => (buttonsRef.current[1] = el)}
+					ref={(el) => {
+						buttonsRef.current[1] = el;
+					}}
 					onClick={() => navigate('/routes')}
 					className={styles.button}>
 					<Search />
@@ -68,7 +72,9 @@ export const MobileFooter = () => {
 				</button>
 
 				<button
-					ref={(el) => (buttonsRef.current[2] = el)}
+					ref={(el) => {
+						buttonsRef.current[2] = el;
+					}}
 					onClick={() => navigate('/favourites')}
 					className={styles.button}>
 					<Like />
@@ -76,7 +82,9 @@ export const MobileFooter = () => {
 				</button>
 
 				<button
-					ref={(el) => (buttonsRef.current[3] = el)}
+					ref={(el) => {
+						buttonsRef.current[3] = el;
+					}}
 					onClick={() => navigate('/settings')}
 					className={styles.button}>
 					<Avatar alt='avatar' size='tiny' />

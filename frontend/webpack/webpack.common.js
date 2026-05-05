@@ -22,6 +22,9 @@ module.exports = {
 				use: [
 					{
 						loader: 'ts-loader',
+						options: {
+							transpileOnly: true,
+						},
 					},
 				],
 				exclude: /node_modules/,
@@ -54,7 +57,8 @@ module.exports = {
 						options: {
 							modules: {
 								mode: 'local',
-								localIdentName: '[name]__[local]__[hash:base64:5]',
+								localIdentName:
+									'[name]__[local]__[hash:base64:5]',
 								auto: /\.module\.\w+$/i,
 							},
 							importLoaders: 2,
@@ -65,7 +69,7 @@ module.exports = {
 						loader: 'sass-loader',
 						options: {
 							sourceMap: true,
-							api: 'modern'
+							api: 'modern',
 						},
 					},
 				],
@@ -74,10 +78,7 @@ module.exports = {
 	},
 	resolve: {
 		extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'],
-		modules: [
-			path.resolve(__dirname, '..', './src'),
-			'node_modules'
-		],
+		modules: [path.resolve(__dirname, '..', './src'), 'node_modules'],
 		alias: {
 			'@fonts': path.resolve(__dirname, '..', './src/assets/fonts'),
 			'@icons': path.resolve(__dirname, '..', './src/assets/icons'),
@@ -85,11 +86,15 @@ module.exports = {
 			'@components': path.resolve(__dirname, '..', './src/components'),
 			'@pages': path.resolve(__dirname, '..', './src/pages'),
 			'@ui': path.resolve(__dirname, '..', './src/ui'),
-			'@selectors': path.resolve(__dirname, '..', './src/services/selectors'),
+			'@selectors': path.resolve(
+				__dirname,
+				'..',
+				'./src/services/selectors'
+			),
 			'@slices': path.resolve(__dirname, '..', './src/services/slices'),
 			'@store': path.resolve(__dirname, '..', './src/services/store'),
 			'@types': path.resolve(__dirname, '..', './src/types'),
-			'@utils': path.resolve(__dirname, '..', './src/utils')
+			'@utils': path.resolve(__dirname, '..', './src/utils'),
 		},
 	},
 	plugins: [

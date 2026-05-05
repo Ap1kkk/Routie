@@ -13,7 +13,7 @@ export * from './ProtectedRoute';
 export * from './RegistrationForm';
 export * from './RouteCard';
 export * from './RouteOfDay';
-export * from './RouteOnMap';
+export * from './MapComponent';
 export * from './Settings';
 export * from './Statistic';
 export * from './StatisticCard';

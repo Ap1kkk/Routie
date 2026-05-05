@@ -16,9 +16,9 @@ module.exports = {
 	plugins: [
 		new ReactRefreshWebpackPlugin(),
 		new Dotenv({
-			path: '../.env', // путь к файлу .env
-			safe: false, // не проверять наличие всех переменных
-			systemvars: true, // брать из системы если нет в .env
+			path: '../.env',
+			safe: false,
+			systemvars: true,
 		}),
 	],
 };

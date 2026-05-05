@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
-		"target": "es5",
-		"lib": ["dom", "dom.iterable", "esnext"],
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"allowJs": true,
 		"skipLibCheck": true,
 		"esModuleInterop": true,
@@ -9,13 +10,16 @@
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 		"noFallthroughCasesInSwitch": true,
-		"module": "esnext",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": false,
 		"jsx": "react-jsx",
 		"types": ["node", "cypress"],
+		"typeRoots": [
+			"./node_modules/@types",
+			"./node_modules/@yandex/ymaps3-types"
+		],
 		"baseUrl": ".",
 		"paths": {
 			"@fonts": ["src/assets/fonts"],
@@ -28,7 +32,8 @@
 			"@slices": ["src/services/slices"],
 			"@store": ["src/services/store"],
 			"@types": ["src/types"],
-			"@utils": ["src/utils"]
+			"@utils": ["src/utils"],
+			"ymaps3": ["./node_modules/@yandex/ymaps3-types"]
 		}
 	},
 	"include": ["src/**/*", "src/custom.d.ts"],
