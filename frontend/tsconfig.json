@@ -36,6 +36,10 @@
 			"ymaps3": ["./node_modules/@yandex/ymaps3-types"]
 		}
 	},
-	"include": ["src/**/*", "src/custom.d.ts"],
+	"include": [
+		"src/**/*",
+		"src/custom.d.ts",
+		"node_modules/@yandex/ymaps3-types/index.d.ts",
+	],
 	"exclude": ["node_modules"]
 }

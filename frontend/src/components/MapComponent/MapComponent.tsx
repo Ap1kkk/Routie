@@ -1,57 +1,59 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Route } from '../../types/route';
-import { YMapLocationRequest } from 'ymaps3';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import ReactDOM from 'react-dom';
+import type { YMapLocationRequest } from '@yandex/ymaps3-types';
+import styles from './MapComponent.module.scss';
 
-const LOCATION: YMapLocationRequest = {
+export const LOCATION: YMapLocationRequest = {
 	center: [43.990696, 56.313476],
 	zoom: 13,
 };
 
+export const COMMON_LOCATION_PARAMS: any = {
+	easing: 'ease-in-out',
+	duration: 2000,
+	zoom: 16,
+};
+
 interface RouteOnMapProps {
-	route: Route | null;
+	route?: any;
 }
 
-export const MapComponent = ({ route }: RouteOnMapProps) => {
+export const MapComponent = ({ route }: RouteOnMapProps = {}) => {
 	const mapRef = useRef<any>(null);
-	const [isReady, setIsReady] = useState(false);
-	const [YMapComponent, setYMapComponent] = useState<any>(null);
-	const [
-		YMapDefaultSchemeLayerComponent,
-		setYMapDefaultSchemeLayerComponent,
-	] = useState<any>(null);
-	const [YMapDefaultFeaturesLayer, setYMapDefaultFeaturesLayer] =
-		useState<any>(null);
+	const [components, setComponents] = useState<any>(null);
 
 	useEffect(() => {
 		let mounted = true;
+
 		const initMap = async () => {
 			try {
+				ymaps3.import.registerCdn(
+					'https://cdn.jsdelivr.net/npm/{package}',
+					'@yandex/ymaps3-default-ui-theme@0.0.24'
+				);
+
 				const [ymaps3React] = await Promise.all([
 					ymaps3.import('@yandex/ymaps3-reactify'),
 					ymaps3.ready,
 				]);
 
 				const reactify = ymaps3React.reactify.bindTo(React, ReactDOM);
-				const {
-					YMap,
-					YMapDefaultSchemeLayer,
-					YMapDefaultFeaturesLayer,
-				} = reactify.module(ymaps3);
+
+				const mainComponents = reactify.module(ymaps3);
+
+				const uiTheme = await ymaps3.import(
+					'@yandex/ymaps3-default-ui-theme'
+				);
+				const uiComponents = reactify.module(uiTheme);
 
 				if (mounted) {
-					// Сохраняем как any для обхода типов
-					setYMapComponent(() => YMap as any);
-					setYMapDefaultSchemeLayerComponent(
-						() => YMapDefaultSchemeLayer as any
-					);
-					setYMapDefaultFeaturesLayer(
-						() => YMapDefaultFeaturesLayer as any
-					);
-					setIsReady(true);
+					setComponents({
+						...mainComponents,
+						...uiComponents,
+					});
 				}
 			} catch (error) {
-				console.error('Failed to load Yandex Maps:', error);
+				console.error('Ошибка загрузки карты:', error);
 			}
 		};
 
@@ -62,47 +64,56 @@ export const MapComponent = ({ route }: RouteOnMapProps) => {
 		};
 	}, []);
 
-	const mapContainerStyle = {
-		height: '75vh',
-		width: '100%',
-		borderRadius: '12px',
-		overflow: 'hidden' as const,
-	};
-
-	if (!isReady || !YMapComponent || !YMapDefaultSchemeLayerComponent) {
+	if (!components) {
 		return (
-			<div style={mapContainerStyle}>
-				<div
-					style={{
-						height: '100%',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						background: '#f0f0f0',
-					}}>
-					Загрузка карты...
-				</div>
+			<div className={styles.mapContainer}>
+				<div className={styles.loading}>Загрузка карты...</div>
 			</div>
 		);
 	}
 
+	const YMap = components.YMap;
+	const YMapDefaultSchemeLayer = components.YMapDefaultSchemeLayer;
+	const YMapDefaultFeaturesLayer = components.YMapDefaultFeaturesLayer;
+	const YMapControls = components.YMapControls;
+	const YMapGeolocationControl = components.YMapGeolocationControl;
+	const YMapDefaultMarker = components.YMapDefaultMarker;
+
 	return (
-		<div style={mapContainerStyle}>
-			<YMapComponent
-				location={LOCATION}
-				showScaleInCopyrights={true}
-				lang='ru_RU'
-				ref={(x: any) => {
-					if (x) mapRef.current = x;
-				}}
-				style={{
-					width: '100%',
-					height: '100%',
-					borderRadius: '12px',
-				}}>
-				<YMapDefaultSchemeLayerComponent />
-				{YMapDefaultFeaturesLayer && <YMapDefaultFeaturesLayer />}
-			</YMapComponent>
+		<div className={styles.mapContainer}>
+			<div className={styles.map}>
+				<YMap
+					location={LOCATION}
+					showScaleInCopyrights={true}
+					lang='ru_RU'
+					ref={(x: any) => {
+						if (x) mapRef.current = x;
+					}}>
+					<YMapDefaultSchemeLayer />
+					<YMapDefaultFeaturesLayer />
+
+					<YMapControls position='right'>
+						<YMapGeolocationControl {...COMMON_LOCATION_PARAMS} />
+					</YMapControls>
+
+					{route?.checkpoints &&
+						route.checkpoints.map(
+							(checkpoint: any, index: number) => (
+								<YMapDefaultMarker
+									key={checkpoint.id || index}
+									coordinates={[
+										checkpoint.longitude,
+										checkpoint.latitude,
+									]}
+									color='lavender'
+									iconName='fallback'
+									size='small'
+									title={checkpoint.name}
+								/>
+							)
+						)}
+				</YMap>
+			</div>
 		</div>
 	);
 };

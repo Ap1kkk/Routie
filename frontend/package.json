@@ -37,6 +37,7 @@
 		"@types/yandex-maps": "^2.1.36",
 		"@typescript-eslint/eslint-plugin": "^5.59.11",
 		"@typescript-eslint/parser": "^5.59.11",
+		"@yandex/ymaps3-default-ui-theme": "^0.0.24",
 		"@yandex/ymaps3-types": "^1.0.19487230",
 		"antd": "^6.3.5",
 		"autoprefixer": "^10.4.14",
