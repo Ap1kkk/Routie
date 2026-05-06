@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "security.jwt")
 @Data
 public class JwtConfigProperties {
-    private String header = "AuthorizationPage";
+    private String header = "Authorization";
     private String secret;
     private Integer expiration = 86400;
 }

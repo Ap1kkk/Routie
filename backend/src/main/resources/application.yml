@@ -22,12 +22,18 @@ spring:
     change-log: classpath:db/migration/db.changelog-main.yaml
     default-schema: public
 
+  minio:
+    url: ${MINIO_URL:http://localhost:9000}
+    bucket: ${MINIO_BUCKET:images}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+
   jackson:
     default-property-inclusion: non_null
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 #    show-sql: true
 #    properties:
 #      hibernate.format_sql: true
