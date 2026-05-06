@@ -2,9 +2,9 @@ package ru.ngtu.twosteps.routes;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.ngtu.twosteps.routes.jpa.RouteRepository;
-import ru.ngtu.twosteps.routes.model.Route;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.jpa.repository.RouteRepository;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
 
 /**
  * @author Egor Bokov

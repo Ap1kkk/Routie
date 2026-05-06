@@ -7,14 +7,15 @@ import net.datafaker.Faker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ngtu.twosteps.auth.AuthService;
-import ru.ngtu.twosteps.category.Category;
+import ru.ngtu.twosteps.jpa.entity.Category;
 import ru.ngtu.twosteps.category.CategoryService;
-import ru.ngtu.twosteps.region.RegionRepository;
-import ru.ngtu.twosteps.routes.model.history.HistoryRouteRepository;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.user.achievements.UserAchievementRepository;
-import ru.ngtu.twosteps.user.avatar.UserAvatar;
-import ru.ngtu.twosteps.user.avatar.UserAvatarRepository;
+import ru.ngtu.twosteps.jpa.repository.RegionRepository;
+import ru.ngtu.twosteps.jpa.repository.HistoryRouteRepository;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.jpa.repository.user.UserRepository;
+import ru.ngtu.twosteps.jpa.repository.user.UserAchievementRepository;
+import ru.ngtu.twosteps.jpa.entity.user.UserAvatar;
+import ru.ngtu.twosteps.jpa.repository.user.UserAvatarRepository;
 import ru.ngtu.twosteps.user.dto.CreateCredentialsDto;
 import ru.ngtu.twosteps.user.dto.EditProfileDto;
 import ru.ngtu.twosteps.user.dto.FinishRegistrationDto;
@@ -22,7 +23,7 @@ import ru.ngtu.twosteps.user.dto.ProfileDto;
 import ru.ngtu.twosteps.user.dto.UserProjectionDto;
 import ru.ngtu.twosteps.user.mappers.UserMapper;
 import ru.ngtu.twosteps.user.mappers.UserProjectionMapper;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 /**
  * @author Egor Bokov

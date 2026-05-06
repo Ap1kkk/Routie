@@ -3,9 +3,8 @@ package ru.ngtu.twosteps.statisctics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.ngtu.twosteps.analytics.AnalyticsClient;
 import ru.ngtu.twosteps.auth.AuthService;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 /**
  * @author Egor Bokov
@@ -15,7 +14,7 @@ import ru.ngtu.twosteps.user.model.User;
 @RequiredArgsConstructor
 public class StatisticsService {
 
-    private final AnalyticsClient analyticsClient;
+//    private final AnalyticsClient analyticsClient;
     private final AuthService authService;
 
     public StatisticsDto getStatistics(StatisticsPeriod period) {
@@ -26,6 +25,9 @@ public class StatisticsService {
                 .userId(currentUser.getId())
                 .period(period)
                 .build();
-        return analyticsClient.getStatistics(dto);
+        //TODO добавить логику по получению статистики
+        log.error("Get statistics not implemented!");
+//        return analyticsClient.getStatistics(dto);
+        return new StatisticsDto();
     }
 }

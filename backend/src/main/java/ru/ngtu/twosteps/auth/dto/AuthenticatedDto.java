@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 /**
  * @author Egor Bokov

@@ -5,6 +5,7 @@ frontend/.env
 /grafana-data
 /loki-data
 /postgres-data
+/minio-data
 /victoria-metrics-data
 /logs
 
