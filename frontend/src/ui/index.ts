@@ -3,5 +3,6 @@ export * from './Button';
 export * from './Input';
 export * from './Modal';
 export * from './Radio';
-export * from './Tag';
 export * from './Select';
+export * from './Slider'
+export * from './Tag';

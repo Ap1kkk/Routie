@@ -1,0 +1,67 @@
+.sliderOuter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.sliderContainer {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.swiper {
+  padding: 10px 0 40px 0;
+}
+
+.slide {
+  width: auto !important;
+  flex-shrink: 0;
+}
+
+.arrow {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  all: unset;
+
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.swiper :global(.swiper-pagination) {
+  bottom: 0 !important;
+  padding-top: 12px;
+}
+
+.swiper :global(.swiper-pagination-bullet) {
+  width: 9px;
+  height: 9px;
+  background: #ccc;
+  opacity: 1;
+  margin: 0 5px;
+}
+
+.swiper :global(.swiper-pagination-bullet-active) {
+  background: var(--color-accent);     /* Зеленый цвет */
+  width: 9px;
+  height: 9px;
+}
