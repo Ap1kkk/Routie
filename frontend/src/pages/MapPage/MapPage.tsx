@@ -22,7 +22,7 @@ export const MapPage = () => {
 
 	return (
 		<section>
-			<MapComponent route={route} />
+			<MapComponent routeData={route} />
 		</section>
 	);
 };
