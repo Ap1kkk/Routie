@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import mmrgl from 'mmr-gl';
+import { decodePolyline } from './map';
+
 import 'mmr-gl/dist/mmr-gl.css';
 import styles from './MapComponent.module.scss';
 
@@ -9,7 +11,6 @@ interface RouteOnMapProps {
 			id: string;
 			latitude: number;
 			longitude: number;
-			order: number;
 			name?: string;
 			description?: string;
 		}>;
@@ -17,28 +18,63 @@ interface RouteOnMapProps {
 	};
 }
 
+const API_MAP_KEY =
+	'a47f57ddcdac37e56aa29e0001678c6f87e2ecbe91e52cc129eecbb01fd0d386';
+
 export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const mapRef = useRef<mmrgl.Map | null>(null);
 	const markersRef = useRef<mmrgl.Marker[]>([]);
 
 	const buildWalkingRoute = async (map: mmrgl.Map, checkpoints: any[]) => {
-		if (checkpoints.length < 2) return;
+		const locations = checkpoints.map((p) => ({
+			lat: p.latitude,
+			lon: p.longitude,
+		}));
 
-		const coordinates = checkpoints.map(p => `${p.longitude},${p.latitude}`).join(';');
-		const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${coordinates}?geometries=polyline&overview=full`;
+		const requestBody = {
+			locations,
+			costing: 'pedestrian',
+			units: 'kilometers',
+			language: 'ru-RU',
+		};
 
 		try {
-			const response = await fetch(url);
+			const response = await fetch(
+				'https://maps.vk.com/api/directions?api_key=a47f57ddcdac37e56aa29e0001678c6f87e2ecbe91e52cc129eecbb01fd0d386',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(requestBody),
+				}
+			);
+
 			const data = await response.json();
 
-			if (data.routes && data.routes[0]) {
-				const points = decodePolyline(data.routes[0].geometry);
+			let allPoints: [number, number][] = [];
 
-				if (map.getSource('route')) {
-					map.removeSource('route');
-				}
+			if (data.trips?.[0]?.trip?.legs) {
+				data.trips[0].trip.legs.forEach((leg: any) => {
+					if (leg.shape) {
+						const points = decodePolyline(leg.shape);
+						const correctedPoints = points.map(
+							(point) =>
+								[
+									point[0] / 10,
+									point[1] / 10,
+								] as [number, number]
+						);
+
+						allPoints = [...allPoints, ...correctedPoints];
+					}
+				});
+			}
+
+			if (allPoints.length > 0) {
 				if (map.getLayer('route')) {
 					map.removeLayer('route');
+				}
+				if (map.getSource('route')) {
+					map.removeSource('route');
 				}
 
 				map.addSource('route', {
@@ -47,71 +83,33 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 						type: 'Feature',
 						geometry: {
 							type: 'LineString',
-							coordinates: points
-						}
-					}
+							coordinates: allPoints,
+						},
+					},
 				});
 
 				map.addLayer({
 					id: 'route',
 					type: 'line',
 					source: 'route',
+					layout: {
+						'line-join': 'round',
+						'line-cap': 'round',
+					},
 					paint: {
-						'line-color': '#3FB1CE',
+						'line-color': '#0c1317',
 						'line-width': 4,
-						'line-opacity': 0.9
-					}
+						'line-opacity': 0.9,
+					},
 				});
-
-				const distance = (data.routes[0].distance / 1000).toFixed(2);
-				const duration = Math.round(data.routes[0].duration / 60);
-				console.log(`Пеший маршрут: ${distance} км, ~${duration} минут`);
 			}
 		} catch (error) {
-			console.error('Ошибка построения маршрута:', error);
+			console.error('Ошибка:', error);
 		}
-	};
-
-	const decodePolyline = (str: string): [number, number][] => {
-		let index = 0;
-		let lat = 0;
-		let lng = 0;
-		const coordinates: [number, number][] = [];
-
-		while (index < str.length) {
-			let result = 0;
-			let shift = 0;
-			let b;
-
-			do {
-				b = str.charCodeAt(index++) - 63;
-				result |= (b & 0x1f) << shift;
-				shift += 5;
-			} while (b >= 0x20);
-
-			const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
-			lat += dlat;
-
-			result = 0;
-			shift = 0;
-
-			do {
-				b = str.charCodeAt(index++) - 63;
-				result |= (b & 0x1f) << shift;
-				shift += 5;
-			} while (b >= 0x20);
-
-			const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
-			lng += dlng;
-
-			coordinates.push([lng / 1e5, lat / 1e5]);
-		}
-
-		return coordinates;
 	};
 
 	const addMarkers = (map: mmrgl.Map, checkpoints: any[]) => {
-		markersRef.current.forEach(marker => marker.remove());
+		markersRef.current.forEach((marker) => marker.remove());
 		markersRef.current = [];
 
 		checkpoints.forEach((point, index) => {
@@ -119,14 +117,15 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 			const isLast = index === checkpoints.length - 1;
 
 			const marker = new mmrgl.Marker({
-				color: isFirst ? '#4CAF50' : isLast ? '#f44336' : '#3FB1CE'
+				color: isFirst ? '#4CAF50' : isLast ? '#f44336' : '#3FB1CE',
 			})
 				.setLngLat([point.longitude, point.latitude])
 				.addTo(map);
 
 			if (point.name) {
-				const popup = new mmrgl.Popup({ offset: 25 })
-					.setHTML(`<h3 style="margin: 0;">${point.name}</h3>`);
+				const popup = new mmrgl.Popup({ offset: 25 }).setHTML(
+					`<h3 style="margin: 0;">${point.name}</h3>`
+				);
 				marker.setPopup(popup);
 			}
 
@@ -135,7 +134,7 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	useEffect(() => {
-		mmrgl.accessToken = 'a47f57ddcdac37e56aa29e0001678c6f87e2ecbe91e52cc129eecbb01fd0d386';
+		mmrgl.accessToken = API_MAP_KEY;
 		mmrgl.workerCount = 3;
 
 		const map = new mmrgl.Map({
@@ -153,18 +152,20 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				buildWalkingRoute(map, routeData.checkpoints);
 
 				const bounds = new mmrgl.LngLatBounds();
-				routeData.checkpoints.forEach(p => bounds.extend([p.longitude, p.latitude]));
+				routeData.checkpoints.forEach((p) =>
+					bounds.extend([p.longitude, p.latitude])
+				);
 				map.fitBounds(bounds, { padding: 50 });
 			}
 		});
 
 		return () => {
-			markersRef.current.forEach(m => m.remove());
+			markersRef.current.forEach((m) => m.remove());
 			if (mapRef.current) {
 				mapRef.current.remove();
 			}
 		};
 	}, [routeData]);
 
-	return <div id="map" className={styles.mapContainer} />;
+	return <div id='map' className={styles.mapContainer} />;
 };
