@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.twosteps.file.enums.TargetDirectory;
-import ru.ngtu.twosteps.system.config.properties.FileServiceConfigProperties;
+import ru.ngtu.twosteps.common.config.properties.FileServiceConfigProperties;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,5 +1,6 @@
 package ru.ngtu.twosteps.auth;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.ngtu.twosteps.auth.dto.AuthenticatedDto;
@@ -13,6 +14,7 @@ import ru.ngtu.twosteps.user.UserService;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "Auth endpoints")
 public class AuthController {
 
     private final AuthService authService;

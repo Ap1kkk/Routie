@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ngtu.twosteps.checkpoint.Checkpoint;
-import ru.ngtu.twosteps.routes.model.Route;
-import ru.ngtu.twosteps.routes.model.RouteDifficulty;
+import ru.ngtu.twosteps.jpa.entity.Checkpoint;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
+import ru.ngtu.twosteps.jpa.entity.route.RouteDifficulty;
 
 import java.util.List;
 

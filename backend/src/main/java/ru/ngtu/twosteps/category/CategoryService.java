@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ngtu.twosteps.common.BaseEntity;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.jpa.BaseEntity;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import ru.ngtu.twosteps.jpa.entity.Category;
+import ru.ngtu.twosteps.jpa.repository.CategoryRepository;
 
 /**
  * @author Egor Bokov

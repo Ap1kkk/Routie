@@ -12,6 +12,8 @@ import ru.ngtu.twosteps.file.image.handler.ImageHandlingType;
 
 import java.util.*;
 import java.util.stream.Stream;
+import ru.ngtu.twosteps.jpa.entity.Image;
+import ru.ngtu.twosteps.jpa.repository.ImageRepository;
 
 /**
  * @author Egor Bokov

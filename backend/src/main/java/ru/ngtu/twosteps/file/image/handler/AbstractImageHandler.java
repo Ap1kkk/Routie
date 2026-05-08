@@ -3,7 +3,7 @@ package ru.ngtu.twosteps.file.image.handler;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import ru.ngtu.twosteps.file.enums.TargetDirectory;
-import ru.ngtu.twosteps.file.image.Image;
+import ru.ngtu.twosteps.jpa.entity.Image;
 import ru.ngtu.twosteps.file.image.ImageDto;
 import ru.ngtu.twosteps.file.image.ImageService;
 

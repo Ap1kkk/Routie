@@ -1,6 +1,7 @@
 package ru.ngtu.twosteps.category;
 
 import org.mapstruct.*;
+import ru.ngtu.twosteps.jpa.entity.Category;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = "spring")
 public interface CategoryMapper {
