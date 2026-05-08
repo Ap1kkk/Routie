@@ -4,6 +4,8 @@ import { getMockRouteById } from '../../mocks/route';
 import { Route } from '../../types/route';
 import { MapComponent } from '@components';
 
+import styles from './MapPage.module.scss'
+
 export const MapPage = () => {
 	const { routeId } = useParams<{ routeId: string }>();
 	const [route, setRoute] = useState<Route | null>(null);
@@ -21,7 +23,7 @@ export const MapPage = () => {
 	if (!route) return <div>Маршрут не найден</div>;
 
 	return (
-		<section>
+		<section className={styles.mapPageWrapper}>
 			<MapComponent routeData={route} />
 		</section>
 	);
