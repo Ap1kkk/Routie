@@ -40,7 +40,7 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 
 		try {
 			const response = await fetch(
-				'https://maps.vk.com/api/directions?api_key=a47f57ddcdac37e56aa29e0001678c6f87e2ecbe91e52cc129eecbb01fd0d386',
+				`https://maps.vk.com/api/directions?api_key=${API_MAP_KEY}`,
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -97,9 +97,18 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 						'line-cap': 'round',
 					},
 					paint: {
-						'line-color': '#0c1317',
-						'line-width': 4,
-						'line-opacity': 0.9,
+						'line-color': '#13BBFA',
+						'line-width': [
+							'interpolate',
+							['exponential', 1.5],
+							['zoom'],
+							5,
+							3,
+							18,
+							8,
+						],
+						'line-opacity': 1,
+						'line-dasharray': [2, 2],
 					},
 				});
 			}
