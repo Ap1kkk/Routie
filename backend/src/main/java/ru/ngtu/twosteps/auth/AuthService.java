@@ -14,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ru.ngtu.twosteps.auth.dto.AuthenticatedDto;
 import ru.ngtu.twosteps.auth.dto.AuthenticationCredentialsDto;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.system.security.jwt.JwtAuthenticationProvider;
-import ru.ngtu.twosteps.user.model.User;
-import ru.ngtu.twosteps.user.model.UserPermission;
-import ru.ngtu.twosteps.user.model.UserRole;
-import ru.ngtu.twosteps.user.UserRepository;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.common.security.jwt.JwtAuthenticationProvider;
+import ru.ngtu.twosteps.jpa.entity.user.User;
+import ru.ngtu.twosteps.jpa.entity.user.UserPermission;
+import ru.ngtu.twosteps.jpa.entity.user.UserRole;
+import ru.ngtu.twosteps.jpa.repository.user.UserRepository;
 
 import java.util.Collection;
 import java.util.HashSet;

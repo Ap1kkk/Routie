@@ -2,10 +2,10 @@ package ru.ngtu.twosteps.routes.mappers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.ngtu.twosteps.common.BaseEntity;
+import ru.ngtu.twosteps.jpa.BaseEntity;
 import ru.ngtu.twosteps.routes.dto.LikedRouteDto;
-import ru.ngtu.twosteps.routes.model.Route;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 import java.util.ArrayList;
 import java.util.List;

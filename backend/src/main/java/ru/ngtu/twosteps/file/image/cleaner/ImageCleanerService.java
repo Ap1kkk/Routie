@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ngtu.twosteps.file.FileService;
-import ru.ngtu.twosteps.file.image.Image;
+import ru.ngtu.twosteps.jpa.entity.Image;
 
 import java.util.List;
+import ru.ngtu.twosteps.jpa.entity.ImageToClean;
+import ru.ngtu.twosteps.jpa.repository.ImageToCleanRepository;
 
 /**
  * @author Egor Bokov

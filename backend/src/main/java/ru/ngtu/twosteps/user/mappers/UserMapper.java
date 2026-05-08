@@ -3,14 +3,14 @@ package ru.ngtu.twosteps.user.mappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import ru.ngtu.twosteps.region.Region;
-import ru.ngtu.twosteps.region.RegionRepository;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.user.activity.UserActivity;
-import ru.ngtu.twosteps.user.activity.UserActivityRepository;
+import ru.ngtu.twosteps.jpa.entity.Region;
+import ru.ngtu.twosteps.jpa.repository.RegionRepository;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.jpa.entity.user.UserActivity;
+import ru.ngtu.twosteps.jpa.repository.user.UserActivityRepository;
 import ru.ngtu.twosteps.user.dto.CreateCredentialsDto;
 import ru.ngtu.twosteps.user.dto.FinishRegistrationDto;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 import java.time.ZonedDateTime;
 

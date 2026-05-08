@@ -2,7 +2,7 @@ package ru.ngtu.twosteps.routes.mappers;
 
 import org.mapstruct.*;
 import ru.ngtu.twosteps.routes.dto.RouteDto;
-import ru.ngtu.twosteps.routes.model.Route;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RouteMapper {

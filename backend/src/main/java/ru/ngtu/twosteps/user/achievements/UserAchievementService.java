@@ -3,16 +3,18 @@ package ru.ngtu.twosteps.user.achievements;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.ngtu.twosteps.achievement.Achievement;
-import ru.ngtu.twosteps.achievement.AchievementRepository;
-import ru.ngtu.twosteps.routes.model.history.HistoryRoute;
-import ru.ngtu.twosteps.routes.model.history.HistoryRouteRepository;
-import ru.ngtu.twosteps.routes.model.history.HistoryRouteStatus;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.Achievement;
+import ru.ngtu.twosteps.jpa.entity.user.UserAchievement;
+import ru.ngtu.twosteps.jpa.repository.AchievementRepository;
+import ru.ngtu.twosteps.jpa.entity.route.history.HistoryRoute;
+import ru.ngtu.twosteps.jpa.repository.HistoryRouteRepository;
+import ru.ngtu.twosteps.jpa.entity.route.history.HistoryRouteStatus;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import ru.ngtu.twosteps.jpa.repository.user.UserAchievementRepository;
 
 /**
  * @author Egor Bokov

@@ -3,10 +3,12 @@ package ru.ngtu.twosteps.category;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationException;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationException;
+import ru.ngtu.twosteps.jpa.entity.Category;
+import ru.ngtu.twosteps.jpa.repository.CategoryRepository;
 
-import static ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
+import static ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
 
 /**
  * @author Egor Bokov

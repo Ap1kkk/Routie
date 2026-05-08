@@ -1,8 +1,9 @@
 package ru.ngtu.twosteps.routes.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.ngtu.twosteps.routes.model.Route;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
 import ru.ngtu.twosteps.routes.dto.RouteDto;
 import ru.ngtu.twosteps.routes.services.RouteService;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/route")
 @RequiredArgsConstructor
+@Tag(name = "Route admin", description = "Route admin endpoints")
 public class RouteAdminController {
 
     private final RouteService routeService;

@@ -7,29 +7,35 @@ services:
     container_name: two-steps-backend
     depends_on:
       - postgres
-      - victoriametrics  # Ждем готовности баз
+      - victoriametrics
       - loki
+      - minio
     environment:
+      SPRING_PROFILES_ACTIVE: ${BACKEND_PROFILES}
+
       SERVER_HOST: ${SERVER_HOST}
       SERVER_PROTOCOL: ${SERVER_PROTOCOL}
-      SPRING_PROFILES_ACTIVE: ${BACKEND_PROFILES}
+
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATASOURCE_DATABASE_HOST: postgres
       SPRING_DATASOURCE_DATABASE_PORT: 5432
       SPRING_DATASOURCE_DATABASE_NAME: ${POSTGRES_DB}
+
       SECURITY_CORS_ALLOWED_ORIGIN: "*"
       MVC_RESOURCE_PATH_PATTERN: "/static/image/**"
 
-      # --- Метрики для VictoriaMetrics (через push) ---
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus,metrics"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
-      # Шлем метрики прямо в vmagent (который отправит в VictoriaMetrics)
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_PUSHGATEWAY_ENABLED: "true"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_PUSHGATEWAY_BASEURL: "http://vmagent:8429"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_PUSHGATEWAY_JOB: "two-steps-backend"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_PUSHGATEWAY_PUSH_RATE: "10s"
 
+      MINIO_URL: http://minio:9000
+      MINIO_BUCKET: images
+      MINIO_ACCESS_KEY: ${MINIO_USER}
+      MINIO_SECRET_KEY: ${MINIO_PASSWORD}
     volumes:
       - ./uploads:/routes/uploads
       - ./logs:/var/log/backend
@@ -47,20 +53,32 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
     ports:
       - "5432:5432"
+    restart: unless-stopped
+
+  # ==================== S3 хранилище ====================
+  minio:
+    image: minio/minio
+    container_name: two-steps-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+      - ./minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
 
   # ==================== ФРОНТЕНД ====================
   frontend:
     image: ap1k/two-steps-frontend:latest
     container_name: two-steps-frontend
-#    environment:
-#      API_URL: ${API_URL}
-    ports:
-      - "80:80"
     volumes:
       - ./infra/nginx:/etc/nginx/conf.d
+    ports:
+      - "80:80"
     restart: unless-stopped
 
   # ================ ЛОГИ (Loki + Vector) ================
@@ -68,15 +86,14 @@ services:
   vector:
     image: timberio/vector:0.42.0-alpine
     container_name: two-steps-vector
-    volumes:
-      - ./logs:/var/log/backend:ro   # Монтируем папку с логами (только чтение)
-      - ./infra/vector.yaml:/etc/vector/vector.yaml:ro  # Конфиг
     command: ["--config", "/etc/vector/vector.yaml"]
     depends_on:
       - loki
+    volumes:
+      - ./logs:/var/log/backend:ro
+      - ./infra/vector.yaml:/etc/vector/vector.yaml:ro
     restart: unless-stopped
 
-  # 2. База для логов (легковесная альтернатива Elasticsearch)
   loki:
     image: grafana/loki:2.9.4
     container_name: two-steps-loki
@@ -90,34 +107,32 @@ services:
 
   # ================ МЕТРИКИ (VictoriaMetrics + vmagent) ================
 
-  # 1. Агент для сбора метрик (кушает push от Spring и тянет метрики)
   vmagent:
     image: victoriametrics/vmagent:latest
     container_name: two-steps-vmagent
-    volumes:
-      - ./infra/vmagent-config.yaml:/etc/vmagent/config.yaml:ro
     command:
       - '-promscrape.config=/etc/vmagent/config.yaml'
       - '-remoteWrite.url=http://victoriametrics:8428/api/v1/write'
       - '-remoteWrite.retryMaxInterval=10s'
-      - '-remoteWrite.maxDiskUsagePerURL=500MB'   # лимит буфера на диске
+      - '-remoteWrite.maxDiskUsagePerURL=500MB'
+    volumes:
+      - ./infra/vmagent-config.yaml:/etc/vmagent/config.yaml:ro
     ports:
       - "8429:8429"
     depends_on:
       - victoriametrics
     restart: unless-stopped
 
-  # 2. База для метрик (эффективная замена Prometheus)
   victoriametrics:
     image: victoriametrics/victoria-metrics:latest
     container_name: two-steps-victoriametrics
-    volumes:
-      - ./victoria-metrics-data:/victoria-metrics-data
     command:
       - '-storageDataPath=/victoria-metrics-data'
-      - '-retentionPeriod=1'  # Храним метрики 1 месяц
+      - '-retentionPeriod=1'
+    volumes:
+      - ./victoria-metrics-data:/victoria-metrics-data
     ports:
-      - "8428:8428"  # Порт для запросов
+      - "8428:8428"
     restart: unless-stopped
 
   # ================ ВИЗУАЛИЗАЦИЯ (Grafana) ================
@@ -125,14 +140,14 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: two-steps-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin  # Пароль по умолчанию
-      - GF_SECURITY_ADMIN_USER=admin
-    volumes:
-      - ./grafana-data:/var/lib/grafana
     depends_on:
       - loki
       - victoriametrics
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
     restart: unless-stopped

@@ -3,12 +3,12 @@ package ru.ngtu.twosteps.file.image;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.twosteps.file.image.handler.ImageHandlingType;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationException;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationException;
 
 import java.util.List;
 import java.util.UUID;
 
-import static ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
+import static ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
 
 /**
  * @author Egor Bokov
