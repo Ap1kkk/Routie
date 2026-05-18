@@ -1,5 +1,6 @@
 package ru.ngtu.twosteps.routes.services;
 
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -7,9 +8,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ngtu.twosteps.analytics.AnalyticsClient;
 import ru.ngtu.twosteps.auth.AuthService;
-import ru.ngtu.twosteps.category.Category;
+import ru.ngtu.twosteps.jpa.entity.Category;
 import ru.ngtu.twosteps.category.CategoryService;
 import ru.ngtu.twosteps.file.FileService;
 import ru.ngtu.twosteps.file.enums.ApplicationTargetDirectory;
@@ -17,14 +17,14 @@ import ru.ngtu.twosteps.routes.RouteValidator;
 import ru.ngtu.twosteps.routes.dto.GetRecommendationRoutesDto;
 import ru.ngtu.twosteps.routes.dto.RecommendationRoutesDto;
 import ru.ngtu.twosteps.routes.dto.RouteDto;
-import ru.ngtu.twosteps.routes.jpa.RouteFilter;
-import ru.ngtu.twosteps.routes.jpa.RouteRepository;
-import ru.ngtu.twosteps.routes.jpa.RouteSpecification;
+import ru.ngtu.twosteps.jpa.entity.route.RouteFilter;
+import ru.ngtu.twosteps.jpa.repository.RouteRepository;
+import ru.ngtu.twosteps.jpa.entity.route.RouteSpecification;
 import ru.ngtu.twosteps.routes.mappers.RouteMapper;
-import ru.ngtu.twosteps.routes.model.Route;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationException;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.route.Route;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationException;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 import java.util.List;
 
@@ -37,12 +37,11 @@ import java.util.List;
 public class RouteService {
 
     private final RouteRepository repository;
-    private final RouteMapper mapper;
+    private final RouteMapper routeMapper;
     private final RouteValidator validator;
 
     private final AuthService authService;
     private final CategoryService categoryService;
-    private final AnalyticsClient analyticsClient;
     private final FileService fileService;
 
     public List<Route> getAll() {
@@ -65,8 +64,8 @@ public class RouteService {
     public Route create(RouteDto dto) {
         log.debug("[Route] : Creating route from dto: {}", dto);
 
-        Route entity = mapper.toEntity(dto);
-        mapper.linkCheckpoints(entity);
+        Route entity = routeMapper.toEntity(dto);
+        routeMapper.linkCheckpoints(entity);
         List<Category> categories = categoryService.getByIds(dto.getCategoryIds());
         entity.setCategories(categories);
         String imagePath = fileService.upload(dto.getImage(), ApplicationTargetDirectory.ROUTE_IMAGES);
@@ -119,14 +118,17 @@ public class RouteService {
                 .userId(currentUser.getId())
                 .filter(filter)
                 .build();
-        RecommendationRoutesDto recommendations = analyticsClient.getRecommendations(dto);
+        //TODO добавить логику по получению рекомендаций
+        log.error("[Route] : getRecommended not implemented!");
+//        RecommendationRoutesDto recommendations = analyticsClient.getRecommendations(dto);
 
-        List<Long> recommendationIds = recommendations.getRecommendations();
-        if(recommendationIds == null || recommendations.getRecommendations().isEmpty()) {
-            log.warn("[Route]: recommendations were empty");
-            return getPopular(limit);
-        }
-
-        return repository.findAllById(recommendationIds);
+//        List<Long> recommendationIds = recommendations.getRecommendations();
+//        if(recommendationIds == null || recommendations.getRecommendations().isEmpty()) {
+//            log.warn("[Route]: recommendations were empty");
+//            return getPopular(limit);
+//        }
+//
+//        return repository.findAllById(recommendationIds);
+        return new ArrayList<>();
     }
 }

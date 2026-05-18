@@ -3,19 +3,20 @@ package ru.ngtu.twosteps.user;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
-import ru.ngtu.twosteps.system.exceptions.classes.data.EntityNotFoundException;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.DefaultValidationErrorType;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationException;
-import ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationViolationDto;
+import ru.ngtu.twosteps.common.exceptions.classes.data.EntityNotFoundException;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.DefaultValidationErrorType;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationException;
+import ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationViolationDto;
+import ru.ngtu.twosteps.jpa.repository.user.UserRepository;
 import ru.ngtu.twosteps.user.dto.CreateCredentialsDto;
 import ru.ngtu.twosteps.user.dto.EditProfileDto;
 import ru.ngtu.twosteps.user.dto.FinishRegistrationDto;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 import java.util.List;
 import java.util.Optional;
 
-import static ru.ngtu.twosteps.system.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
+import static ru.ngtu.twosteps.common.exceptions.classes.validation.ValidationViolationDto.requiredIsNull;
 
 /**
  * @author Egor Bokov

@@ -3,7 +3,7 @@ package ru.ngtu.twosteps.file.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import ru.ngtu.twosteps.system.exceptions.reasons.ErrorReason;
+import ru.ngtu.twosteps.common.exceptions.reasons.ErrorReason;
 
 /**
  * @author Egor Bokov

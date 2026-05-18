@@ -3,7 +3,7 @@ package ru.ngtu.twosteps.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.ngtu.twosteps.user.model.UserGender;
+import ru.ngtu.twosteps.jpa.entity.user.UserGender;
 
 import java.time.LocalDate;
 

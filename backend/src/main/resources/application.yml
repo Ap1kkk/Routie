@@ -1,6 +1,7 @@
 server:
   host: localhost
   protocol: http
+  port: 8080
 
 spring:
   application:
@@ -21,12 +22,18 @@ spring:
     change-log: classpath:db/migration/db.changelog-main.yaml
     default-schema: public
 
+  minio:
+    url: ${MINIO_URL:http://localhost:9000}
+    bucket: ${MINIO_BUCKET:images}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+
   jackson:
     default-property-inclusion: non_null
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 #    show-sql: true
 #    properties:
 #      hibernate.format_sql: true
@@ -43,15 +50,17 @@ mvc:
   resource-location: "/uploads/"
   resource-path-pattern: "/static/image/**"
 
+springdoc:
+  swagger-ui:
+    schemes:
+      dev: http://localhost:${server.port}
+      prod: https://${SERVER_HOST:localhost}
+
 security:
   jwt:
     secret: ${JWT_SECRET:5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
   cors:
-    allowed-origin: ${server.protocol}://${server.host}:3000
-
-clients:
-  analytics:
-    url: ${server.protocol}://${server.host}:8000/analytics
+    allowed-origin: ${server.protocol}://${server.host}:3000, https://demo.maps.vk.com/api/directions
 
 management:
   endpoints:

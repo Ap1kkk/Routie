@@ -34,20 +34,15 @@ configurations.all {
 }
 
 dependencies {
-    // Основные стартеры Spring Boot БЕЗ логирования
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-rest'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // Log4j2 вместо Logback
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
-    // JSON layout для Log4j2 (очень рекомендуется)
     implementation 'org.apache.logging.log4j:log4j-layout-template-json'
 
-    // Остальные зависимости
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.liquibase:liquibase-core:4.29.2'
@@ -58,6 +53,7 @@ dependencies {
     implementation 'net.datafaker:datafaker:2.3.1'
     implementation 'org.mapstruct:mapstruct:1.6.3'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.3'
+    implementation 'io.minio:minio:8.5.2'
 
     runtimeOnly 'org.postgresql:postgresql'
 

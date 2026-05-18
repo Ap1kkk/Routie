@@ -2,7 +2,7 @@ package ru.ngtu.twosteps.user.mappers;
 
 import org.mapstruct.*;
 import ru.ngtu.twosteps.user.dto.UserProjectionDto;
-import ru.ngtu.twosteps.user.model.User;
+import ru.ngtu.twosteps.jpa.entity.user.User;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserProjectionMapper {
