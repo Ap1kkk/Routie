@@ -14,7 +14,6 @@
 		"server": "json-server --watch db.json --port 3001"
 	},
 	"dependencies": {
-		"mmr-gl": "^0.2.43",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-redux": "^9.2.0",
@@ -60,6 +59,7 @@
 		"lint-staged": "^13.2.2",
 		"merge": "^2.1.1",
 		"mini-css-extract-plugin": "^2.7.6",
+		"mmr-gl": "^0.2.43",
 		"postcss-loader": "^7.3.3",
 		"prettier": "^2.8.8",
 		"rc-slider": "^11.1.9",
@@ -73,6 +73,7 @@
 		"stylelint": "^16.1.0",
 		"stylelint-config-standard-scss": "^13.0.0",
 		"stylelint-order": "^6.0.3",
+		"swiper": "^12.1.4",
 		"ts-loader": "^9.4.3",
 		"typescript": "^5.0.4",
 		"typescript-plugin-css-modules": "^5.2.0",

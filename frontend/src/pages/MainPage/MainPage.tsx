@@ -29,17 +29,6 @@ export const MainPage: React.FC = () => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [routeOfTheDay, setRouteOfTheDay] = useState<Route | null>(null);
 
-	const popularCards = popularRoutes.map((route) => (
-		<RouteCard
-			key={route.id}
-			route={route}
-			imageUrl={getRouteImage(route.id)}
-			isLiked={likedRoutes[route.id] || false}
-			onToggleLike={handleToggleLike}
-			variant='compact'
-		/>
-	));
-
 	useEffect(() => {
 		const checkAuth = () => {
 			try {
@@ -110,6 +99,17 @@ export const MainPage: React.FC = () => {
 			</div>
 		);
 	}
+
+	const popularCards = popularRoutes.map((route) => (
+		<RouteCard
+			key={route.id}
+			route={route}
+			imageUrl={getRouteImage(route.id)}
+			isLiked={likedRoutes[route.id] || false}
+			onToggleLike={handleToggleLike}
+			variant='compact'
+		/>
+	));
 
 	return (
 		<section className={styles.section}>

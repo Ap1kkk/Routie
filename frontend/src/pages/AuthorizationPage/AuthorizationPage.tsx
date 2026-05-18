@@ -61,7 +61,7 @@ export const AuthorizationPage = () => {
 
 	const errorMessage = error
 		? typeof error === 'object' && 'message' in error
-			? error.message
+			? error
 			: typeof error === 'string'
 			? error
 			: 'Ошибка входа'

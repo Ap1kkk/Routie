@@ -452,7 +452,9 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				addMarkers(map, routeData.checkpoints);
 
 				setTimeout(() => {
-					buildRoute(map, routeData.checkpoints, routeType);
+					if (routeData.checkpoints) {
+						buildRoute(map, routeData.checkpoints, routeType);
+					}
 				}, 100);
 
 				const bounds = new mmrgl.LngLatBounds();
