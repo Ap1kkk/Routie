@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Route } from '../../types/route';
-import { Button, Slider } from '@ui';
+import { Button } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 import {
 	mockRoutes,
@@ -18,7 +18,6 @@ export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
-
 	const [popularRoutes, setPopularRoutes] = useState<Route[]>([]);
 	const [recommendedRoutes, setRecommendedRoutes] = useState<Route[]>([]);
 	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
@@ -28,17 +27,6 @@ export const MainPage: React.FC = () => {
 
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [routeOfTheDay, setRouteOfTheDay] = useState<Route | null>(null);
-
-	const popularCards = popularRoutes.map((route) => (
-		<RouteCard
-			key={route.id}
-			route={route}
-			imageUrl={getRouteImage(route.id)}
-			isLiked={likedRoutes[route.id] || false}
-			onToggleLike={handleToggleLike}
-			variant='compact'
-		/>
-	));
 
 	useEffect(() => {
 		const checkAuth = () => {
@@ -56,10 +44,12 @@ export const MainPage: React.FC = () => {
 	useEffect(() => {
 		const loadRoutes = () => {
 			try {
-				setPopularRoutes(mockRoutes.slice(0, 6)); // можно больше
-				setRecommendedRoutes(mockRoutes.slice(6, 12));
+				setPopularRoutes(mockRoutes.slice(0, 4));
+				setRecommendedRoutes(mockRoutes.slice(4, 8));
 
-				setRouteOfTheDay(getRandomMockRoute());
+				const randomRoute = getRandomMockRoute();
+				setRouteOfTheDay(randomRoute);
+
 				setLoading(false);
 			} catch (err) {
 				setError('Ошибка при загрузке маршрутов');
@@ -71,18 +61,25 @@ export const MainPage: React.FC = () => {
 		return () => clearTimeout(timer);
 	}, []);
 
+	const handleRouteOfTheDay = () => {
+		if (routeOfTheDay) {
+			navigate(`/map/${routeOfTheDay.id}`);
+		} else if (popularRoutes.length > 0) {
+			navigate(`/map/${popularRoutes[0].id}`);
+		} else if (recommendedRoutes.length > 0) {
+			navigate(`/map/${recommendedRoutes[0].id}`);
+		} else {
+			navigate(`/map/${mockRoutes[0].id}`);
+		}
+	};
+
 	const handleToggleLike = (routeId: string) => {
 		setLikedRoutes((prev) => ({
 			...prev,
 			[routeId]: !prev[routeId],
 		}));
-	};
 
-	const handleCardClick = (index: number) => {
-		const route = popularRoutes[index];
-		if (route) {
-			navigate(`/map/${route.id}`);
-		}
+		console.log(`Route ${routeId} liked: ${!likedRoutes[routeId]}`);
 	};
 
 	if (loading) {
@@ -116,7 +113,7 @@ export const MainPage: React.FC = () => {
 			{routeOfTheDay && (
 				<RouteOfTheDay
 					route={routeOfTheDay}
-					onNavigate={() => navigate(`/map/${routeOfTheDay.id}`)}
+					onNavigate={handleRouteOfTheDay}
 				/>
 			)}
 
@@ -125,15 +122,18 @@ export const MainPage: React.FC = () => {
 					<div className={styles.containerHeader}>
 						<h2 className={styles.title}>Популярные маршруты</h2>
 					</div>
-
-					<Slider
-						cards={popularCards}
-						gap={12}
-						infinite={true}
-						showArrows={true}
-						showDots={true}
-						onCardClick={handleCardClick}
-					/>
+					<div className={styles.position}>
+						{popularRoutes.map((route) => (
+							<RouteCard
+								key={route.id}
+								imageUrl={getRouteImage(route.id)}
+								route={route}
+								isLiked={likedRoutes[route.id] || false}
+								onToggleLike={handleToggleLike}
+								variant='compact'
+							/>
+						))}
+					</div>
 				</div>
 			)}
 
@@ -143,23 +143,26 @@ export const MainPage: React.FC = () => {
 						<h2 className={styles.title}>
 							Рекомендованные маршруты
 						</h2>
-						<Button
-							variant='tertiary'
-							onClick={() =>
-								navigate(isMobile ? '/routes' : '/filter')
-							}
-							iconRight={<RightIcon />}
-							className={styles.containerHeaderButton}>
-							Смотреть все
-						</Button>
+						<div className={styles.button}>
+							<Button
+								variant='tertiary'
+								onClick={() => {
+									isMobile
+										? navigate('/routes')
+										: navigate('/filter');
+								}}
+								children={'Смотреть все'}
+								iconRight={<RightIcon />}
+								className={styles.containerHeaderButton}
+							/>
+						</div>
 					</div>
-
 					<div className={styles.positionGrid}>
 						{recommendedRoutes.map((route) => (
 							<RouteCard
 								key={route.id}
-								route={route}
 								imageUrl={getRouteImage(route.id)}
+								route={route}
 								isLiked={likedRoutes[route.id] || false}
 								onToggleLike={handleToggleLike}
 								variant='standard'
