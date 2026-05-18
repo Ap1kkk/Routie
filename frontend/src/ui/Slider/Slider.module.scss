@@ -1,36 +1,20 @@
 .sliderOuter {
   display: flex;
-  align-items: center;
-  width: 100%;
   position: relative;
-}
-
-.sliderContainer {
-  flex: 1;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.swiper {
-  padding: 10px 0 40px 0;
-}
-
-.slide {
-  width: auto !important;
-  flex-shrink: 0;
+  width: 100%;
 }
 
 .arrow {
-  width: 44px;
-  height: 44px;
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
+  border: none;
+  background-color: transparent;
   transition: all 0.2s ease;
-
-  all: unset;
 
   &:hover:not(:disabled) {
     transform: scale(1.05);
@@ -40,16 +24,43 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+}
 
-  svg {
-    width: 24px;
-    height: 24px;
-  }
+.arrowLeft {
+  top: 50%;
+  left: -5px;
+}
+
+.arrowRight {
+  top: 50%;
+  right: -5px;
+}
+
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+}
+
+.swiper {
+  padding: 0 0 20px;
+  margin: 0 25px;
+}
+
+.slide {
+  width: auto;
+  flex-shrink: 0;
 }
 
 .swiper :global(.swiper-pagination) {
   bottom: 0 !important;
   padding-top: 12px;
+}
+
+.swiper :global(.swiper-slide) {
+  height: auto;
 }
 
 .swiper :global(.swiper-pagination-bullet) {
@@ -61,7 +72,7 @@
 }
 
 .swiper :global(.swiper-pagination-bullet-active) {
-  background: var(--color-accent);     /* Зеленый цвет */
+  background: var(--color-accent);
   width: 9px;
   height: 9px;
 }

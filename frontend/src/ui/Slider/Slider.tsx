@@ -35,14 +35,11 @@ export const Slider: React.FC<SliderProps> = ({
 
 	return (
 		<div className={`${styles.sliderOuter} ${className}`}>
-			{/* Левая стрелка */}
 			{showArrows && (
-				<button
+				<ChevronLeftIcon
 					className={`${styles.arrow} ${styles.arrowLeft}`}
 					onClick={() => swiperInstance.current?.slidePrev()}
-					disabled={isBeginning && !infinite}>
-					<ChevronLeftIcon />
-				</button>
+				/>
 			)}
 
 			<div className={styles.sliderContainer}>
@@ -82,14 +79,11 @@ export const Slider: React.FC<SliderProps> = ({
 				</Swiper>
 			</div>
 
-			{/* Правая стрелка */}
 			{showArrows && (
-				<button
+				<ChevronRightIcon
 					className={`${styles.arrow} ${styles.arrowRight}`}
 					onClick={() => swiperInstance.current?.slideNext()}
-					disabled={isEnd && !infinite}>
-					<ChevronRightIcon />
-				</button>
+				/>
 			)}
 		</div>
 	);

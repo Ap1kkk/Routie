@@ -128,7 +128,7 @@ export const MainPage: React.FC = () => {
 
 					<Slider
 						cards={popularCards}
-						gap={24}
+						gap={12}
 						infinite={true}
 						showArrows={true}
 						showDots={true}
