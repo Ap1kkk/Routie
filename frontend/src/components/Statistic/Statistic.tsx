@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import styles from './Statistic.module.scss';
 import { StatisticCard } from '../StatisticCard';
 import { Button } from '@ui';
-import { StatisticCardData } from '../../types/statistic';
-import { PeriodKey, PERIODS } from '../../types/constants/periods';
+import { PeriodKey, PERIODS, StatisticCardData } from '../../types/statistic';
 
 interface StatisticProps {
 	title?: string;
