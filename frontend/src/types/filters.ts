@@ -7,7 +7,7 @@ export interface Filters {
 		min: number;
 		max: number;
 	};
-	categoryIds: string[]; // Используем string для ID тегов
+	categoryIds: string[];
 	duration: {
 		min: number;
 		max: number;

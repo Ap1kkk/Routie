@@ -245,3 +245,26 @@ export const getPopularRoutes = async (limit: number = 5): Promise<Route[]> => {
 		);
 	}
 };
+
+// Получение изображений маршрута
+export const getRouteImages = async (routeId: string): Promise<any[]> => {
+	try {
+		const response = await fetch(`${API_URL}/routeImages?routeId=${routeId}`, {
+			method: 'GET',
+			headers: getHeaders(),
+		});
+		return await handleResponse<any[]>(response);
+	} catch (error: any) {
+		throw new Error(error.message || 'Ошибка загрузки изображений маршрута');
+	}
+};
+
+// Получение чекпоинтов маршрута (если нужно отдельно)
+export const getRouteCheckpoints = async (routeId: string): Promise<any[]> => {
+	try {
+		const route = await getRouteById(routeId);
+		return route.checkpoints;
+	} catch (error: any) {
+		throw new Error(error.message || 'Ошибка загрузки чекпоинтов');
+	}
+};
