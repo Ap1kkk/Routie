@@ -1,5 +1,5 @@
 import { Route, RouteImage } from '../types/route';
-import { Checkpoint, CheckpointImage, AudioGuide } from '../types/checkpoint';
+import { Checkpoint } from '../types/checkpoint';
 import { Tags } from '../types/tags';
 
 const ROUTE_UUIDS = {

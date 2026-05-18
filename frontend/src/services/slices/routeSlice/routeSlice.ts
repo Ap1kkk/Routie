@@ -185,7 +185,6 @@ const routesSlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		builder
-			// fetchAllRoutes
 			.addCase(fetchAllRoutes.pending, (state) => {
 				state.loading = true;
 				state.error = null;
@@ -209,16 +208,14 @@ const routesSlice = createSlice({
 				state.loading = true;
 				state.error = null;
 			})
-			.addCase(
-				fetchRouteById.fulfilled,
-				(state, action: PayloadAction<Route>) => {
-					state.loading = false;
-					state.currentRoute = action.payload;
-				}
-			)
+			.addCase(fetchRouteById.fulfilled, (state, action) => {
+				state.loading = false;
+				state.currentRoute = action.payload;
+			})
 			.addCase(fetchRouteById.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload as string;
+				state.currentRoute = null;
 			})
 			// addNewRoute
 			.addCase(addNewRoute.pending, (state) => {

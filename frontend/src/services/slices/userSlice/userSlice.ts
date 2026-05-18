@@ -1,9 +1,5 @@
-import {
-	createAsyncThunk,
-	createSlice,
-	PayloadAction,
-	SerializedError,
-} from '@reduxjs/toolkit';
+// userSlice.ts
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
 	TLoginData,
 	TRegisterData,
@@ -25,17 +21,19 @@ import { TApiResponse } from '../../../types/api';
 type TUserState = {
 	isAuthChecked: boolean;
 	isAuthenticated: boolean;
-	loginError?: SerializedError;
-	registerError?: SerializedError;
-	data: User | null; // Изменили на null
+	data: User | null;
 	isLoading: boolean;
+	loginError: string | null;
+	registerError: string | null;
 };
 
 const initialState: TUserState = {
 	isAuthChecked: false,
 	isAuthenticated: false,
+	data: null,
 	isLoading: false,
-	data: null, // Начальное состояние null
+	loginError: null,
+	registerError: null,
 };
 
 export const register = createAsyncThunk<
@@ -44,19 +42,10 @@ export const register = createAsyncThunk<
 	{ rejectValue: string }
 >('user/register', async (data, { rejectWithValue }) => {
 	const response: TApiResponse = await registerUserApi(data);
-
-	if (!response?.success) {
+	if (!response.success)
 		return rejectWithValue(response.message || 'Ошибка регистрации');
-	}
-
-	const { user, refreshToken, accessToken } = response;
-
-	if (refreshToken && accessToken && user) {
-		storeTokens(refreshToken, accessToken);
-		return user;
-	}
-
-	return rejectWithValue('Ошибка получения данных пользователя');
+	storeTokens(response.refreshToken!, response.accessToken!);
+	return response.user!;
 });
 
 export const login = createAsyncThunk<
@@ -65,80 +54,31 @@ export const login = createAsyncThunk<
 	{ rejectValue: string }
 >('user/login', async (data, { rejectWithValue }) => {
 	const response: TApiResponse = await loginUserApi(data);
-
-	if (!response?.success) {
+	if (!response.success)
 		return rejectWithValue(response.message || 'Ошибка входа');
-	}
-
-	const { user, refreshToken, accessToken } = response;
-
-	if (refreshToken && accessToken && user) {
-		storeTokens(refreshToken, accessToken);
-		return user;
-	}
-
-	return rejectWithValue('Ошибка получения данных пользователя');
+	storeTokens(response.refreshToken!, response.accessToken!);
+	return response.user!;
 });
 
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 	'user/logout',
 	async (_, { rejectWithValue }) => {
-		const response: TApiResponse = await logoutApi();
-
-		if (!response?.success) {
+		const response = await logoutApi();
+		if (!response.success)
 			return rejectWithValue(response.message || 'Ошибка выхода');
-		}
-
 		clearTokens();
 	}
 );
 
-export const resetPassword = createAsyncThunk<
-	boolean,
-	{ password: string; token: string },
-	{ rejectValue: string }
->('user/resetPassword', async (data, { rejectWithValue }) => {
-	const response: TApiResponse = await resetPasswordApi(data);
-
-	if (!response?.success) {
-		return rejectWithValue(response.message || 'Ошибка сброса пароля');
-	}
-
-	return true;
-});
-
-export const forgotPassword = createAsyncThunk<
-	boolean,
-	{ email: string },
-	{ rejectValue: string }
->('user/forgotPassword', async (data, { rejectWithValue }) => {
-	const response: TApiResponse = await forgotPasswordApi(data);
-
-	if (!response?.success) {
-		return rejectWithValue(
-			response.message || 'Ошибка восстановления пароля'
-		);
-	}
-
-	return true;
-});
-
 export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
-	'user/fetch',
+	'user/fetchUser',
 	async (_, { rejectWithValue }) => {
-		const response: TApiResponse = await getUserApi();
-
-		if (!response?.success) {
+		const response = await getUserApi();
+		if (!response.success)
 			return rejectWithValue(
 				response.message || 'Ошибка получения пользователя'
 			);
-		}
-
-		if (!response.user) {
-			return rejectWithValue('Пользователь не найден');
-		}
-
-		return response.user;
+		return response.user!;
 	}
 );
 
@@ -146,18 +86,11 @@ export const updateUser = createAsyncThunk<
 	User,
 	TUpdateUserData,
 	{ rejectValue: string }
->('user/update', async (data, { rejectWithValue }) => {
-	const response: TApiResponse = await updateUserApi(data);
-
-	if (!response?.success) {
-		return rejectWithValue(response.message || 'Ошибка обновления данных');
-	}
-
-	if (!response.user) {
-		return rejectWithValue('Пользователь не найден');
-	}
-
-	return response.user;
+>('user/updateUser', async (data, { rejectWithValue }) => {
+	const response = await updateUserApi(data);
+	if (!response.success)
+		return rejectWithValue(response.message || 'Ошибка обновления');
+	return response.user!;
 });
 
 const userSlice = createSlice({
@@ -168,82 +101,58 @@ const userSlice = createSlice({
 			state.isAuthChecked = action.payload;
 		},
 		clearErrors: (state) => {
-			state.loginError = undefined;
-			state.registerError = undefined;
+			state.loginError = null;
+			state.registerError = null;
 		},
 	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(register.pending, (state) => {
-				state.registerError = undefined;
 				state.isLoading = true;
+				state.registerError = null;
 			})
 			.addCase(register.fulfilled, (state, action) => {
-				state.registerError = undefined;
-				state.isAuthenticated = true;
 				state.isLoading = false;
+				state.isAuthenticated = true;
 				state.data = action.payload;
 			})
 			.addCase(register.rejected, (state, action) => {
 				state.isLoading = false;
-				state.registerError = action.meta.rejectedWithValue
-					? { message: action.payload as string }
-					: action.error;
+				state.registerError = action.payload as string;
 			})
 
 			.addCase(login.pending, (state) => {
-				state.loginError = undefined;
 				state.isLoading = true;
+				state.loginError = null;
 			})
 			.addCase(login.fulfilled, (state, action) => {
-				state.loginError = undefined;
-				state.isAuthenticated = true;
 				state.isLoading = false;
+				state.isAuthenticated = true;
 				state.data = action.payload;
 			})
 			.addCase(login.rejected, (state, action) => {
 				state.isLoading = false;
-				state.loginError = action.meta.rejectedWithValue
-					? { message: action.payload as string }
-					: action.error;
+				state.loginError = action.payload as string;
 			})
 
-			.addCase(logout.pending, (state) => {
-				state.isLoading = true;
-			})
 			.addCase(logout.fulfilled, (state) => {
 				state.isAuthenticated = false;
-				state.isLoading = false;
-				state.data = null; // Изменили на null
-			})
-			.addCase(logout.rejected, (state) => {
-				state.isLoading = false;
+				state.data = null;
 			})
 
-			.addCase(fetchUser.pending, (state) => {
-				state.isLoading = true;
-			})
 			.addCase(fetchUser.fulfilled, (state, action) => {
 				state.isAuthenticated = true;
 				state.isAuthChecked = true;
-				state.isLoading = false;
 				state.data = action.payload;
 			})
 			.addCase(fetchUser.rejected, (state) => {
 				state.isAuthChecked = true;
 				state.isAuthenticated = false;
-				state.isLoading = false;
-				state.data = null; // Изменили на null
+				state.data = null;
 			})
-			.addCase(updateUser.pending, (state) => {
-				state.isLoading = true;
-			})
+
 			.addCase(updateUser.fulfilled, (state, action) => {
-				state.isLoading = false;
 				state.data = action.payload;
-			})
-			.addCase(updateUser.rejected, (state) => {
-				state.isLoading = false;
 			});
 	},
 });
