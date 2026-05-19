@@ -165,7 +165,7 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
 			</form>
 
 			<div className={styles.links}>
-				<Link to='/forgot-password' className={styles.link}>
+				<Link to='/recovery-page' className={styles.link}>
 					Забыли пароль?
 				</Link>
 
