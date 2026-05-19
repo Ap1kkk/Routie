@@ -1,0 +1,32 @@
+.progressBar {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--color-accent);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-link-pressed);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  font-weight: var(--font-regular);
+  letter-spacing: var(--letter-spacing);
+  color: var(--color-text);
+
+  padding: 1px 5px;
+
+  background-color: var(--color-card);
+  border-radius: var(--border-radius);
+}

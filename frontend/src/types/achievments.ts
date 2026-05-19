@@ -1,7 +1,7 @@
 export interface AchievementItem {
 	id: string;
 	title: string;
-	value: string;
-	finishValue: string;
+	value: number;
+	finishValue: number; // цель
 	caption: string;
 }
