@@ -8,15 +8,16 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({ value, max = 100}) => {
 	const percent = Math.min((value / max) * 100, 100);
+	const roundedPercent = Math.round(percent);
 
 	return (
 		<div className={styles.progressBar}>
 			<div
 				className={styles.progressFill}
-				style={{ width: `${percent}%` }}
+				style={{ width: `${roundedPercent}%` }}
 			/>
 
-			<span className={styles.progressText}>{percent}%</span>
+			<span className={styles.progressText}>{roundedPercent}%</span>
 		</div>
 	);
 }
