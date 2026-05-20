@@ -20,7 +20,8 @@ export const Achievement: React.FC<AchievementProps> = ({
 						index={index}
 						title={achievement.title}
 						caption={achievement.caption}
-						children={achievement.value}
+						value={achievement.value}
+						finishValue={achievement.finishValue}
 					/>
 				))}
 			</div>

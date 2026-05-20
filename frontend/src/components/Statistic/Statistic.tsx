@@ -24,7 +24,7 @@ export const Statistic: React.FC<StatisticProps> = ({ statisticData = [] }) => {
 				{PERIODS.map((period) => (
 					<Button
 						key={period.key}
-						variant='primary'
+						variant='secondary'
 						className={`${styles.statisticButton} ${
 							activePeriod === period.key ? styles.active : ''
 						}`}

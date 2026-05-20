@@ -11,6 +11,10 @@
 	padding: 5px;
 	transition: all 0.2s ease;
 
+	&:hover {
+		scale: 1.05;
+	}
+
 	@media (max-width: 925px) {
 		width: 180px;
 		font-size: calc(var(--text-h4-size) * 0.9);
@@ -66,10 +70,15 @@
 	transition: all 0.2s ease;
 	padding: 5px;
 	color: var(--text-color);
+	box-shadow: var(--shadow-card);
 	text-decoration: none;
 	font-family: var(--font-body);
 	font-size: var(--text-h4-size);
 	letter-spacing: var(--letter-spacing);
+
+	&:hover {
+		scale: 1.05;
+	}
 
 	@media (max-width: 925px) {
 		gap: 10px;
