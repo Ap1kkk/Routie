@@ -1,4 +1,9 @@
 export * from './AchievementPage';
+
+// ADMIN
+export * from './ADMIN/RouteList'
+export * from './ADMIN/Workbench';
+
 export * from './AuthorizationPage';
 export * from './EditProfilePage';
 export * from './Error400Page';
@@ -13,3 +18,4 @@ export * from './RoutesMobilePage';
 export * from './SettingsPage';
 export * from './StatisticPage';
 export * from './RecoveryPasswordPage';
+

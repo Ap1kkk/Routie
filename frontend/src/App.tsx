@@ -12,10 +12,11 @@ import {
 	NotFoundPage,
 	ProfilePage,
 	RecoveryPasswordPage,
-	RegistrationPage,
+	RegistrationPage, RoutesList,
 	RoutesMobilePage,
 	SettingsPage,
 	StatisticPage,
+	Workbench,
 } from '@pages';
 
 function checkAuth(): boolean {
@@ -45,7 +46,12 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute isAuthenticated={true} />,
+				element: (
+					<ProtectedRoute
+						isAuthenticated={checkAuth()}
+						userRole={getCurrentRole()}
+					/>
+				),
 				children: [
 					{
 						path: '/routie',
@@ -99,6 +105,25 @@ export const router = createBrowserRouter([
 				],
 			},
 			{
+				element: (
+					<ProtectedRoute
+						isAuthenticated={checkAuth()}
+						userRole={getCurrentRole()}
+						allowedRoles={['ADMIN']}
+					/>
+				),
+				children: [
+					{
+						path: '/admin/workbench',
+						element: <Workbench />,
+					},
+					{
+						path: '/admin/EditRoute',
+						element: <RoutesList />,
+					}
+				],
+			},
+			{
 				path: '*',
 				element: <NotFoundPage />,
 			},
@@ -109,4 +134,8 @@ export const router = createBrowserRouter([
 function getCurrentUsername() {
 	const username = localStorage.getItem('username');
 	if (username) return username;
+}
+
+function getCurrentRole(): 'USER' | 'ADMIN' {
+	return 'ADMIN';
 }
