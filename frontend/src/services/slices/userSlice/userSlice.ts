@@ -1,10 +1,10 @@
-// userSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
 	TLoginData,
 	TRegisterData,
 	TUpdateUserData,
 	User,
+	UserForAdmin,
 } from '../../../types/user';
 import { clearTokens, storeTokens } from '../../../utils/auth';
 import {
@@ -15,6 +15,8 @@ import {
 	registerUserApi,
 	resetPasswordApi,
 	updateUserApi,
+	getAllUsersApi,
+	updateUserByIdApi,
 } from '../../../utils/api/user-api';
 import { TApiResponse } from '../../../types/api';
 
@@ -25,6 +27,10 @@ type TUserState = {
 	isLoading: boolean;
 	loginError: string | null;
 	registerError: string | null;
+	allUsers: UserForAdmin[];
+	allUsersLoading: boolean;
+	allUsersError: string | null;
+	updatingUser: boolean;
 };
 
 const initialState: TUserState = {
@@ -34,6 +40,10 @@ const initialState: TUserState = {
 	isLoading: false,
 	loginError: null,
 	registerError: null,
+	allUsers: [],
+	allUsersLoading: false,
+	allUsersError: null,
+	updatingUser: false,
 };
 
 export const register = createAsyncThunk<
@@ -93,6 +103,34 @@ export const updateUser = createAsyncThunk<
 	return response.user!;
 });
 
+export const fetchAllUsers = createAsyncThunk<
+	UserForAdmin[],
+	void,
+	{ rejectValue: string }
+>('user/fetchAllUsers', async (_, { rejectWithValue }) => {
+	const response: TApiResponse = await getAllUsersApi();
+	if (!response.success) {
+		return rejectWithValue(
+			response.message || 'Ошибка получения списка пользователей'
+		);
+	}
+	return response.users || [];
+});
+
+export const updateUserById = createAsyncThunk<
+	UserForAdmin,
+	{ id: string; data: Partial<UserForAdmin> },
+	{ rejectValue: string }
+>('user/updateUserById', async ({ id, data }, { rejectWithValue }) => {
+	const response: TApiResponse = await updateUserByIdApi(id, data);
+	if (!response.success || !response.user) {
+		return rejectWithValue(
+			response.message || 'Ошибка обновления пользователя'
+		);
+	}
+	return response.user;
+});
+
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
@@ -103,6 +141,9 @@ const userSlice = createSlice({
 		clearErrors: (state) => {
 			state.loginError = null;
 			state.registerError = null;
+		},
+		clearAllUsers: (state) => {
+			state.allUsers = [];
 		},
 	},
 	extraReducers: (builder) => {
@@ -153,9 +194,39 @@ const userSlice = createSlice({
 
 			.addCase(updateUser.fulfilled, (state, action) => {
 				state.data = action.payload;
+			})
+
+			.addCase(fetchAllUsers.pending, (state) => {
+				state.allUsersLoading = true;
+				state.allUsersError = null;
+			})
+			.addCase(fetchAllUsers.fulfilled, (state, action) => {
+				state.allUsersLoading = false;
+				state.allUsers = action.payload;
+			})
+			.addCase(fetchAllUsers.rejected, (state, action) => {
+				state.allUsersLoading = false;
+				state.allUsersError = action.payload as string;
+			})
+
+			.addCase(updateUserById.pending, (state) => {
+				state.updatingUser = true;
+			})
+			.addCase(updateUserById.fulfilled, (state, action) => {
+				state.updatingUser = false;
+				// Обновляем пользователя в списке
+				const index = state.allUsers.findIndex(
+					(u) => u.id === action.payload.id
+				);
+				if (index !== -1) {
+					state.allUsers[index] = action.payload;
+				}
+			})
+			.addCase(updateUserById.rejected, (state) => {
+				state.updatingUser = false;
 			});
 	},
 });
 
-export const { setAuthChecked, clearErrors } = userSlice.actions;
+export const { setAuthChecked, clearErrors, clearAllUsers } = userSlice.actions;
 export default userSlice.reducer;

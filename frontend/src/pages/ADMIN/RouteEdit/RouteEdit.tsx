@@ -16,7 +16,7 @@ import {
 
 import { CreateRouteData, UpdateRouteData } from '../../../types/route';
 
-import './RoutesList.scss';
+import './RouteEdit.module.scss';
 
 const initialRoute: CreateRouteData = {
 	name: '',
@@ -31,7 +31,7 @@ const initialRoute: CreateRouteData = {
 	tagIds: [],
 };
 
-export const RoutesList = () => {
+export const RouteEdit = () => {
 	const dispatch = useDispatch<AppDispatch>();
 
 	const { routes, loading, error, successMessage, page, limit, total } =
@@ -259,4 +259,4 @@ export const RoutesList = () => {
 	);
 };
 
-export default RoutesList;
+export default RouteEdit;

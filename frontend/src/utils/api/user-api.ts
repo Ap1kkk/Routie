@@ -8,6 +8,7 @@ import {
 	RoleUser,
 	FriendsUser,
 	RoutesHistoryUser,
+	UserForAdmin,
 } from '../../types/user';
 import {
 	clearSession,
@@ -467,6 +468,55 @@ export const refreshTokenApi = async (): Promise<TApiResponse> => {
 		return {
 			success: false,
 			message: error.message || 'Ошибка обновления токена',
+		};
+	}
+};
+
+/** Получение ВСЕХ пользователей (для админа) */
+export const getAllUsersApi = async (): Promise<TApiResponse> => {
+	try {
+		const response = await fetch(`${API_URL}/users`);
+		const users = await handleResponse<User[]>(response);
+
+		const sanitizedUsers: UserForAdmin[] = users.map(
+			({ password, ...user }) => user
+		);
+
+		return {
+			success: true,
+			users: sanitizedUsers,
+		};
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error.message || 'Ошибка получения списка пользователей',
+		};
+	}
+};
+
+/** Обновление пользователя по ID (админ) */
+export const updateUserByIdApi = async (
+	userId: string,
+	data: Partial<User>
+): Promise<TApiResponse> => {
+	try {
+		const response = await fetch(`${API_URL}/users/${userId}`, {
+			method: 'PATCH',
+			headers: getHeaders(true),
+			body: JSON.stringify({ ...data, updatedAt: new Date().toISOString() }),
+		});
+
+		const updatedUser = await handleResponse<User>(response);
+		const { password, ...userWithoutPassword } = updatedUser;
+
+		return {
+			success: true,
+			user: userWithoutPassword as User,
+		};
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error.message || 'Ошибка обновления пользователя',
 		};
 	}
 };

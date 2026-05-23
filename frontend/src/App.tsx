@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
+	AchievementsEdit,
 	AuthorizationPage,
 	EditProfilePage,
 	Error500Page,
@@ -10,14 +11,17 @@ import {
 	MainPage,
 	MapPage,
 	NotFoundPage,
+	PointsEdit,
 	ProfilePage,
 	RecoveryPasswordPage,
-	RegistrationPage, RoutesList,
+	RegistrationPage,
 	RoutesMobilePage,
 	SettingsPage,
 	StatisticPage,
+	UsersEdit,
 	Workbench,
 } from '@pages';
+import RouteEdit from './pages/ADMIN/RouteEdit/RouteEdit';
 
 function checkAuth(): boolean {
 	const token = localStorage.getItem('accessToken');
@@ -114,13 +118,25 @@ export const router = createBrowserRouter([
 				),
 				children: [
 					{
-						path: '/admin/workbench',
+						path: '/admin',
 						element: <Workbench />,
 					},
 					{
-						path: '/admin/EditRoute',
-						element: <RoutesList />,
-					}
+						path: '/admin/routes/edit',
+						element: <RouteEdit />,
+					},
+					{
+						path: '/admin/routes/points',
+						element: <PointsEdit />,
+					},
+					{
+						path: '/admin/users',
+						element: <UsersEdit />,
+					},
+					{
+						path: '/admin/achievements',
+						element: <AchievementsEdit />,
+					},
 				],
 			},
 			{

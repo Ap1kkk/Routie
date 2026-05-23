@@ -16,7 +16,15 @@ export interface User {
 	birthday: string;
 	password: string;
 	isAuthenticated: boolean;
+	role?: 'USER' | 'ADMIN';
+	completedRouteIds?: string[];
+	likedRouteIds?: string[];
+	updatedAt?: string;
+	createdAt?: string;
 }
+
+// Тип пользователя без пароля (для админки и публичных данных)
+export type UserForAdmin = Omit<User, 'password'>;
 
 export interface AvatarUser {
 	id: string;
