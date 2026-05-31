@@ -56,5 +56,5 @@ jobs:
           script: |
             cd /opt/Two-steps
             docker compose pull
-            docker compose up -d --remove-orphans
+            docker compose up -d frontend --remove-orphans
             docker system prune -f
