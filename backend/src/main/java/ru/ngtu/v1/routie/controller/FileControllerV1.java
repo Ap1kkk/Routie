@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ngtu.twosteps.jpa.entity.ImageInfo;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.dto.common.ApiResponseVoid;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
