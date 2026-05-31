@@ -12,7 +12,7 @@ const adminCards = [
 	{
 		to: '/admin/routes/points',
 		icon: <Marker />,
-		title: 'Изменение точек маршрута',
+		title: 'Изменение достопримечательностей',
 	},
 	{
 		to: '/admin/routes/edit',
