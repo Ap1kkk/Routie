@@ -4,6 +4,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.ngtu.v1.routie.dto.landmark.response.LandmarkResponse;
 
 @Data
 @NoArgsConstructor
@@ -14,5 +15,5 @@ public class CheckpointFullResponse {
   private Double latitude;
   private Double longitude;
   private Integer sortOrder;
-  private LandmarkShortResponse landmark;
+  private LandmarkResponse landmark;
 }
