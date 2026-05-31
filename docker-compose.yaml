@@ -41,6 +41,11 @@ services:
       - ./logs:/var/log/backend
     ports:
       - "8080:8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
     restart: unless-stopped
 
   # ==================== БАЗА ДАННЫХ ====================
@@ -103,6 +108,11 @@ services:
       - ./loki-data:/loki  # Персистентные данные
     ports:
       - "3100:3100"  # Порт для запросов из Grafana
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "5"
     restart: unless-stopped
 
   # ================ МЕТРИКИ (VictoriaMetrics + vmagent) ================
