@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
+import ru.ngtu.v1.routie.dto.tag.TagResponse;
 
 @Data
 @NoArgsConstructor
@@ -24,4 +25,5 @@ public class RouteFullResponse {
   private Boolean isActive;
   private List<MediaFileResponse> images;
   private List<CheckpointFullResponse> checkpoints;
+  private List<TagResponse> tags;
 }

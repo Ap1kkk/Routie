@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
+import ru.ngtu.v1.routie.dto.tag.TagResponse;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +24,5 @@ public class RouteShortResponse {
   private Integer completionsCount;
   private Boolean isActive;
   private List<MediaFileResponse> images;
+  private List<TagResponse> tags;
 }
