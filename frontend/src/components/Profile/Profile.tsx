@@ -4,7 +4,7 @@ import { Avatar, Button } from '@ui';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { RouteCard } from '../RouteCard';
-import { Route } from '../../types/route';
+import { Route } from '../../types/Route';
 
 interface Friend {
 	id: string;

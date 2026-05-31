@@ -1,5 +1,5 @@
-import { Route } from './route';
-import { Tags } from './tags';
+import { Route } from './Route';
+import { Tags } from './Tags';
 
 export type UUID = string;
 

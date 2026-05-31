@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { mockRoutes } from '../../mocks/route';
-import { Route } from '../../types/route';
+import { Route } from '../../types/Route';
 import styles from './RoutesMobilePage.module.scss';
 import { RouteCard } from '@components';
 import { Button, Input } from '@ui';

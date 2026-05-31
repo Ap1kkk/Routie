@@ -7,7 +7,7 @@ import {
 	RoutesSearchParams,
 	PaginatedRoutes,
 	GetRecommendedParams,
-} from '../../../types/route';
+} from '../../../types/Route';
 import {
 	deleteRouteApi,
 	getRouteApi,

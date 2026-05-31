@@ -7,9 +7,9 @@ import {
 	AvatarUser,
 	UserTags,
 	RoleUser,
-} from '../types/user';
-import { Route } from '../types/route';
-import { Tags } from '../types/tags';
+} from '../types/User';
+import { Route } from '../types/Route';
+import { Tags } from '../types/Tags';
 
 const USER_UUIDS = {
 	CURRENT: '11111111-1111-1111-1111-111111111111',

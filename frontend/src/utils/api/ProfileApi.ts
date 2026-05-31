@@ -4,7 +4,7 @@ import {
 	handleResponse,
 	ApiResponse,
 	getHeaders,
-} from './api';
+} from './Api';
 import {
 	FullProfile,
 	ShortProfile,
@@ -12,7 +12,7 @@ import {
 	ProfileImage,
 	PaginatedRoutes,
 	GetFavoritesParams,
-} from '../../types/profile';
+} from '../../types/Profile';
 
 export const getMyProfileApi = async (): Promise<ApiResponse<FullProfile>> => {
 	try {

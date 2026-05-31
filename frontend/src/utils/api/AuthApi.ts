@@ -4,14 +4,14 @@ import {
 	handleResponse,
 	ApiResponse,
 	getHeaders,
-} from './api';
+} from './Api';
 import {
 	LoginRequest,
 	RegisterRequest,
 	RolesResponse,
 	RegisterResponse,
 	LoginResponseWithTokens,
-} from '../../types/auth';
+} from '../../types/Auth';
 import {
 	getAccessToken,
 	getRefreshToken,

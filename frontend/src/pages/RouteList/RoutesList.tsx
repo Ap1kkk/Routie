@@ -21,8 +21,8 @@ import {
 	CreateRouteData,
 	UpdateRouteData,
 	RouteFilters,
-} from '../../types/route';
-import { Tags } from '../../types/tags';
+} from '../../types/Route';
+import { Tags } from '../../types/Tags';
 import './RoutesList.scss';
 
 export const RoutesList: React.FC = () => {

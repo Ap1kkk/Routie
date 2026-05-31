@@ -4,7 +4,7 @@ import {
 	handleResponse,
 	ApiResponse,
 	getHeaders,
-} from './api';
+} from './Api';
 import {
 	Route,
 	FullRoute,
@@ -14,7 +14,7 @@ import {
 	PaginatedRoutes,
 	GetRecommendedParams,
 	RouteImageUpload,
-} from '../../types/route';
+} from '../../types/Route';
 
 export const deleteRouteApi = async (
 	routeId: string

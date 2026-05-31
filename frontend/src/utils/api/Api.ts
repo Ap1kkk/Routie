@@ -1,9 +1,14 @@
 import { getAccessToken } from '../auth';
 
-export const API_URL = 'http://localhost:3001';
+export const API_URL = 'http://two-steps.duckdns.org:8080';
 export const API_AUTH_URL = 'api/v1/auth';
 export const API_PROFILE_URL = 'api/v1/profile';
 export const API_ROUTES_URL = 'api/v1/routes';
+export const API_AUDIO_GUIDES_URL = 'api/v1/audio-guides';
+export const API_FILE_URL = 'api/v1/file';
+export const API_LANDMARKS_URL = 'api/v1/landmarks';
+export const API_FRIENDS_URL = 'api/v1/profile/friends/friends';
+export const API_TAGS_URL = 'api/v1/tags';
 
 export interface ApiError {
 	code: string;
@@ -80,20 +85,4 @@ export const handleResponse = async <T>(
 		success: true,
 		timestamp: new Date().toISOString(),
 	};
-};
-
-export const request = async <T>(
-	url: string,
-	options: RequestInit = {}
-): Promise<ApiResponse<T>> => {
-	const headers = getHeaders(!!options.headers);
-	const response = await fetch(url, {
-		...options,
-		headers: {
-			...headers,
-			...options.headers,
-		},
-	});
-
-	return handleResponse<T>(response);
 };

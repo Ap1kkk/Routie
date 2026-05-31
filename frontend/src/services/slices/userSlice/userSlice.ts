@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../../../types/user';
+import { User } from '../../../types/User';
 import { clearTokens, storeTokens } from '../../../utils/auth';
 import {
 	getUserApi,
@@ -13,8 +13,8 @@ import {
 	RegisterRequest,
 	RegisterResponse,
 	LoginResponseWithTokens,
-} from '../../../types/auth';
-import { ApiResponse } from '../../../utils/api/api';
+} from '../../../types/Auth';
+import { ApiResponse } from '../../../utils/api/Api';
 
 type TUserState = {
 	isAuthChecked: boolean;

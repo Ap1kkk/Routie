@@ -1,4 +1,4 @@
-import { UUID } from './user';
+import { UUID } from './User';
 
 export interface Avatar {
 	id: UUID;
