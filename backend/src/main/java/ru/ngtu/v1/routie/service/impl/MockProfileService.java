@@ -1,6 +1,6 @@
 package ru.ngtu.v1.routie.service.impl;
 
-import java.time.Instant;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -12,9 +12,6 @@ import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
-
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -44,32 +41,20 @@ public class MockProfileService implements ProfileService {
   @Override
   public UserProfileShortResponse getShortUserProfile(UUID userId) {
     log.info("Мок: получение краткого профиля {}", userId);
-    return new UserProfileShortResponse(
-        userId, "Иван", "Иванов", "https://example.com/avatar.jpg",
-        12, 2450, "Москва", true
-    );
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Override
   public MediaFileResponse uploadAvatar(MultipartFile file) {
     log.info("Мок: загрузка аватарки");
-    return new MediaFileResponse(
-        UUID.randomUUID(),
-        "https://example.com/avatars/new.jpg",
-        "image/jpeg",
-        Instant.now(),
-        0);
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Override
   public PageResponse<UserProfileShortResponse> getFriends(int page, int size, String sort,
       String search, String status) {
     log.info("Мок: получение списка друзей");
-    List<UserProfileShortResponse> friends = List.of(
-        new UserProfileShortResponse(UUID.randomUUID(), "Анна", "Смирнова", null, 8, 1200,
-            "Санкт-Петербург", true)
-    );
-    return new PageResponse<>(friends, 1, 1, page);
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Override
