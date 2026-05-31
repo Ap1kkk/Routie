@@ -52,6 +52,7 @@ mvc:
 
 springdoc:
   swagger-ui:
+    tags-sorter: ""
     schemes:
       dev: http://localhost:${server.port}
       prod: https://${SERVER_HOST:localhost}
