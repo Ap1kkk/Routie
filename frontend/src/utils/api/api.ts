@@ -1,10 +1,23 @@
-export const getAccessToken = (): string | null => {
-	const cookies = document.cookie.split(';');
-	const accessTokenCookie = cookies.find((cookie) =>
-		cookie.trim().startsWith('accessToken=')
-	);
-	return accessTokenCookie ? accessTokenCookie.split('=')[1] : null;
-};
+import { getAccessToken } from '../auth';
+
+export const API_URL = 'http://localhost:3001';
+export const API_AUTH_URL = 'api/v1/auth';
+export const API_PROFILE_URL = 'api/v1/profile';
+export const API_ROUTES_URL = 'api/v1/routes';
+
+export interface ApiError {
+	code: string;
+	message: string;
+	details?: string[];
+	timestamp: string;
+}
+
+export interface ApiResponse<T = any> {
+	success: boolean;
+	data?: T;
+	error?: ApiError;
+	timestamp: string;
+}
 
 export const getHeaders = (withAuth: boolean = false): HeadersInit => {
 	const headers: HeadersInit = {
@@ -19,42 +32,68 @@ export const getHeaders = (withAuth: boolean = false): HeadersInit => {
 	return headers;
 };
 
-export const handleResponse = async <T>(response: Response): Promise<T> => {
+export const handleResponse = async <T>(
+	response: Response
+): Promise<ApiResponse<T>> => {
+	const contentType = response.headers.get('content-type');
+
+	if (contentType && contentType.includes('application/json')) {
+		const data: ApiResponse<T> = await response.json();
+
+		if (!response.ok) {
+			return {
+				success: false,
+				error: data.error || {
+					code: `HTTP_${response.status}`,
+					message: `Ошибка сервера: ${response.status}`,
+					details: [],
+					timestamp: data.timestamp || new Date().toISOString(),
+				},
+				timestamp: data.timestamp || new Date().toISOString(),
+			};
+		}
+
+		return data;
+	}
+
 	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(
-			errorData.message || `HTTP error! status: ${response.status}`
-		);
+		return {
+			success: false,
+			error: {
+				code: `HTTP_${response.status}`,
+				message: `Ошибка сервера: ${response.status}`,
+				details: [],
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
 	}
 
 	if (response.status === 204) {
-		return {} as T;
+		return {
+			success: true,
+			timestamp: new Date().toISOString(),
+		};
 	}
 
-	return await response.json();
+	return {
+		success: true,
+		timestamp: new Date().toISOString(),
+	};
 };
 
-export const setAccessToken = (token: string): void => {
-	document.cookie = `accessToken=${token}; path=/; max-age=3600; SameSite=Lax`;
-};
+export const request = async <T>(
+	url: string,
+	options: RequestInit = {}
+): Promise<ApiResponse<T>> => {
+	const headers = getHeaders(!!options.headers);
+	const response = await fetch(url, {
+		...options,
+		headers: {
+			...headers,
+			...options.headers,
+		},
+	});
 
-export const removeAccessToken = (): void => {
-	document.cookie = 'accessToken=; path=/; max-age=0';
-};
-
-export const saveSession = (
-	accessToken: string,
-	refreshToken: string
-): void => {
-	setAccessToken(accessToken);
-	localStorage.setItem('refreshToken', refreshToken);
-};
-
-export const clearSession = (): void => {
-	removeAccessToken();
-	localStorage.removeItem('refreshToken');
-};
-
-export const getRefreshToken = (): string | null => {
-	return localStorage.getItem('refreshToken');
+	return handleResponse<T>(response);
 };

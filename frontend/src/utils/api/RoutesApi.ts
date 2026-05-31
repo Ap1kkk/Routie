@@ -1,0 +1,279 @@
+import {
+	API_URL,
+	API_ROUTES_URL,
+	handleResponse,
+	ApiResponse,
+	getHeaders,
+} from './api';
+import {
+	Route,
+	FullRoute,
+	RouteCreateRequest,
+	RouteUpdateRequest,
+	RoutesSearchParams,
+	PaginatedRoutes,
+	GetRecommendedParams,
+	RouteImageUpload,
+} from '../../types/route';
+
+export const deleteRouteApi = async (
+	routeId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
+			method: 'DELETE',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'DELETE_ROUTE_ERROR',
+				message: error.message || 'Ошибка удаления маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const getRouteApi = async (
+	routeId: string
+): Promise<ApiResponse<Route>> => {
+	try {
+		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<Route>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_ROUTE_ERROR',
+				message: error.message || 'Ошибка получения маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const searchRoutesApi = async (
+	params?: RoutesSearchParams
+): Promise<ApiResponse<PaginatedRoutes>> => {
+	try {
+		const queryParams = new URLSearchParams();
+		if (params?.search !== undefined) queryParams.append('search', params.search);
+		if (params?.type !== undefined) queryParams.append('type', params.type);
+		if (params?.difficultyMin !== undefined)
+			queryParams.append('difficultyMin', params.difficultyMin.toString());
+		if (params?.difficultyMax !== undefined)
+			queryParams.append('difficultyMax', params.difficultyMax.toString());
+		if (params?.lengthMin !== undefined)
+			queryParams.append('lengthMin', params.lengthMin.toString());
+		if (params?.lengthMax !== undefined)
+			queryParams.append('lengthMax', params.lengthMax.toString());
+		if (params?.estimatedTimeMin !== undefined)
+			queryParams.append('estimatedTimeMin', params.estimatedTimeMin.toString());
+		if (params?.estimatedTimeMax !== undefined)
+			queryParams.append('estimatedTimeMax', params.estimatedTimeMax.toString());
+		if (params?.city !== undefined) queryParams.append('city', params.city);
+		if (params?.tags !== undefined) queryParams.append('tags', params.tags);
+		if (params?.hasAudioGuide !== undefined)
+			queryParams.append('hasAudioGuide', params.hasAudioGuide.toString());
+		if (params?.favoriteOnly !== undefined)
+			queryParams.append('favoriteOnly', params.favoriteOnly.toString());
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+		if (params?.sort !== undefined) queryParams.append('sort', params.sort);
+
+		const url = `${API_URL}/${API_ROUTES_URL}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedRoutes>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'SEARCH_ROUTES_ERROR',
+				message: error.message || 'Ошибка поиска маршрутов',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const getFullRouteApi = async (
+	routeId: string
+): Promise<ApiResponse<FullRoute>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}/full`,
+			{
+				method: 'GET',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<FullRoute>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_FULL_ROUTE_ERROR',
+				message: error.message || 'Ошибка получения полной информации о маршруте',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const getRecommendedRoutesApi = async (
+	params?: GetRecommendedParams
+): Promise<ApiResponse<PaginatedRoutes>> => {
+	try {
+		const queryParams = new URLSearchParams();
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_ROUTES_URL}/recommended${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedRoutes>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_RECOMMENDED_ROUTES_ERROR',
+				message: error.message || 'Ошибка получения рекомендуемых маршрутов',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const publishRouteApi = async (
+	routeId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}/publish`,
+			{
+				method: 'PATCH',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'PUBLISH_ROUTE_ERROR',
+				message: error.message || 'Ошибка публикации маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const uploadRouteImagesApi = async (
+	routeId: string,
+	file: File
+): Promise<ApiResponse<RouteImageUpload[]>> => {
+	try {
+		const formData = new FormData();
+		formData.append('file', file);
+
+		const token = localStorage.getItem('accessToken');
+		const headers: HeadersInit = {
+			Authorization: token ? `Bearer ${token}` : '',
+		};
+
+		const response = await fetch(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}/images`,
+			{
+				method: 'PATCH',
+				headers,
+				body: formData,
+			}
+		);
+
+		return await handleResponse<RouteImageUpload[]>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'UPLOAD_ROUTE_IMAGES_ERROR',
+				message: error.message || 'Ошибка загрузки изображений маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const createRouteApi = async (
+	data: RouteCreateRequest
+): Promise<ApiResponse<Route>> => {
+	try {
+		const response = await fetch(`${API_URL}/${API_ROUTES_URL}`, {
+			method: 'POST',
+			headers: getHeaders(true),
+			body: JSON.stringify(data),
+		});
+
+		return await handleResponse<Route>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'CREATE_ROUTE_ERROR',
+				message: error.message || 'Ошибка создания маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const updateRouteApi = async (
+	routeId: string,
+	data: RouteUpdateRequest
+): Promise<ApiResponse<Route>> => {
+	try {
+		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
+			method: 'PUT',
+			headers: getHeaders(true),
+			body: JSON.stringify(data),
+		});
+
+		return await handleResponse<Route>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'UPDATE_ROUTE_ERROR',
+				message: error.message || 'Ошибка обновления маршрута',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
