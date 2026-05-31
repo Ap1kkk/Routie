@@ -19,9 +19,8 @@ import ru.ngtu.v1.routie.service.AuthService;
  */
 @Slf4j
 @Service
-@Profile("dev")
 @RequiredArgsConstructor
-public class MockAuthService implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
   private static final String MOCK_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mok-token-1234567890";
   private static final UUID MOCK_USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");

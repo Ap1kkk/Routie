@@ -15,8 +15,7 @@ import ru.ngtu.v1.routie.service.ProfileService;
 
 @Slf4j
 @Service
-@Profile("dev")
-public class MockProfileService implements ProfileService {
+public class ProfileServiceImpl implements ProfileService {
 
   private static final UUID MOCK_USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 
