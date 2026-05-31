@@ -1,0 +1,13 @@
+package ru.ngtu.v1.routie;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class RoutieApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(RoutieApplication.class, args);
+    }
+
+}
