@@ -1,19 +1,29 @@
 .layout {
-	background: var(--color-background);
-	max-width: 1200px;
-	min-height: 100vh;
-	margin: 0 auto;
-	display: flex;
-	flex-direction: column;
+  background: var(--color-background);
+  max-width: 1200px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 
-	@media (max-width: 925px) {
-		min-height: 75vh;
-	}
+  @media (max-width: 925px) {
+    min-height: 75vh;
+  }
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: fixed;
+  z-index: 0;
 }
 
 .content {
-	flex: 1;
-	overflow-y: auto;
-	position: relative;
-	padding: 10px 20px 15px;
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  padding: 10px 20px 15px;
 }
+
+
