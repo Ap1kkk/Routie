@@ -17,6 +17,7 @@ public class OpenApiConfig {
             "Auth",
             "Profile",
             "Routes",
+            "Recommendations",
             "Sessions",
             "Landmarks",
             "Audio Guides",
