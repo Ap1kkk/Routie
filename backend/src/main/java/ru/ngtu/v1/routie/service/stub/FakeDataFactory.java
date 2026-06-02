@@ -3,6 +3,14 @@ package ru.ngtu.v1.routie.service.stub;
 import net.datafaker.Faker;
 import ru.ngtu.v1.routie.dto.audioguide.response.AudioGuideResponse;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
+import ru.ngtu.v1.routie.dto.gamification.AchievementResponse;
+import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
+import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardEntry;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
+import ru.ngtu.v1.routie.dto.gamification.UserAchievementResponse;
+import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
 import ru.ngtu.v1.routie.dto.landmark.response.LandmarkResponse;
 import ru.ngtu.v1.routie.dto.profile.Gender;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
@@ -14,6 +22,11 @@ import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.dto.session.response.CheckpointProgressResponse;
 import ru.ngtu.v1.routie.dto.session.response.RouteSessionResponse;
+import ru.ngtu.v1.routie.dto.statistics.GamificationStatisticsResponse;
+import ru.ngtu.v1.routie.dto.statistics.PopularRouteResponse;
+import ru.ngtu.v1.routie.dto.statistics.PopularRoutesResponse;
+import ru.ngtu.v1.routie.dto.statistics.StatisticsOverviewResponse;
+import ru.ngtu.v1.routie.dto.statistics.UserActivityResponse;
 import ru.ngtu.v1.routie.dto.tag.TagResponse;
 
 import java.time.Instant;
@@ -264,7 +277,107 @@ public class FakeDataFactory {
     }
 
     // -------------------------------------------------------------------------
-    // Вспомогательные методы
+    // Gamification — Leaderboard
+    // -------------------------------------------------------------------------
+
+    public static LeaderboardEntry fakeLeaderboardEntry(int rank) {
+        return new LeaderboardEntry(
+                rank,
+                UUID.randomUUID(),
+                faker.name().fullName(),
+                faker.internet().username(),
+                fakeMediaFile(),
+                faker.number().numberBetween(1, 50),
+                faker.number().numberBetween(100, 10000),
+                faker.number().numberBetween(10, 2000)
+        );
+    }
+
+    public static LeaderboardResponse fakeLeaderboard(LeaderboardPeriod period, int limit) {
+        List<LeaderboardEntry> entries = IntStream.rangeClosed(1, limit)
+                .mapToObj(FakeDataFactory::fakeLeaderboardEntry)
+                .toList();
+        return new LeaderboardResponse(period, entries);
+    }
+
+    // -------------------------------------------------------------------------
+    // Gamification — Achievements
+    // -------------------------------------------------------------------------
+
+    private static final String[] ACHIEVEMENT_TITLES = {
+            "Первый шаг", "Путешественник", "Марафонец", "Исследователь",
+            "Коллекционер", "Спортсмен", "Знаток города", "Неутомимый"
+    };
+
+    public static UserAchievementResponse fakeUserAchievement() {
+        boolean unlocked = faker.bool().bool();
+        int target = faker.options().option(5, 10, 25, 50, 100);
+        int progress = unlocked ? target : faker.number().numberBetween(0, target);
+        return new UserAchievementResponse(
+                UUID.randomUUID(),
+                faker.options().option(ACHIEVEMENT_TITLES),
+                faker.lorem().sentence(),
+                fakeMediaFile(),
+                faker.number().numberBetween(10, 500),
+                progress,
+                target,
+                unlocked,
+                unlocked ? Instant.now().minusSeconds(faker.number().numberBetween(3600, 2592000)) : null
+        );
+    }
+
+    public static AchievementsListResponse fakeAchievementsList() {
+        int total = 20;
+        List<UserAchievementResponse> achievements = IntStream.range(0, total)
+                .mapToObj(i -> fakeUserAchievement())
+                .toList();
+        int unlocked = (int) achievements.stream().filter(UserAchievementResponse::getIsUnlocked).count();
+        return new AchievementsListResponse(achievements, unlocked, total);
+    }
+
+    public static AllAchievementsResponse fakeAllAchievements() {
+        List<AchievementResponse> achievements = IntStream.range(0, 20)
+                .mapToObj(i -> new AchievementResponse(
+                        UUID.randomUUID(),
+                        faker.options().option(ACHIEVEMENT_TITLES),
+                        faker.lorem().sentence(),
+                        fakeMediaFile(),
+                        faker.number().numberBetween(10, 500),
+                        faker.options().option(5, 10, 25, 50, 100)
+                ))
+                .toList();
+        return new AllAchievementsResponse(achievements);
+    }
+
+    // -------------------------------------------------------------------------
+    // Gamification — XP History
+    // -------------------------------------------------------------------------
+
+    private static final String[] XP_REASONS = {
+            "ROUTE_COMPLETED", "CHECKPOINT_REACHED", "ACHIEVEMENT_UNLOCKED",
+            "DAILY_LOGIN", "FRIEND_ADDED", "LANDMARK_VISITED"
+    };
+
+    public static XpTransactionResponse fakeXpTransaction() {
+        String reason = faker.options().option(XP_REASONS);
+        return new XpTransactionResponse(
+                UUID.randomUUID(),
+                faker.number().numberBetween(5, 200),
+                reason,
+                UUID.randomUUID(),
+                reason.contains("ROUTE") ? "ROUTE" : reason.contains("ACHIEVEMENT") ? "ACHIEVEMENT" : "OTHER",
+                Instant.now().minusSeconds(faker.number().numberBetween(0, 2592000))
+        );
+    }
+
+    public static List<XpTransactionResponse> fakeXpTransactions(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> fakeXpTransaction())
+                .toList();
+    }
+
+    // -------------------------------------------------------------------------
+    // Общие вспомогательные методы
     // -------------------------------------------------------------------------
 
     public static <T> ru.ngtu.v1.routie.dto.common.PageResponse<T> fakePage(
@@ -272,6 +385,73 @@ public class FakeDataFactory {
         int totalPages = (int) Math.ceil((double) totalElements / size);
         return new ru.ngtu.v1.routie.dto.common.PageResponse<>(content, totalElements, totalPages, page);
     }
+
+    // -------------------------------------------------------------------------
+    // Statistics
+    // -------------------------------------------------------------------------
+
+    public static StatisticsOverviewResponse fakeStatisticsOverview() {
+        int totalUsers = faker.number().numberBetween(1000, 50000);
+        return new StatisticsOverviewResponse(
+                totalUsers,
+                faker.number().numberBetween(100, totalUsers),
+                faker.number().numberBetween(500, 100000),
+                (long) faker.number().numberBetween(1_000_000, 500_000_000),
+                (long) faker.number().numberBetween(50_000, 10_000_000),
+                (float) (faker.number().randomDouble(1, 1, 30) + 1.0)
+        );
+    }
+
+    public static UserActivityResponse fakeUserActivity() {
+        return new UserActivityResponse(
+                UUID.randomUUID(),
+                faker.name().fullName(),
+                faker.internet().username(),
+                faker.number().numberBetween(1, 50),
+                faker.number().numberBetween(0, 10000),
+                faker.number().numberBetween(0, 200),
+                faker.number().numberBetween(0, 500_000),
+                Instant.now().minusSeconds(faker.number().numberBetween(0, 2_592_000))
+        );
+    }
+
+    public static List<UserActivityResponse> fakeUserActivityList(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> fakeUserActivity())
+                .toList();
+    }
+
+    public static PopularRoutesResponse fakePopularRoutes(int limit) {
+        List<PopularRouteResponse> routes = IntStream.range(0, limit)
+                .mapToObj(i -> new PopularRouteResponse(
+                        UUID.randomUUID(),
+                        "Маршрут «" + faker.address().cityName() + "»",
+                        faker.options().option(RouteType.values()).name(),
+                        faker.number().numberBetween(10, 5000),
+                        faker.address().cityName()
+                ))
+                .toList();
+        return new PopularRoutesResponse(routes);
+    }
+
+    public static GamificationStatisticsResponse fakeGamificationStatistics() {
+        java.util.Map<Integer, Integer> usersByLevel = new java.util.LinkedHashMap<>();
+        int[] levels = {1, 2, 3, 5, 10, 15, 20, 30, 50};
+        for (int level : levels) {
+            usersByLevel.put(level, faker.number().numberBetween(10, 2000));
+        }
+        return new GamificationStatisticsResponse(
+                (long) faker.number().numberBetween(100_000, 50_000_000),
+                (float) faker.number().randomDouble(1, 100, 5000),
+                faker.options().option("Первый шаг", "Марафонец", "Исследователь", "Коллекционер"),
+                usersByLevel,
+                faker.options().option("WEEK", "MONTH", "SEASON")
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // Общие вспомогательные методы
+    // -------------------------------------------------------------------------
 
     public static Faker getFaker() {
         return faker;

@@ -16,13 +16,15 @@ public class OpenApiConfig {
     private static final List<String> TAG_ORDER = List.of(
             "Auth",
             "Profile",
+            "Friends",
             "Routes",
             "Recommendations",
+            "Gamification",
             "Sessions",
             "Landmarks",
             "Audio Guides",
             "Tags",
-            "Friends",
+            "Statistics",
             "File"
     );
 
