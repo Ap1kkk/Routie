@@ -7,21 +7,24 @@ import { ReactComponent as Ach3 } from '../../assets/images/achievmensPicture/du
 import { ReactComponent as Ach4 } from '../../assets/images/achievmensPicture/earth.svg';
 import { ReactComponent as Ach5 } from '../../assets/images/achievmensPicture/ghost.svg';
 import { ReactComponent as Ach6 } from '../../assets/images/achievmensPicture/office.svg';
+import { ProgressBar } from '@ui';
 
 interface AchievementCardProps {
-	children?: React.ReactNode;
 	title?: string;
 	caption?: string;
 	index?: number;
+	value?: number;
+	finishValue?: number;
 }
 
 const ACHIEVEMENT_ICONS = [Ach1, Ach2, Ach3, Ach4, Ach5, Ach6];
 
 export const AchievementCard: React.FC<AchievementCardProps> = ({
-	children,
 	title = '',
 	caption = '',
 	index = 0,
+	value = 0,
+	finishValue = 100,
 }) => {
 	const Icon = useMemo(() => {
 		const iconIndex = index % ACHIEVEMENT_ICONS.length;
@@ -38,7 +41,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 			<span className={styles.cardTitle}>{title}</span>
 			<p className={styles.cardCaption}>{caption}</p>
 			<span className={styles.cardContent}>
-				<span className={styles.cardContentValue}>{children}</span>
+				<ProgressBar value={value} max={finishValue} />
 			</span>
 		</article>
 	);
