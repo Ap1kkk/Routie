@@ -1,6 +1,6 @@
-import { Route, RouteImage } from '../types/route';
+import { Route, RouteImage } from '../types/Route';
 import { Checkpoint } from '../types/checkpoint';
-import { Tags } from '../types/tags';
+import { Tags } from '../types/Tags';
 
 const ROUTE_UUIDS = {
 	KREMLIN: 'route-11111111-1111-1111-1111-111111111111',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Route } from '../../types/route';
-import { Tags } from '../../types/tags';
+import { Route } from '../../types/Route';
+import { Tags } from '../../types/Tags';
 import { Filters } from '../../types/filters';
 import { Filter, RouteCard } from '@components';
 import { mockRoutes } from '../../mocks/route';

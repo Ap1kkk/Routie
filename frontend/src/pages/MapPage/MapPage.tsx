@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getMockRouteById } from '../../mocks/route';
-import { Route } from '../../types/route';
+import { Route } from '../../types/Route';
 import { MapComponent } from '@components';
 
 import styles from './MapPage.module.scss'

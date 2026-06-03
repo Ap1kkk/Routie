@@ -17,11 +17,9 @@ import {
 	SettingsPage,
 	StatisticPage,
 } from '@pages';
+import { hasTokens } from './utils/auth';
 
-function checkAuth(): boolean {
-	const token = localStorage.getItem('accessToken');
-	return !!token;
-}
+const tokens = hasTokens();
 
 export const router = createBrowserRouter([
 	{
@@ -45,7 +43,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute isAuthenticated={true} />,
+				element: <ProtectedRoute isAuthenticated={tokens} />,
 				children: [
 					{
 						path: '/routie',

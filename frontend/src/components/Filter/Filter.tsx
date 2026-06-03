@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tags } from '../../types/tags';
+import { Tags } from '../../types/Tags';
 import { Filters } from '../../types/filters';
 import { Button, Input, Tag } from '@ui';
 import Slider from 'rc-slider';

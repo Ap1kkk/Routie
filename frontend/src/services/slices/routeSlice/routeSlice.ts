@@ -1,353 +1,266 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
 	Route,
-	CreateRouteData,
-	UpdateRouteData,
-	RoutesResponse,
-} from '../../../types/route';
-
+	FullRoute,
+	RouteCreateRequest,
+	RouteUpdateRequest,
+	RoutesSearchParams,
+	PaginatedRoutes,
+	GetRecommendedParams,
+} from '../../../types/Route';
 import {
-	getAllRoutes,
-	getRouteById,
-	createRoute,
-	updateRoute,
-	deleteRoute,
-	getRoutesByTag,
-	getRoutesByDistanceRange,
-	searchRoutes,
-} from '../../../utils/api/route-api';
+	deleteRouteApi,
+	getRouteApi,
+	searchRoutesApi,
+	getFullRouteApi,
+	getRecommendedRoutesApi,
+	publishRouteApi,
+	uploadRouteImagesApi,
+	createRouteApi,
+	updateRouteApi,
+} from '../../../utils/api/RoutesApi';
 
-interface RoutesState {
-	routes: Route[];
-	currentRoute: Route | null;
-	loading: boolean;
+type TRouteState = {
+	currentRoute: FullRoute | null;
+	searchResults: PaginatedRoutes | null;
+	recommendedRoutes: PaginatedRoutes | null;
+	isLoading: boolean;
 	error: string | null;
-	successMessage: string | null;
-	total: number;
-	page: number;
-	limit: number;
-}
-
-const initialState: RoutesState = {
-	routes: [],
-	currentRoute: null,
-	loading: false,
-	error: null,
-	successMessage: null,
-	total: 0,
-	page: 1,
-	limit: 10,
 };
 
-/** Загрузка всех маршрутов с фильтрацией и пагинацией */
-export const fetchAllRoutes = createAsyncThunk(
-	'routes/fetchAllRoutes',
-	async (
-		{
-			page = 1,
-			limit = 10,
-			filters,
-		}: { page?: number; limit?: number; filters?: any } = {},
-		{ rejectWithValue }
-	) => {
-		try {
-			return await getAllRoutes(filters, page, limit);
-		} catch (error: any) {
-			return rejectWithValue(
-				error.message || 'Ошибка загрузки маршрутов'
-			);
-		}
-	}
-);
+const initialState: TRouteState = {
+	currentRoute: null,
+	searchResults: null,
+	recommendedRoutes: null,
+	isLoading: false,
+	error: null,
+};
 
-/** Загрузка маршрута по ID */
-export const fetchRouteById = createAsyncThunk(
-	'routes/fetchRouteById',
-	async (id: string, { rejectWithValue }) => {
-		try {
-			return await getRouteById(id);
-		} catch (error: any) {
-			return rejectWithValue(error.message || 'Ошибка загрузки маршрута');
-		}
-	}
-);
+export const fetchRoute = createAsyncThunk<
+	FullRoute,
+	string,
+	{ rejectValue: string }
+>('route/fetchRoute', async (routeId, { rejectWithValue }) => {
+	const response = await getFullRouteApi(routeId);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка получения маршрута');
 
-/** Создание нового маршрута */
-export const addNewRoute = createAsyncThunk(
-	'routes/addNewRoute',
-	async (data: CreateRouteData, { rejectWithValue }) => {
-		try {
-			return await createRoute(data);
-		} catch (error: any) {
-			return rejectWithValue(error.message || 'Ошибка создания маршрута');
-		}
-	}
-);
+	if (!response.data)
+		return rejectWithValue('Данные маршрута не найдены');
 
-/** Обновление существующего маршрута */
-export const editRoute = createAsyncThunk(
-	'routes/editRoute',
-	async (
-		{ id, data }: { id: string; data: UpdateRouteData },
-		{ rejectWithValue }
-	) => {
-		try {
-			return await updateRoute(id, data);
-		} catch (error: any) {
-			return rejectWithValue(
-				error.message || 'Ошибка обновления маршрута'
-			);
-		}
-	}
-);
+	return response.data;
+});
 
-/** Удаление маршрута */
-export const removeRoute = createAsyncThunk(
-	'routes/removeRoute',
-	async (id: string, { rejectWithValue }) => {
-		try {
-			const response = await deleteRoute(id);
-			return { id, ...response };
-		} catch (error: any) {
-			return rejectWithValue(error.message || 'Ошибка удаления маршрута');
-		}
-	}
-);
+export const searchRoutes = createAsyncThunk<
+	PaginatedRoutes,
+	RoutesSearchParams,
+	{ rejectValue: string }
+>('route/searchRoutes', async (params, { rejectWithValue }) => {
+	const response = await searchRoutesApi(params);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка поиска маршрутов');
 
-/** Загрузка маршрутов по тегу */
-export const fetchRoutesByTag = createAsyncThunk(
-	'routes/fetchRoutesByTag',
-	async (tagId: string, { rejectWithValue }) => {
-		try {
-			return await getRoutesByTag(tagId);
-		} catch (error: any) {
-			return rejectWithValue(
-				error.message || 'Ошибка загрузки маршрутов по тегу'
-			);
-		}
-	}
-);
+	if (!response.data)
+		return rejectWithValue('Результаты поиска не найдены');
 
-/** Загрузка маршрутов по диапазону расстояния */
-export const fetchRoutesByDistanceRange = createAsyncThunk(
-	'routes/fetchRoutesByDistanceRange',
-	async (
-		{
-			minDistance,
-			maxDistance,
-		}: { minDistance: number; maxDistance: number },
-		{ rejectWithValue }
-	) => {
-		try {
-			return await getRoutesByDistanceRange(minDistance, maxDistance);
-		} catch (error: any) {
-			return rejectWithValue(
-				error.message || 'Ошибка загрузки маршрутов по расстоянию'
-			);
-		}
-	}
-);
+	return response.data;
+});
 
-/** Поиск маршрутов по названию */
-export const searchRoutesThunk = createAsyncThunk(
-	'routes/searchRoutes',
-	async (searchTerm: string, { rejectWithValue }) => {
-		try {
-			return await searchRoutes(searchTerm);
-		} catch (error: any) {
-			return rejectWithValue(error.message || 'Ошибка поиска маршрутов');
-		}
-	}
-);
+export const fetchRecommendedRoutes = createAsyncThunk<
+	PaginatedRoutes,
+	GetRecommendedParams,
+	{ rejectValue: string }
+>('route/fetchRecommendedRoutes', async (params, { rejectWithValue }) => {
+	const response = await getRecommendedRoutesApi(params);
+	if (!response.success || response.error)
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения рекомендуемых маршрутов'
+		);
 
-const routesSlice = createSlice({
-	name: 'routes',
+	if (!response.data)
+		return rejectWithValue('Рекомендуемые маршруты не найдены');
+
+	return response.data;
+});
+
+export const createNewRoute = createAsyncThunk<
+	Route,
+	RouteCreateRequest,
+	{ rejectValue: string }
+>('route/createRoute', async (data, { rejectWithValue }) => {
+	const response = await createRouteApi(data);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка создания маршрута');
+
+	if (!response.data)
+		return rejectWithValue('Не удалось создать маршрут');
+
+	return response.data;
+});
+
+export const routeUpdate = createAsyncThunk<
+	Route,
+	{ routeId: string; data: RouteUpdateRequest },
+	{ rejectValue: string }
+>('route/updateRoute', async ({ routeId, data }, { rejectWithValue }) => {
+	const response = await updateRouteApi(routeId, data);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка обновления маршрута');
+
+	if (!response.data)
+		return rejectWithValue('Не удалось обновить маршрут');
+
+	return response.data;
+});
+
+export const routeDelete = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>('route/deleteRoute', async (routeId, { rejectWithValue }) => {
+	const response = await deleteRouteApi(routeId);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка удаления маршрута');
+
+	return routeId;
+});
+
+export const routePublish = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>('route/publishRoute', async (routeId, { rejectWithValue }) => {
+	const response = await publishRouteApi(routeId);
+	if (!response.success || response.error)
+		return rejectWithValue(response.error?.message || 'Ошибка публикации маршрута');
+
+	return routeId;
+});
+
+export const routeImagesUpload = createAsyncThunk<
+	any[],
+	{ routeId: string; file: File },
+	{ rejectValue: string }
+>('route/uploadImages', async ({ routeId, file }, { rejectWithValue }) => {
+	const response = await uploadRouteImagesApi(routeId, file);
+	if (!response.success || response.error)
+		return rejectWithValue(
+			response.error?.message || 'Ошибка загрузки изображений маршрута'
+		);
+
+	if (!response.data)
+		return rejectWithValue('Не удалось загрузить изображения');
+
+	return response.data;
+});
+
+const routeSlice = createSlice({
+	name: 'route',
 	initialState,
 	reducers: {
-		clearMessages: (state) => {
-			state.error = null;
-			state.successMessage = null;
-		},
-		clearCurrentRoute: (state) => {
+		clearRoute: (state) => {
 			state.currentRoute = null;
 		},
-		clearRoutes: (state) => {
-			state.routes = [];
+		clearSearchResults: (state) => {
+			state.searchResults = null;
 		},
-		resetRoutesState: () => initialState,
-		setPage: (state, action: PayloadAction<number>) => {
-			state.page = action.payload;
-		},
-		setLimit: (state, action: PayloadAction<number>) => {
-			state.limit = action.payload;
+		clearError: (state) => {
+			state.error = null;
 		},
 	},
 	extraReducers: (builder) => {
 		builder
-			.addCase(fetchAllRoutes.pending, (state) => {
-				state.loading = true;
+			.addCase(fetchRoute.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
 			})
-			.addCase(
-				fetchAllRoutes.fulfilled,
-				(state, action: PayloadAction<RoutesResponse>) => {
-					state.loading = false;
-					state.routes = action.payload.data;
-					state.total = action.payload.total;
-					state.page = action.payload.page;
-					state.limit = action.payload.limit;
-				}
-			)
-			.addCase(fetchAllRoutes.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// fetchRouteById
-			.addCase(fetchRouteById.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchRouteById.fulfilled, (state, action) => {
-				state.loading = false;
+			.addCase(fetchRoute.fulfilled, (state, action) => {
+				state.isLoading = false;
 				state.currentRoute = action.payload;
 			})
-			.addCase(fetchRouteById.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-				state.currentRoute = null;
-			})
-			// addNewRoute
-			.addCase(addNewRoute.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-				state.successMessage = null;
-			})
-			.addCase(
-				addNewRoute.fulfilled,
-				(state, action: PayloadAction<Route>) => {
-					state.loading = false;
-					state.routes.unshift(action.payload);
-					state.successMessage = 'Маршрут успешно создан!';
-				}
-			)
-			.addCase(addNewRoute.rejected, (state, action) => {
-				state.loading = false;
+			.addCase(fetchRoute.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			})
-			// editRoute
-			.addCase(editRoute.pending, (state) => {
-				state.loading = true;
+
+			.addCase(searchRoutes.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
-				state.successMessage = null;
 			})
-			.addCase(
-				editRoute.fulfilled,
-				(state, action: PayloadAction<Route>) => {
-					state.loading = false;
-					const index = state.routes.findIndex(
-						(route) => route.id === action.payload.id
-					);
-					if (index !== -1) {
-						state.routes[index] = action.payload;
-					}
-					if (state.currentRoute?.id === action.payload.id) {
-						state.currentRoute = action.payload;
-					}
-					state.successMessage = 'Маршрут успешно обновлен!';
-				}
-			)
-			.addCase(editRoute.rejected, (state, action) => {
-				state.loading = false;
+			.addCase(searchRoutes.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.searchResults = action.payload;
+			})
+			.addCase(searchRoutes.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			})
-			// removeRoute
-			.addCase(removeRoute.pending, (state) => {
-				state.loading = true;
+
+			.addCase(fetchRecommendedRoutes.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
-				state.successMessage = null;
 			})
-			.addCase(
-				removeRoute.fulfilled,
-				(
-					state,
-					action: PayloadAction<{ id: string; message: string }> // Изменено id с number на string
-				) => {
-					state.loading = false;
-					state.routes = state.routes.filter(
-						(route) => route.id !== action.payload.id
-					);
-					if (state.currentRoute?.id === action.payload.id) {
-						state.currentRoute = null;
-					}
-					state.successMessage = action.payload.message;
-				}
-			)
-			.addCase(removeRoute.rejected, (state, action) => {
-				state.loading = false;
+			.addCase(fetchRecommendedRoutes.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.recommendedRoutes = action.payload;
+			})
+			.addCase(fetchRecommendedRoutes.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			})
-			// fetchRoutesByTag
-			.addCase(fetchRoutesByTag.pending, (state) => {
-				state.loading = true;
+
+			.addCase(createNewRoute.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
 			})
-			.addCase(
-				fetchRoutesByTag.fulfilled,
-				(state, action: PayloadAction<Route[]>) => {
-					state.loading = false;
-					state.routes = action.payload;
-					state.total = action.payload.length;
-				}
-			)
-			.addCase(fetchRoutesByTag.rejected, (state, action) => {
-				state.loading = false;
+			.addCase(createNewRoute.fulfilled, (state) => {
+				state.isLoading = false;
+			})
+			.addCase(createNewRoute.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			})
-			// fetchRoutesByDistanceRange
-			.addCase(fetchRoutesByDistanceRange.pending, (state) => {
-				state.loading = true;
+
+			.addCase(routeUpdate.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
 			})
-			.addCase(
-				fetchRoutesByDistanceRange.fulfilled,
-				(state, action: PayloadAction<Route[]>) => {
-					state.loading = false;
-					state.routes = action.payload;
-					state.total = action.payload.length;
+			.addCase(routeUpdate.fulfilled, (state, action) => {
+				state.isLoading = false;
+				if (state.currentRoute?.id === action.payload.id) {
+					state.currentRoute = action.payload as unknown as FullRoute;
 				}
-			)
-			.addCase(fetchRoutesByDistanceRange.rejected, (state, action) => {
-				state.loading = false;
+			})
+			.addCase(routeUpdate.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			})
-			// searchRoutesThunk
-			.addCase(searchRoutesThunk.pending, (state) => {
-				state.loading = true;
+
+			.addCase(routeDelete.fulfilled, (state, action) => {
+				if (state.currentRoute?.id === action.payload) {
+					state.currentRoute = null;
+				}
+			})
+
+			.addCase(routePublish.fulfilled, (state, action) => {
+				if (state.currentRoute?.id === action.payload) {
+					state.currentRoute.isActive = true;
+				}
+			})
+
+			.addCase(routeImagesUpload.pending, (state) => {
+				state.isLoading = true;
 				state.error = null;
 			})
-			.addCase(
-				searchRoutesThunk.fulfilled,
-				(state, action: PayloadAction<Route[]>) => {
-					state.loading = false;
-					state.routes = action.payload;
-					state.total = action.payload.length;
-				}
-			)
-			.addCase(searchRoutesThunk.rejected, (state, action) => {
-				state.loading = false;
+			.addCase(routeImagesUpload.fulfilled, (state) => {
+				state.isLoading = false;
+			})
+			.addCase(routeImagesUpload.rejected, (state, action) => {
+				state.isLoading = false;
 				state.error = action.payload as string;
 			});
 	},
 });
 
-export const {
-	clearMessages,
-	clearCurrentRoute,
-	clearRoutes,
-	resetRoutesState,
-	setPage,
-	setLimit,
-} = routesSlice.actions;
-
-export default routesSlice.reducer;
+export const { clearRoute, clearSearchResults, clearError } = routeSlice.actions;
+export default routeSlice.reducer;

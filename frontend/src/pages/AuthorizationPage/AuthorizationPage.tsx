@@ -1,15 +1,15 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
-import { login } from '../../services/slices/userSlice/userSlice';
-import {
-	selectIsLoading,
-	selectLoginError,
-	selectIsAuthenticated,
-} from '../../services/selectors/userSelectors';
 import { AuthorizationForm } from '@components';
 
 import styles from './AuthorizationPage.module.scss';
+import {
+	selectIsAuthenticated,
+	selectIsLoading,
+	selectLoginError,
+} from '../../services/selectors/userSelectors';
+import { login } from '../../services/slices/userSlice/userSlice';
 
 export const AuthorizationPage = () => {
 	const navigate = useNavigate();
@@ -27,7 +27,7 @@ export const AuthorizationPage = () => {
 	useEffect(() => {
 		if (isAuthenticated) {
 			const timer = setTimeout(() => {
-				navigate('/');
+				navigate('/routie');
 			}, 1500);
 
 			return () => clearTimeout(timer);

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Button, Input, Tag } from '@ui';
-import { Tags } from '../../types/tags';
+import { Tags } from '../../types/Tags';
 
 import styles from './EditProfileForm.module.scss';
 
