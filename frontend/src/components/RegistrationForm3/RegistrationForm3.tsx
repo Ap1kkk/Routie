@@ -1,46 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Tag } from '@ui';
 
 import styles from './RegistrationForm3.module.scss';
-import s from '../RegistrationForm.module.scss';
+import s from '../RegistrationForm/RegistrationForm.module.scss';
+import { getAllTags } from '../../utils/api/tags-spi';
 
-interface Tag {
+interface TagItem {
 	id: string;
-	name: string;
+	label: string;
 }
-
-const availableTags: Tag[] = [
-	{ id: '1', name: 'Фитнес' },
-	{ id: '2', name: 'Бег' },
-	{ id: '3', name: 'Йога' },
-	{ id: '4', name: 'Велоспорт' },
-	{ id: '5', name: 'Плавание' },
-	{ id: '6', name: 'Тренажёрный зал' },
-	{ id: '7', name: 'Кроссфит' },
-	{ id: '8', name: 'Танцы' },
-	{ id: '9', name: 'Футбол' },
-	{ id: '10', name: 'Баскетбол' },
-	{ id: '11', name: 'Волейбол' },
-	{ id: '12', name: 'Теннис' },
-	{ id: '13', name: 'Бокс' },
-	{ id: '14', name: 'ММА' },
-	{ id: '15', name: 'Карате' },
-	{ id: '16', name: 'Дзюдо' },
-	{ id: '17', name: 'Самбо' },
-	{ id: '18', name: 'Стретчинг' },
-	{ id: '19', name: 'Пилатес' },
-	{ id: '20', name: 'Калланетика' },
-	{ id: '21', name: 'Зумба' },
-	{ id: '22', name: 'Лыжи' },
-	{ id: '23', name: 'Сноуборд' },
-	{ id: '24', name: 'Скейтборд' },
-	{ id: '25', name: 'Роллерспорт' },
-	{ id: '26', name: 'Скалолазание' },
-	{ id: '27', name: 'Туризм' },
-	{ id: '28', name: 'Спортивная ходьба' },
-	{ id: '29', name: 'Триатлон' },
-	{ id: '30', name: 'Пауэрлифтинг' },
-];
 
 interface RegistrationForm3Props {
 	onComplete: (data: { tags: string[] }) => void;
@@ -53,14 +21,39 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 	onBack,
 	initialData,
 }) => {
+	const [availableTags, setAvailableTags] = useState<TagItem[]>([]);
 	const [selectedTags, setSelectedTags] = useState<string[]>(
 		initialData?.tags || []
 	);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
 
-	const tagItems = availableTags.map((tag) => ({
-		id: tag.id,
-		label: tag.name,
-	}));
+	useEffect(() => {
+		const loadTags = async () => {
+			try {
+				setLoading(true);
+				const tagsFromServer = await getAllTags();
+
+				const formattedTags: TagItem[] = tagsFromServer.map((tag) => ({
+					id: tag.id,
+					label: tag.label,
+				}));
+
+				setAvailableTags(formattedTags);
+				console.log(
+					'✅ Теги загружены для регистрации:',
+					formattedTags
+				);
+			} catch (err: any) {
+				console.error('Ошибка загрузки тегов:', err);
+				setError('Не удалось загрузить теги. Попробуйте позже.');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadTags();
+	}, []);
 
 	const handleTagClick = (tagId?: string | number) => {
 		if (tagId) {
@@ -89,17 +82,25 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 					<div className={`${s.stepDot} ${s.active}`} />
 				</div>
 			</div>
+
 			<form onSubmit={handleSubmit} className={styles.form}>
 				<span className={styles.tagTitle}>
 					Выберите теги, которые вам нравятся
 				</span>
 
-				<Tag
-					items={tagItems}
-					variant='selectable'
-					selectedIds={selectedTags}
-					onTagClick={handleTagClick}
-				/>
+				{loading ? (
+					<div className={styles.loading}>Загрузка тегов...</div>
+				) : error ? (
+					<div className={styles.error}>{error}</div>
+				) : (
+					<Tag
+						items={availableTags}
+						variant='selectable'
+						selectedIds={selectedTags}
+						onTagClick={handleTagClick}
+						wrap={true}
+					/>
+				)}
 
 				<div className={styles.tagsButtons}>
 					<Button
@@ -112,7 +113,8 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 					<Button
 						type='submit'
 						variant='primary'
-						className={styles.nextButton}>
+						className={styles.nextButton}
+						disabled={loading}>
 						Завершить регистрацию
 					</Button>
 				</div>
