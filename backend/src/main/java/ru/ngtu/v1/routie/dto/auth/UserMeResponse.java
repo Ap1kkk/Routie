@@ -13,7 +13,6 @@ public class UserMeResponse {
 
   private UUID id;
   private String email;
-  private String name;
   private String username;
   private List<String> roles;
 }

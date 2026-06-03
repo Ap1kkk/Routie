@@ -15,18 +15,16 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Запрос на регистрацию пользователя")
 public class UserRegisterRequest {
 
-    @NotBlank(message = "Email обязателен")
-    @Email(message = "Некорректный формат email")
-    private String email;
+  @NotBlank(message = "Email обязателен")
+  @Email(message = "Некорректный формат email")
+  private String email;
 
-    @NotBlank(message = "Username обязателен")
-    @Size(min = 3, max = 30, message = "Username должен содержать от 3 до 30 символов")
-    @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Username может содержать только латиницу, цифры, '_', '-', '.'")
-    private String username;
+  @NotBlank(message = "Username обязателен")
+  @Size(min = 3, max = 30, message = "Username должен содержать от 3 до 30 символов")
+  @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Username может содержать только латиницу, цифры, '_', '-', '.'")
+  private String username;
 
-    @NotBlank(message = "Пароль обязателен")
-    @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
-    private String password;
-
-    private String name;
+  @NotBlank(message = "Пароль обязателен")
+  @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
+  private String password;
 }
