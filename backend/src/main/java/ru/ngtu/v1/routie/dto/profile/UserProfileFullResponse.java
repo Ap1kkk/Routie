@@ -2,13 +2,17 @@ package ru.ngtu.v1.routie.dto.profile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
+import ru.ngtu.v1.routie.dto.tag.TagResponse;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileFullResponse {
@@ -23,6 +27,7 @@ public class UserProfileFullResponse {
   private String city;
   private String favoriteSportType;
   private String preferredTransport;
+  private List<TagResponse> preferredTags;
   private Integer totalXp;
   private Integer currentLevel;
   private Integer totalDistanceMeters;

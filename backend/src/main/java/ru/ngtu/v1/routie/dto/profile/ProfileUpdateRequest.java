@@ -2,6 +2,8 @@ package ru.ngtu.v1.routie.dto.profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +19,5 @@ public class ProfileUpdateRequest {
   private Gender gender;
   private String city;
   private String preferredTransport;
+  private List<UUID> preferredTags;
 }
