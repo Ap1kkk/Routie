@@ -47,7 +47,7 @@ export const RecoveryPasswordPage = () => {
 
 	const errorMessage = error
 		? typeof error === 'object' && 'message' in error
-			? error.message
+			? error
 			: typeof error === 'string'
 			? error
 			: 'Ошибка при смене пароля'

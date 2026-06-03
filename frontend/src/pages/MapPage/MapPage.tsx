@@ -24,7 +24,7 @@ export const MapPage = () => {
 
 	return (
 		<section className={styles.mapPageWrapper}>
-			<MapComponent routeData={route} />
+			{/*<MapComponent routeData={route} />*/}
 		</section>
 	);
 };

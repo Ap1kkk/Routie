@@ -56,8 +56,8 @@ const routeTags: Tags[] = [
 const recentRoutesList: Route[] = [
 	{
 		id: 'route-11111111-1111-1111-1111-111111111111',
-		name: 'Нижегородский Кремль',
-		distance: 2100,
+		title: 'Нижегородский Кремль',
+		lengthMeters: 2100,
 		checkpoints: [
 			{
 				id: 'cp-1',
@@ -128,8 +128,8 @@ const recentRoutesList: Route[] = [
 	},
 	{
 		id: 'route-22222222-2222-2222-2222-222222222222',
-		name: 'Большая Покровская улица',
-		distance: 1400,
+		title: 'Большая Покровская улица',
+		lengthMeters: 1400,
 		checkpoints: [
 			{
 				id: 'cp-10',
@@ -227,8 +227,7 @@ export const MOCK_USER_FRIENDS: FriendsUser = {
 
 export const MOCK_USER_AVATAR: { id: string; user_id: string } = {
 	id: generateUUID(),
-	user_id: USER_UUIDS.CURRENT,
-	avatar:
+	user_id: USER_UUIDS.CURRENT
 };
 
 export const MOCK_USER_TAGS: UserTags = {
