@@ -1,3 +1,0 @@
-clients:
-  analytics:
-    url: http://backend-analytics:8000/analytics
