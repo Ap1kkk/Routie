@@ -17,10 +17,10 @@ interface RegistrationForm3Props {
 }
 
 export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
-																		onComplete,
-																		onBack,
-																		initialData,
-																	}) => {
+	onComplete,
+	onBack,
+	initialData,
+}) => {
 	const [availableTags, setAvailableTags] = useState<TagItem[]>([]);
 	const [selectedTags, setSelectedTags] = useState<string[]>(
 		initialData?.tags || []
@@ -40,7 +40,10 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 				}));
 
 				setAvailableTags(formattedTags);
-				console.log('✅ Теги загружены для регистрации:', formattedTags);
+				console.log(
+					'✅ Теги загружены для регистрации:',
+					formattedTags
+				);
 			} catch (err: any) {
 				console.error('Ошибка загрузки тегов:', err);
 				setError('Не удалось загрузить теги. Попробуйте позже.');
@@ -81,9 +84,9 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 			</div>
 
 			<form onSubmit={handleSubmit} className={styles.form}>
-                <span className={styles.tagTitle}>
-                    Выберите теги, которые вам нравятся
-                </span>
+				<span className={styles.tagTitle}>
+					Выберите теги, которые вам нравятся
+				</span>
 
 				{loading ? (
 					<div className={styles.loading}>Загрузка тегов...</div>
@@ -92,7 +95,7 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 				) : (
 					<Tag
 						items={availableTags}
-						variant="selectable"
+						variant='selectable'
 						selectedIds={selectedTags}
 						onTagClick={handleTagClick}
 						wrap={true}
@@ -101,15 +104,15 @@ export const RegistrationForm3: React.FC<RegistrationForm3Props> = ({
 
 				<div className={styles.tagsButtons}>
 					<Button
-						type="button"
-						variant="secondary"
+						type='button'
+						variant='secondary'
 						onClick={onBack}
 						className={styles.backButton}>
 						Назад
 					</Button>
 					<Button
-						type="submit"
-						variant="primary"
+						type='submit'
+						variant='primary'
 						className={styles.nextButton}
 						disabled={loading}>
 						Завершить регистрацию
