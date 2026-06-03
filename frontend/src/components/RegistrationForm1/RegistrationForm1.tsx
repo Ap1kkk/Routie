@@ -11,23 +11,27 @@ import s from '../RegistrationForm/RegistrationForm.module.scss';
 import styles from './RegistrationForm1.module.scss';
 
 interface RegistrationForm1Props {
-	onNext: (data: { email: string; password: string }) => void;
-	initialData?: { email: string; password: string };
+	onNext: (data: { email: string; password: string; username: string }) => void;
+	initialData?: { email: string; password: string; username?: string };
 }
 
 export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
-	onNext,
-	initialData,
-}) => {
+																		onNext,
+																		initialData,
+																	}) => {
 	const [email, setEmail] = useState(initialData?.email || '');
+	const [username, setUsername] = useState(initialData?.username || '');
 	const [password, setPassword] = useState(initialData?.password || '');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
 	const [touched, setTouched] = useState({
 		email: false,
+		username: false,
 		password: false,
 		confirmPassword: false,
 	});
+
+	// ================= VALIDATION =================
 
 	const emailValidation = useMemo(() => {
 		if (!email) {
@@ -35,6 +39,16 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		}
 		return validateEmail(email);
 	}, [email]);
+
+	const usernameValidation = useMemo(() => {
+		if (!username.trim()) {
+			return { isValid: false, errorMessage: 'Username обязателен' };
+		}
+		if (username.length < 3) {
+			return { isValid: false, errorMessage: 'Минимум 3 символа' };
+		}
+		return { isValid: true };
+	}, [username]);
 
 	const passwordValidation = useMemo(() => {
 		if (!password) {
@@ -53,36 +67,53 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		return validateConfirmPassword(password, confirmPassword);
 	}, [password, confirmPassword]);
 
+	// ================= ERRORS =================
+
 	const showEmailError = touched.email && !emailValidation.isValid;
+	const showUsernameError = touched.username && !usernameValidation.isValid;
 	const showPasswordError = touched.password && !passwordValidation.isValid;
 	const showConfirmPasswordError =
 		touched.confirmPassword && !confirmPasswordValidation.isValid;
 
+	// ================= FORM STATE =================
+
 	const isAllFieldsFilled = useMemo(() => {
 		return (
 			email.trim() !== '' &&
+			username.trim() !== '' &&
 			password.trim() !== '' &&
 			confirmPassword.trim() !== ''
 		);
-	}, [email, password, confirmPassword]);
+	}, [email, username, password, confirmPassword]);
 
 	const isFormValid = useMemo(() => {
 		return (
 			isAllFieldsFilled &&
 			emailValidation.isValid &&
+			usernameValidation.isValid &&
 			passwordValidation.isValid &&
 			confirmPasswordValidation.isValid
 		);
 	}, [
 		isAllFieldsFilled,
 		emailValidation.isValid,
+		usernameValidation.isValid,
 		passwordValidation.isValid,
 		confirmPasswordValidation.isValid,
 	]);
 
+	// ================= HANDLERS =================
+
 	const handleEmailChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			setEmail(e.target.value);
+		},
+		[]
+	);
+
+	const handleUsernameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setUsername(e.target.value);
 		},
 		[]
 	);
@@ -105,6 +136,10 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		setTouched((prev) => ({ ...prev, email: true }));
 	}, []);
 
+	const handleUsernameBlur = useCallback(() => {
+		setTouched((prev) => ({ ...prev, username: true }));
+	}, []);
+
 	const handlePasswordBlur = useCallback(() => {
 		setTouched((prev) => ({ ...prev, password: true }));
 	}, []);
@@ -119,16 +154,19 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 
 			setTouched({
 				email: true,
+				username: true,
 				password: true,
 				confirmPassword: true,
 			});
 
 			if (isFormValid) {
-				onNext({ email, password });
+				onNext({ email, password, username });
 			}
 		},
-		[email, password, isFormValid, onNext]
+		[email, password, username, isFormValid, onNext]
 	);
+
+	// ================= UI =================
 
 	return (
 		<div className={styles.container}>
@@ -151,10 +189,23 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					onChange={handleEmailChange}
 					onBlur={handleEmailBlur}
 					placeholder='example@mail.com'
-					required={true}
+					required
+					error={showEmailError ? emailValidation.errorMessage : undefined}
+				/>
+
+				<Input
+					id='username'
+					type='text'
+					label='Username'
+					name='username'
+					value={username}
+					onChange={handleUsernameChange}
+					onBlur={handleUsernameBlur}
+					placeholder='your_username'
+					required
 					error={
-						showEmailError
-							? emailValidation.errorMessage
+						showUsernameError
+							? usernameValidation.errorMessage
 							: undefined
 					}
 				/>
@@ -168,7 +219,7 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					onChange={handlePasswordChange}
 					onBlur={handlePasswordBlur}
 					placeholder='Минимум 8 символов'
-					required={true}
+					required
 					error={
 						showPasswordError
 							? passwordValidation.errorMessage
@@ -185,7 +236,7 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					onChange={handleConfirmPasswordChange}
 					onBlur={handleConfirmPasswordBlur}
 					placeholder='Введите пароль ещё раз'
-					required={true}
+					required
 					error={
 						showConfirmPasswordError
 							? confirmPasswordValidation.errorMessage
@@ -194,12 +245,12 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 				/>
 
 				<Button
-					children={'Далее'}
 					variant='primary'
 					type='submit'
 					className={styles.nextButton}
-					disabled={!isFormValid}
-				/>
+					disabled={!isFormValid}>
+					Далее
+				</Button>
 			</form>
 
 			<div className={styles.auth}>
