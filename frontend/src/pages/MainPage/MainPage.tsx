@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Route } from '../../types/route';
-import { Button, Slider } from '@ui';
+import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 import {
 	mockRoutes,
@@ -9,6 +9,9 @@ import {
 	getRouteImage,
 } from '../../mocks/route';
 import { useDeviceType } from '../../hooks/useDeviceType';
+
+import lightImage from '../../assets/images/main-page.png';
+import blackImage from '../../assets/images/main-black.png';
 
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
 
@@ -28,6 +31,11 @@ export const MainPage: React.FC = () => {
 
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [routeOfTheDay, setRouteOfTheDay] = useState<Route | null>(null);
+
+	const [theme] = useState<boolean>(() => {
+		const saved = localStorage.getItem('theme');
+		return saved === 'light';
+	});
 
 	useEffect(() => {
 		const checkAuth = () => {
@@ -74,32 +82,6 @@ export const MainPage: React.FC = () => {
 		}
 	};
 
-	if (loading) {
-		return (
-			<div className={styles.container}>
-				<div className={styles.mapBackground} />
-				<div className={styles.loading}>
-					<div className={styles.spinner}></div>
-					<p>Загрузка маршрутов...</p>
-				</div>
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className={styles.container}>
-				<div className={styles.mapBackground} />
-				<div className={styles.error}>
-					<p>{error}</p>
-					<button onClick={() => window.location.reload()}>
-						Попробовать снова
-					</button>
-				</div>
-			</div>
-		);
-	}
-
 	const popularCards = popularRoutes.map((route) => (
 		<RouteCard
 			key={route.id}
@@ -112,64 +94,90 @@ export const MainPage: React.FC = () => {
 	));
 
 	return (
-		<section className={styles.section}>
-			{routeOfTheDay && (
-				<RouteOfTheDay
-					route={routeOfTheDay}
-					onNavigate={() => navigate(`/map/${routeOfTheDay.id}`)}
-				/>
-			)}
-
-			{popularRoutes.length > 0 && (
-				<div className={styles.container}>
-					<div className={styles.containerHeader}>
-						<h2 className={styles.title}>Популярные маршруты</h2>
-					</div>
-
-					<Slider
-						cards={popularCards}
-						gap={12}
-						infinite={true}
-						showArrows={true}
-						showDots={true}
-						onCardClick={handleCardClick}
-					/>
-				</div>
-			)}
-
-			{recommendedRoutes.length > 0 && (
-				<div className={styles.container}>
-					<div className={styles.containerHeader}>
-						<h2 className={styles.title}>
-							Рекомендованные маршруты
-						</h2>
-						<Button
-							variant='tertiary'
-							onClick={() =>
-								navigate(isMobile ? '/routes' : '/filter')
-							}
-							iconRight={<RightIcon />}
-							className={styles.containerHeaderButton}>
-							Смотреть все
-						</Button>
-					</div>
-
-					<div className={styles.positionGrid}>
-						{recommendedRoutes.map((route) => (
-							<RouteCard
-								key={route.id}
-								route={route}
-								imageUrl={getRouteImage(route.id)}
-								isLiked={likedRoutes[route.id] || false}
-								onToggleLike={handleToggleLike}
-								variant='standard'
+		<div>
+			<img
+				src={theme ? lightImage : blackImage}
+				alt={'Фон'}
+				className={styles.backgroundImage}
+			/>
+			<section className={styles.mainPageContainer}>
+				<div className={styles.containerRouteOfTheDay}>
+					<div className={styles.routeContainer}>
+						{routeOfTheDay && (
+							<RouteOfTheDay
+								route={routeOfTheDay}
+								onNavigate={() =>
+									navigate(`/map/${routeOfTheDay.id}`)
+								}
 							/>
-						))}
+						)}
 					</div>
 				</div>
-			)}
-		</section>
+
+				{popularRoutes.length > 0 && (
+					<article className={styles.sectionPopRecRoutes}>
+						<div className={styles.headerOfSmallSection}>
+							<Blur className={styles.containerBlur}>
+								<span className={styles.titlePopularRoutes}>
+									Популярное
+								</span>
+							</Blur>
+							<Button
+								variant='blur'
+								onClick={() =>
+									navigate(isMobile ? '/routes' : '/filter')
+								}
+								iconRight={<RightIcon />}
+								children={'Смотреть все'}
+								className={styles.buttonWatchAll}
+							/>
+						</div>
+
+						<Slider
+							cards={popularCards}
+							gap={12}
+							infinite={true}
+							showArrows={true}
+							showDots={true}
+							onCardClick={handleCardClick}
+						/>
+					</article>
+				)}
+
+				{recommendedRoutes.length > 0 && (
+					<article className={styles.sectionPopRecRoutes}>
+						<div className={styles.headerOfSmallSection}>
+							<Blur className={styles.containerBlur}>
+								<span className={styles.titlePopularRoutes}>
+									Рекомендованное
+								</span>
+							</Blur>
+							<Button
+								variant='blur'
+								onClick={() =>
+									navigate(isMobile ? '/routes' : '/filter')
+								}
+								iconRight={<RightIcon />}
+								children={'Смотреть все'}
+								className={styles.buttonWatchAll}
+							/>
+						</div>
+
+						<div className={styles.positionGrid}>
+							{recommendedRoutes.map((route) => (
+								<RouteCard
+									key={route.id}
+									route={route}
+									imageUrl={getRouteImage(route.id)}
+									isLiked={likedRoutes[route.id] || false}
+									onToggleLike={handleToggleLike}
+									variant='standard'
+								/>
+							))}
+						</div>
+					</article>
+				)}
+			</section>
+		</div>
 	);
 };
-
-export default MainPage;

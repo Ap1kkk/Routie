@@ -1,87 +1,92 @@
-.section {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 40px;
+.mainPageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
 }
 
-.errorBanner {
-	position: relative;
-	z-index: 1;
-	background-color: var(--color-card);
-	color: var(--color-alarm);
-	border-radius: 12px;
-	border: 1px solid var(--color-accent);
-	font-size: var(--text-body-size);
-	font-weight: var(--font-regular);
-	font-family: var(--font-body);
-	letter-spacing: var(--letter-spacing);
-	text-align: center;
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
 }
 
-.container {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+.containerRouteOfTheDay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
 }
 
-.containerHeader {
-	width: 100%;
-
-	@media (max-width: 10000000px) {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	@media (max-width: 925px) {
-		display: grid;
-		grid-template-columns: 1fr;
-	}
+.routeContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.title {
-	font-family: var(--font-body);
-	font-size: var(--text-h2-size);
-	font-weight: var(--font-medium);
-	color: var(--color-tetx);
-	letter-spacing: var(--letter-spacing);
-
-	@media (max-width: 925px) {
-		font-size: var(--text-h2-size-mobile);
-	}
+.containerBlur {
+  padding: 5px 10px;
 }
 
-.button {
-	display: flex;
-	justify-content: flex-end;
+.sectionPopRecRoutes {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
-.containerHeaderButton {
-	display: flex;
-	background-color: var(--color-card);
-
-	@media (max-width: 925px) {
-		padding: 4px 8px;
-	}
+.headerOfSmallSection {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.position {
-	display: flex;
-	flex-direction: row;
-	gap: 20px;
+.titlePopularRoutes {
+  font-weight: var(--font-medium);
+  font-size: var(--text-h3-size);
+
+  @media (max-width: 925px) {
+    font-size: var(--text-h4-size-mobile);
+  }
+}
+
+.buttonWatchAll {
+  padding: 5px 10px;
 }
 
 .positionGrid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 20px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 
-	@media (max-width: 1075px) {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
+  @media (max-width: 1075px) {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+.errorBanner {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-card);
+  color: var(--color-alarm);
+  border-radius: 12px;
+  border: 1px solid var(--color-accent);
+  font-size: var(--text-body-size);
+  font-weight: var(--font-regular);
+  font-family: var(--font-body);
+  letter-spacing: var(--letter-spacing);
+  text-align: center;
 }
