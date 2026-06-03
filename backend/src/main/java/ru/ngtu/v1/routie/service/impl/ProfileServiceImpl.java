@@ -27,10 +27,12 @@ import ru.ngtu.v1.routie.exception.ForbiddenException;
 import ru.ngtu.v1.routie.model.Friendship;
 import ru.ngtu.v1.routie.model.FriendshipStatus;
 import ru.ngtu.v1.routie.model.SportType;
+import ru.ngtu.v1.routie.model.Tag;
 import ru.ngtu.v1.routie.model.User;
 import ru.ngtu.v1.routie.model.UserProfile;
 import ru.ngtu.v1.routie.repository.FriendshipRepository;
 import ru.ngtu.v1.routie.repository.MediaFileRepository;
+import ru.ngtu.v1.routie.repository.TagRepository;
 import ru.ngtu.v1.routie.repository.UserProfileRepository;
 import ru.ngtu.v1.routie.repository.UserRepository;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
@@ -46,6 +48,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final UserProfileRepository userProfileRepository;
     private final FriendshipRepository friendshipRepository;
     private final MediaFileRepository mediaFileRepository;
+    private final TagRepository tagRepository;
     private final FileService fileService;
 
     // ==================== Профиль ====================
@@ -83,6 +86,7 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setFavoriteSportType(parseSportType(request.getFavoriteSportType()));
         }
         if (request.getPreferredTags() != null) {
+            validateTagsExist(request.getPreferredTags());
             profile.setPreferredTagIds(request.getPreferredTags());
         }
 
@@ -296,11 +300,26 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElse(null);
     }
 
+    private void validateTagsExist(List<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) return;
+        List<UUID> foundIds = tagRepository.findAllByIdIn(tagIds).stream()
+                .map(Tag::getId)
+                .toList();
+        List<UUID> missingIds = tagIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .toList();
+        if (!missingIds.isEmpty()) {
+            throw new EntityNotFoundException("Теги не найдены: " + missingIds);
+        }
+    }
+
     private List<TagResponse> buildTagResponses(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) return Collections.emptyList();
-        // Tag-сущность ещё не реализована — возвращаем заглушки с id
-        return tagIds.stream()
-                .map(id -> TagResponse.builder().id(id).build())
+        return tagRepository.findAllByIdIn(tagIds).stream()
+                .map(tag -> TagResponse.builder()
+                        .id(tag.getId())
+                        .title(tag.getTitle())
+                        .build())
                 .toList();
     }
 
