@@ -20,13 +20,13 @@ public class OpenApiConfig {
 
   private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
-  @Value("${server.protocol:http}")
+  @Value("${server.protocol}")
   private String protocol;
 
-  @Value("${server.host:localhost}")
+  @Value("${server.host}")
   private String host;
 
-  @Value("${server.port:8080}")
+  @Value("${server.port}")
   private int port;
 
   private static final List<String> TAG_ORDER = List.of(
@@ -46,12 +46,9 @@ public class OpenApiConfig {
 
   @Bean
   public OpenAPI openAPI() {
-    boolean isDefaultPort = ("http".equals(protocol) && port == 80)
-        || ("https".equals(protocol) && port == 443);
-
-    String url = isDefaultPort
-        ? protocol + "://" + host
-        : protocol + "://" + host + ":" + port;
+    String url = protocol.equals("http") && host.equals("localhost")
+        ? protocol + "://" + host + ":" + port
+        : protocol + "://" + host;
 
     Server server = new Server()
         .url(url)
