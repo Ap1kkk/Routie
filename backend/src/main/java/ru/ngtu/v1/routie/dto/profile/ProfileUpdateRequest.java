@@ -14,10 +14,11 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Запрос на обновление профиля пользователя")
 public class ProfileUpdateRequest {
 
-  private String name;
-  private LocalDate dateOfBirth;
-  private Gender gender;
-  private String city;
-  private String preferredTransport;
-  private List<UUID> preferredTags;
+    private String name;
+    private LocalDate dateOfBirth;
+    private Gender gender;
+    private String city;
+    private String preferredTransport;
+    private String favoriteSportType;
+    private List<UUID> preferredTags;
 }
