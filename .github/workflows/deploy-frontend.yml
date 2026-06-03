@@ -3,9 +3,7 @@ name: Deploy frontend to VPS
 on:
   push:
     branches:
-      - main
-    paths:
-      - "**/frontend/**"
+      - dev-fe
   workflow_dispatch:
 
 env:
