@@ -2,13 +2,11 @@ package ru.ngtu.v1.routie.dto.route.response;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.ngtu.v1.routie.dto.landmark.response.LandmarkResponse;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CheckpointFullResponse {
