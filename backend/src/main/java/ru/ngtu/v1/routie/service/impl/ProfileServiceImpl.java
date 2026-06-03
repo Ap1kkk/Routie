@@ -1,88 +1,387 @@
 package ru.ngtu.v1.routie.service.impl;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.profile.Gender;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
+import ru.ngtu.v1.routie.dto.tag.TagResponse;
+import ru.ngtu.v1.routie.exception.BadRequestException;
+import ru.ngtu.v1.routie.exception.ConflictException;
+import ru.ngtu.v1.routie.exception.EntityNotFoundException;
+import ru.ngtu.v1.routie.exception.ForbiddenException;
+import ru.ngtu.v1.routie.model.Friendship;
+import ru.ngtu.v1.routie.model.FriendshipStatus;
+import ru.ngtu.v1.routie.model.SportType;
+import ru.ngtu.v1.routie.model.Tag;
+import ru.ngtu.v1.routie.model.User;
+import ru.ngtu.v1.routie.model.UserProfile;
+import ru.ngtu.v1.routie.repository.FriendshipRepository;
+import ru.ngtu.v1.routie.repository.MediaFileRepository;
+import ru.ngtu.v1.routie.repository.TagRepository;
+import ru.ngtu.v1.routie.repository.UserProfileRepository;
+import ru.ngtu.v1.routie.repository.UserRepository;
+import ru.ngtu.v1.routie.security.CustomUserDetails;
+import ru.ngtu.v1.routie.service.FileService;
 import ru.ngtu.v1.routie.service.ProfileService;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
-  private static final UUID MOCK_USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+    private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final MediaFileRepository mediaFileRepository;
+    private final TagRepository tagRepository;
+    private final FileService fileService;
 
-  @Override
-  public UserProfileFullResponse getCurrentUserProfile() {
-    log.info("Мок: получение полного профиля текущего пользователя");
-    return createMockFullProfile(MOCK_USER_ID);
-  }
+    // ==================== Профиль ====================
 
-  @Override
-  public UserProfileFullResponse updateCurrentUserProfile(ProfileUpdateRequest request) {
-    log.info("Мок: обновление профиля");
-    return createMockFullProfile(MOCK_USER_ID);
-  }
+    @Override
+    @Transactional
+    public UserProfileFullResponse getCurrentUserProfile() {
+        User currentUser = getCurrentUser();
+        UserProfile profile = getOrCreateProfile(currentUser);
+        return toFullResponse(currentUser, profile, false);
+    }
 
-  @Override
-  public UserProfileFullResponse getUserProfile(UUID userId) {
-    log.info("Мок: получение профиля пользователя {}", userId);
-    return createMockFullProfile(userId);
-  }
+    @Override
+    @Transactional
+    public UserProfileFullResponse updateCurrentUserProfile(ProfileUpdateRequest request) {
+        User currentUser = getCurrentUser();
+        UserProfile profile = getOrCreateProfile(currentUser);
 
-  @Override
-  public UserProfileShortResponse getShortUserProfile(UUID userId) {
-    log.info("Мок: получение краткого профиля {}", userId);
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+        if (request.getName() != null) {
+            profile.setName(request.getName());
+        }
+        if (request.getDateOfBirth() != null) {
+            profile.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (request.getGender() != null) {
+            profile.setGender(mapGender(request.getGender()));
+        }
+        if (request.getCity() != null) {
+            profile.setCity(request.getCity());
+        }
+        if (request.getPreferredTransport() != null) {
+            profile.setPreferredTransport(request.getPreferredTransport());
+        }
+        if (request.getFavoriteSportType() != null) {
+            profile.setFavoriteSportType(parseSportType(request.getFavoriteSportType()));
+        }
+        if (request.getPreferredTags() != null) {
+            validateTagsExist(request.getPreferredTags());
+            profile.setPreferredTagIds(request.getPreferredTags());
+        }
 
-  @Override
-  public MediaFileResponse uploadAvatar(MultipartFile file) {
-    log.info("Мок: загрузка аватарки");
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+        userProfileRepository.save(profile);
+        log.info("Профиль обновлён для пользователя: {}", currentUser.getId());
+        return toFullResponse(currentUser, profile, false);
+    }
 
-  @Override
-  public PageResponse<UserProfileShortResponse> getFriends(int page, int size, String sort,
-      String search, String status) {
-    log.info("Мок: получение списка друзей");
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileFullResponse getUserProfile(UUID userId) {
+        User user = findUserById(userId);
+        UserProfile profile = getOrCreateProfile(user);
+        boolean isFriend = isFriendWithCurrentUser(user);
+        return toFullResponse(user, profile, isFriend);
+    }
 
-  @Override
-  public void sendFriendRequest(UUID friendId) {
-    log.info("Мок: отправка запроса в друзья {}", friendId);
-  }
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileShortResponse getShortUserProfile(UUID userId) {
+        User user = findUserById(userId);
+        UserProfile profile = getOrCreateProfile(user);
+        boolean isFriend = isFriendWithCurrentUser(user);
+        return toShortResponse(user, profile, isFriend);
+    }
 
-  @Override
-  public void acceptFriendRequest(UUID friendshipId) {
-    log.info("Мок: принятие запроса {}", friendshipId);
-  }
+    @Override
+    @Transactional
+    public MediaFileResponse uploadAvatar(MultipartFile file) {
+        User currentUser = getCurrentUser();
+        UserProfile profile = getOrCreateProfile(currentUser);
 
-  @Override
-  public void rejectFriendRequest(UUID friendshipId) {
-    log.info("Мок: отклонение запроса {}", friendshipId);
-  }
+        MediaFileResponse response = fileService.upload(file, 0);
 
-  @Override
-  public void removeFriend(UUID friendId) {
-    log.info("Мок: удаление из друзей {}", friendId);
-  }
+        profile.setAvatarFileId(response.getId());
+        userProfileRepository.save(profile);
 
-  @Override
-  public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
-    log.info("Мок: получение избранных маршрутов");
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+        log.info("Аватар обновлён для пользователя: {}", currentUser.getId());
+        return response;
+    }
 
-  private UserProfileFullResponse createMockFullProfile(UUID id) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+    // ==================== Друзья ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<UserProfileShortResponse> getFriends(
+            int page, int size, String sort, String search, String status) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        FriendshipStatus friendshipStatus = status != null
+                ? parseFriendshipStatus(status)
+                : FriendshipStatus.ACCEPTED;
+
+        Page<Friendship> friendships = friendshipRepository
+                .findAllByUserAndStatus(currentUser, friendshipStatus, pageable);
+
+        List<UserProfileShortResponse> friends = friendships.stream()
+                .map(f -> {
+                    User friend = f.getRequester().getId().equals(currentUser.getId())
+                            ? f.getAddressee()
+                            : f.getRequester();
+                    UserProfile friendProfile = getOrCreateProfile(friend);
+                    return toShortResponse(friend, friendProfile, true);
+                })
+                .toList();
+
+        return new PageResponse<>(friends, friendships.getTotalElements(),
+                friendships.getTotalPages(), page);
+    }
+
+    @Override
+    @Transactional
+    public void sendFriendRequest(UUID friendId) {
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getId().equals(friendId)) {
+            throw new BadRequestException("Нельзя отправить запрос самому себе");
+        }
+
+        User addressee = findUserById(friendId);
+
+        friendshipRepository.findBetweenUsers(currentUser.getId(), friendId)
+                .ifPresent(f -> {
+                    throw new ConflictException("Запрос в друзья уже существует");
+                });
+
+        Friendship friendship = Friendship.builder()
+                .requester(currentUser)
+                .addressee(addressee)
+                .status(FriendshipStatus.PENDING)
+                .build();
+
+        friendshipRepository.save(friendship);
+        log.info("Запрос в друзья отправлен: {} -> {}", currentUser.getId(), friendId);
+    }
+
+    @Override
+    @Transactional
+    public void acceptFriendRequest(UUID friendshipId) {
+        User currentUser = getCurrentUser();
+        Friendship friendship = findFriendshipById(friendshipId);
+
+        if (!friendship.getAddressee().getId().equals(currentUser.getId())) {
+            throw new ForbiddenException("Вы не являетесь адресатом этого запроса");
+        }
+        if (friendship.getStatus() != FriendshipStatus.PENDING) {
+            throw new BadRequestException("Запрос уже обработан");
+        }
+
+        friendship.setStatus(FriendshipStatus.ACCEPTED);
+        friendshipRepository.save(friendship);
+        log.info("Запрос в друзья принят: {}", friendshipId);
+    }
+
+    @Override
+    @Transactional
+    public void rejectFriendRequest(UUID friendshipId) {
+        User currentUser = getCurrentUser();
+        Friendship friendship = findFriendshipById(friendshipId);
+
+        if (!friendship.getAddressee().getId().equals(currentUser.getId())) {
+            throw new ForbiddenException("Вы не являетесь адресатом этого запроса");
+        }
+        if (friendship.getStatus() != FriendshipStatus.PENDING) {
+            throw new BadRequestException("Запрос уже обработан");
+        }
+
+        friendship.setStatus(FriendshipStatus.REJECTED);
+        friendshipRepository.save(friendship);
+        log.info("Запрос в друзья отклонён: {}", friendshipId);
+    }
+
+    @Override
+    @Transactional
+    public void removeFriend(UUID friendId) {
+        User currentUser = getCurrentUser();
+
+        Friendship friendship = friendshipRepository
+                .findBetweenUsers(currentUser.getId(), friendId)
+                .filter(f -> f.getStatus() == FriendshipStatus.ACCEPTED)
+                .orElseThrow(() -> new EntityNotFoundException("Дружба с пользователем не найдена"));
+
+        friendshipRepository.delete(friendship);
+        log.info("Пользователь {} удалён из друзей {}", friendId, currentUser.getId());
+    }
+
+    // ==================== Избранное ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
+        // Route-сущность ещё не реализована — возвращаем пустую страницу
+        return new PageResponse<>(Collections.emptyList(), 0L, 0, page);
+    }
+
+    // ==================== Вспомогательные методы ====================
+
+    private User getCurrentUser() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        return userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Текущий пользователь не найден"));
+    }
+
+    private User findUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь", userId));
+    }
+
+    private Friendship findFriendshipById(UUID friendshipId) {
+        return friendshipRepository.findById(friendshipId)
+                .orElseThrow(() -> new EntityNotFoundException("Запрос в друзья", friendshipId));
+    }
+
+    private UserProfile getOrCreateProfile(User user) {
+        return userProfileRepository.findById(user.getId())
+                .orElseGet(() -> {
+                    UserProfile profile = UserProfile.builder().user(user).build();
+                    return userProfileRepository.save(profile);
+                });
+    }
+
+    private boolean isFriendWithCurrentUser(User targetUser) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getPrincipal();
+            return friendshipRepository
+                    .findBetweenUsers(userDetails.getId(), targetUser.getId())
+                    .map(f -> f.getStatus() == FriendshipStatus.ACCEPTED)
+                    .orElse(false);
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    private MediaFileResponse buildAvatarResponse(UUID avatarFileId) {
+        if (avatarFileId == null) return null;
+        return mediaFileRepository.findById(avatarFileId)
+                .map(f -> MediaFileResponse.builder()
+                        .id(f.getId())
+                        .filename(f.getOriginalFilename())
+                        .contentType(f.getContentType())
+                        .createTs(f.getCreatedAt())
+                        .sortOrder(f.getSortOrder())
+                        .build())
+                .orElse(null);
+    }
+
+    private void validateTagsExist(List<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) return;
+        List<UUID> foundIds = tagRepository.findAllByIdIn(tagIds).stream()
+                .map(Tag::getId)
+                .toList();
+        List<UUID> missingIds = tagIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .toList();
+        if (!missingIds.isEmpty()) {
+            throw new EntityNotFoundException("Теги не найдены: " + missingIds);
+        }
+    }
+
+    private List<TagResponse> buildTagResponses(List<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) return Collections.emptyList();
+        return tagRepository.findAllByIdIn(tagIds).stream()
+                .map(tag -> TagResponse.builder()
+                        .id(tag.getId())
+                        .title(tag.getTitle())
+                        .build())
+                .toList();
+    }
+
+    private UserProfileFullResponse toFullResponse(User user, UserProfile profile, boolean isFriend) {
+        return UserProfileFullResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(profile.getName())
+                .username(user.getUsername())
+                .avatar(buildAvatarResponse(profile.getAvatarFileId()))
+                .dateOfBirth(profile.getDateOfBirth())
+                .gender(mapGenderToDto(profile.getGender()))
+                .city(profile.getCity())
+                .favoriteSportType(profile.getFavoriteSportType() != null
+                        ? profile.getFavoriteSportType().name() : null)
+                .preferredTransport(profile.getPreferredTransport())
+                .preferredTags(buildTagResponses(profile.getPreferredTagIds()))
+                .totalXp(profile.getTotalXp())
+                .currentLevel(profile.getCurrentLevel())
+                .totalDistanceMeters(profile.getTotalDistanceMeters())
+                .totalRoutesCompleted(profile.getTotalRoutesCompleted())
+                .totalLandmarksVisited(profile.getTotalLandmarksVisited())
+                .isFriend(isFriend)
+                .createdAt(user.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
+                .build();
+    }
+
+    private UserProfileShortResponse toShortResponse(User user, UserProfile profile, boolean isFriend) {
+        return UserProfileShortResponse.builder()
+                .id(user.getId())
+                .name(profile.getName())
+                .avatar(buildAvatarResponse(profile.getAvatarFileId()))
+                .currentLevel(profile.getCurrentLevel())
+                .totalXp(profile.getTotalXp())
+                .city(profile.getCity())
+                .isFriend(isFriend)
+                .build();
+    }
+
+    private ru.ngtu.v1.routie.model.Gender mapGender(Gender dto) {
+        if (dto == null) return null;
+        return ru.ngtu.v1.routie.model.Gender.valueOf(dto.name());
+    }
+
+    private Gender mapGenderToDto(ru.ngtu.v1.routie.model.Gender model) {
+        if (model == null) return null;
+        return Gender.valueOf(model.name());
+    }
+
+    private SportType parseSportType(String value) {
+        try {
+            return SportType.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Неизвестный тип спорта: " + value);
+        }
+    }
+
+    private FriendshipStatus parseFriendshipStatus(String value) {
+        try {
+            return FriendshipStatus.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Неизвестный статус дружбы: " + value);
+        }
+    }
 }
