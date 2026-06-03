@@ -5,7 +5,7 @@ import {
 	getHeaders,
 	API_TAGS_URL,
 } from './Api';
-import { Tag, TagCreateRequest, TagUpdateRequest } from '../../types/Tags';
+import { Tags, TagCreateRequest, TagUpdateRequest } from '../../types/Tags';
 
 /**
  * Удаление тега (только ADMIN)
@@ -34,14 +34,14 @@ export const deleteTagApi = async (tagId: string): Promise<ApiResponse<string>> 
 /**
  * Получение тега по ID
  */
-export const getTagApi = async (tagId: string): Promise<ApiResponse<Tag>> => {
+export const getTagApi = async (tagId: string): Promise<ApiResponse<Tags>> => {
 	try {
 		const response = await fetch(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
 
-		return await handleResponse<Tag>(response);
+		return await handleResponse<Tags>(response);
 	} catch (error: any) {
 		return {
 			success: false,
@@ -58,14 +58,14 @@ export const getTagApi = async (tagId: string): Promise<ApiResponse<Tag>> => {
 /**
  * Получение всех тегов
  */
-export const getAllTagsApi = async (): Promise<ApiResponse<Tag[]>> => {
+export const getAllTagsApi = async (): Promise<ApiResponse<Tags[]>> => {
 	try {
 		const response = await fetch(`${API_URL}/${API_TAGS_URL}`, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
 
-		return await handleResponse<Tag[]>(response);
+		return await handleResponse<Tags[]>(response);
 	} catch (error: any) {
 		return {
 			success: false,
@@ -84,7 +84,7 @@ export const getAllTagsApi = async (): Promise<ApiResponse<Tag[]>> => {
  */
 export const createTagApi = async (
 	data: TagCreateRequest
-): Promise<ApiResponse<Tag>> => {
+): Promise<ApiResponse<Tags>> => {
 	try {
 		const response = await fetch(`${API_URL}/${API_TAGS_URL}`, {
 			method: 'POST',
@@ -92,7 +92,7 @@ export const createTagApi = async (
 			body: JSON.stringify(data),
 		});
 
-		return await handleResponse<Tag>(response);
+		return await handleResponse<Tags>(response);
 	} catch (error: any) {
 		return {
 			success: false,
@@ -112,7 +112,7 @@ export const createTagApi = async (
 export const updateTagApi = async (
 	tagId: string,
 	data: TagUpdateRequest
-): Promise<ApiResponse<Tag>> => {
+): Promise<ApiResponse<Tags>> => {
 	try {
 		const response = await fetch(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
 			method: 'PUT',
@@ -120,7 +120,7 @@ export const updateTagApi = async (
 			body: JSON.stringify(data),
 		});
 
-		return await handleResponse<Tag>(response);
+		return await handleResponse<Tags>(response);
 	} catch (error: any) {
 		return {
 			success: false,

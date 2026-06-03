@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Blur, Tag } from '@ui';
-import { Route } from '../../types/route';
-import { Tags } from '../../types/tags';
+import { Route } from '../../types/Route';
+import { Tags } from '../../types/Tags';
 
 import { ReactComponent as Like } from '../../assets/icons/like.svg';
 import { ReactComponent as LikeActive } from '../../assets/icons/like-green.svg';
@@ -77,11 +77,11 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					alt={route.name}
+					// alt={route.name}
 					className={styles.imageContainerCompact}
 					loading='lazy'
 				/>
-				<span className={styles.compactRouteName}>{route.name}</span>
+				{/*<span className={styles.compactRouteName}>{route.name}</span>*/}
 			</Blur>
 		);
 	}
@@ -93,12 +93,12 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					alt={route.name}
+					// alt={route.name}
 					className={styles.standartImage}
 					loading='lazy'
 				/>
 				<div className={styles.standartContent}>
-					<h3 className={styles.standartCardTitle}>{route.name}</h3>
+					{/*<h3 className={styles.standartCardTitle}>{route.name}</h3>*/}
 					{onToggleLike && (
 						<button
 							className={`${styles.standartLike} ${
@@ -111,12 +111,12 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 						</button>
 					)}
 					<span className={styles.standartDistance}>
-						{formatDistance(route.distance)}
+						{/*{formatDistance(route.distance)}*/}
 					</span>
 					{displayTags.length > 0 && (
 						<div className={styles.compactTags}>
 							<Tag
-								items={displayTags}
+								items={['fsdfsf','sdasdasd']}
 								variant='small'
 								wrap={false}
 							/>

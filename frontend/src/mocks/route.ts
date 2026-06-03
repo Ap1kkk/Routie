@@ -1,5 +1,5 @@
 import { Route, RouteImage } from '../types/Route';
-import { Checkpoint } from '../types/checkpoint';
+import { Checkpoint } from '../types/Route';
 import { Tags } from '../types/Tags';
 
 const ROUTE_UUIDS = {
@@ -18,35 +18,35 @@ const ROUTE_UUIDS = {
 };
 
 const tags: Tags[] = [
-	{ id: '1', label: 'Кремль' },
-	{ id: '2', label: 'История' },
-	{ id: '3', label: 'Архитектура' },
-	{ id: '4', label: 'Пешеходный' },
-	{ id: '5', label: 'Улица' },
-	{ id: '6', label: 'Достопримечательности' },
-	{ id: '7', label: 'Набережная' },
-	{ id: '8', label: 'Вид' },
-	{ id: '9', label: 'Фото' },
-	{ id: '10', label: 'Лестница' },
-	{ id: '11', label: 'Монумент' },
-	{ id: '12', label: 'Современный' },
-	{ id: '13', label: 'Река' },
-	{ id: '14', label: 'Спорт' },
-	{ id: '15', label: 'Парк' },
-	{ id: '16', label: 'Отдых' },
-	{ id: '17', label: 'Прогулка' },
-	{ id: '18', label: 'Природа' },
-	{ id: '19', label: 'Активный отдых' },
-	{ id: '20', label: 'Транспорт' },
-	{ id: '21', label: 'Экскурсия' },
-	{ id: '22', label: 'Культура' },
-	{ id: '23', label: 'Рестораны' },
-	{ id: '24', label: 'Монастырь' },
-	{ id: '25', label: 'Духовное' },
-	{ id: '26', label: 'Развлечения' },
-	{ id: '27', label: 'Семейный' },
-	{ id: '28', label: 'Лес' },
-	{ id: '29', label: 'Треккинг' },
+	{ id: '1', title: 'Кремль' },
+	{ id: '2', title: 'История' },
+	{ id: '3', title: 'Архитектура' },
+	{ id: '4', title: 'Пешеходный' },
+	{ id: '5', title: 'Улица' },
+	{ id: '6', title: 'Достопримечательности' },
+	{ id: '7', title: 'Набережная' },
+	{ id: '8', title: 'Вид' },
+	{ id: '9', title: 'Фото' },
+	{ id: '10', title: 'Лестница' },
+	{ id: '11', title: 'Монумент' },
+	{ id: '12', title: 'Современный' },
+	{ id: '13', title: 'Река' },
+	{ id: '14', title: 'Спорт' },
+	{ id: '15', title: 'Парк' },
+	{ id: '16', title: 'Отдых' },
+	{ id: '17', title: 'Прогулка' },
+	{ id: '18', title: 'Природа' },
+	{ id: '19', title: 'Активный отдых' },
+	{ id: '20', title: 'Транспорт' },
+	{ id: '21', title: 'Экскурсия' },
+	{ id: '22', title: 'Культура' },
+	{ id: '23', title: 'Рестораны' },
+	{ id: '24', title: 'Монастырь' },
+	{ id: '25', title: 'Духовное' },
+	{ id: '26', title: 'Развлечения' },
+	{ id: '27', title: 'Семейный' },
+	{ id: '28', title: 'Лес' },
+	{ id: '29', title: 'Треккинг' },
 ];
 
 const kremlinCheckpoints: Checkpoint[] = [

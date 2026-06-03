@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './RouteOfDay.module.scss';
 import { Blur, Button } from '@ui';
-import { Route } from '../../types/route';
+import { Route } from '../../types/Route';
 
 interface RouteOfTheDayProps {
 	route: Route;
@@ -16,7 +16,6 @@ export const RouteOfTheDay: React.FC<RouteOfTheDayProps> = ({
 		<Blur className={styles.container}>
 			<h2 className={styles.title}>
 				Маршрут дня: <br />
-				{route.name}
 			</h2>
 			<Button
 				variant='primary'

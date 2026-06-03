@@ -45,12 +45,12 @@ const friend2: Friend = {
 };
 
 const routeTags: Tags[] = [
-	{ id: '1', label: 'Кремль' },
-	{ id: '2', label: 'История' },
-	{ id: '3', label: 'Архитектура' },
-	{ id: '4', label: 'Пешеходный' },
-	{ id: '5', label: 'Улица' },
-	{ id: '6', label: 'Достопримечательности' },
+	{ id: '1', title: 'Кремль' },
+	{ id: '2', title: 'История' },
+	{ id: '3', title: 'Архитектура' },
+	{ id: '4', title: 'Пешеходный' },
+	{ id: '5', title: 'Улица' },
+	{ id: '6', title: 'Достопримечательности' },
 ];
 
 const recentRoutesList: Route[] = [

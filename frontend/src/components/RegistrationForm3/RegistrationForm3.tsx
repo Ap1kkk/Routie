@@ -3,7 +3,7 @@ import { Button, Tag } from '@ui';
 
 import styles from './RegistrationForm3.module.scss';
 import s from '../RegistrationForm/RegistrationForm.module.scss';
-import { getAllTags } from '../../utils/api/tags-spi';
+import { getAllTags } from '../../utils/api/TagApi';
 
 interface TagItem {
 	id: string;
