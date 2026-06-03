@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Tag } from '@ui';
+import { Link, useNavigate } from 'react-router-dom';
+import { Blur, Tag } from '@ui';
 import { Route } from '../../types/route';
 import { Tags } from '../../types/tags';
 
@@ -28,6 +28,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 }) => {
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [localLiked, setLocalLiked] = useState(isLiked);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		setLocalLiked(isLiked);
@@ -71,21 +72,25 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 
 	if (variant === 'compact') {
 		return (
-			<Link className={styles.compactCard} to={`/map/${route.id}`}>
+			<Blur
+				className={styles.compactCard}
+				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
 					alt={route.name}
-					className={styles.compactRouteImage}
+					className={styles.imageContainerCompact}
 					loading='lazy'
 				/>
 				<span className={styles.compactRouteName}>{route.name}</span>
-			</Link>
+			</Blur>
 		);
 	}
 
 	if (variant === 'standard') {
 		return (
-			<Link className={styles.standartCard} to={`/map/${route.id}`}>
+			<Blur
+				className={styles.standartCard}
+				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
 					alt={route.name}
@@ -94,6 +99,17 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				/>
 				<div className={styles.standartContent}>
 					<h3 className={styles.standartCardTitle}>{route.name}</h3>
+					{onToggleLike && (
+						<button
+							className={`${styles.standartLike} ${
+								localLiked ? styles.liked : ''
+							} ${isAnimating ? styles.animating : ''}`}
+							onClick={handleLikeClick}
+							aria-label='Добавить в избранное'
+							type='button'>
+							{localLiked ? <LikeActive /> : <Like />}
+						</button>
+					)}
 					<span className={styles.standartDistance}>
 						{formatDistance(route.distance)}
 					</span>
@@ -107,18 +123,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 						</div>
 					)}
 				</div>
-				{onToggleLike && (
-					<button
-						className={`${styles.standartLike} ${
-							localLiked ? styles.liked : ''
-						} ${isAnimating ? styles.animating : ''}`}
-						onClick={handleLikeClick}
-						aria-label='Добавить в избранное'
-						type='button'>
-						{localLiked ? <LikeActive /> : <Like />}
-					</button>
-				)}
-			</Link>
+			</Blur>
 		);
 	}
 

@@ -1,0 +1,45 @@
+.marker {
+  position: relative;
+  cursor: pointer;
+}
+
+.markerCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.markerStart {
+  background: #4caf50;
+}
+
+.markerFinish {
+  background: #f44336;
+}
+
+.markerArrow {
+  position: absolute;
+  left: 50%;
+  bottom: -15px;
+  transform: translateX(-50%);
+
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.markerArrowStart {
+  border-top: 10px solid #4caf50;
+}
+
+.markerArrowFinish {
+  border-top: 10px solid #f44336;
+}

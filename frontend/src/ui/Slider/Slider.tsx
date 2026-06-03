@@ -9,6 +9,7 @@ import 'swiper/css/pagination';
 import styles from './Slider.module.scss';
 import { ReactComponent as ChevronLeftIcon } from '../../assets/icons/chevron-left.svg';
 import { ReactComponent as ChevronRightIcon } from '../../assets/icons/chevron-right.svg';
+import { Blur } from '../Blur';
 
 interface SliderProps {
 	cards: React.ReactNode[];
@@ -36,10 +37,12 @@ export const Slider: React.FC<SliderProps> = ({
 	return (
 		<div className={`${styles.sliderOuter} ${className}`}>
 			{showArrows && (
-				<ChevronLeftIcon
-					className={`${styles.arrow} ${styles.arrowLeft}`}
-					onClick={() => swiperInstance.current?.slidePrev()}
-				/>
+				<Blur className={`${styles.arrowBlur} ${styles.arrowLeft}`}>
+					<ChevronLeftIcon
+						className={styles.arrow}
+						onClick={() => swiperInstance.current?.slidePrev()}
+					/>
+				</Blur>
 			)}
 
 			<div className={styles.sliderContainer}>
@@ -80,10 +83,12 @@ export const Slider: React.FC<SliderProps> = ({
 			</div>
 
 			{showArrows && (
-				<ChevronRightIcon
-					className={`${styles.arrow} ${styles.arrowRight}`}
-					onClick={() => swiperInstance.current?.slideNext()}
-				/>
+				<Blur className={`${styles.arrowBlur} ${styles.arrowRight}`}>
+					<ChevronRightIcon
+						className={styles.arrow}
+						onClick={() => swiperInstance.current?.slideNext()}
+					/>
+				</Blur>
 			)}
 		</div>
 	);
