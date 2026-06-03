@@ -52,6 +52,8 @@ mvc:
 
 springdoc:
   swagger-ui:
+    tags-sorter: ""
+    operations-sorter: method
     schemes:
       dev: http://localhost:${server.port}
       prod: https://${SERVER_HOST:localhost}
@@ -59,6 +61,8 @@ springdoc:
 security:
   jwt:
     secret: ${JWT_SECRET:5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
+    expiration: 900           # 15 минут
+    refresh-expiration: 2592000 # 30 дней
   cors:
     allowed-origin: ${server.protocol}://${server.host}:3000, https://demo.maps.vk.com/api/directions
 

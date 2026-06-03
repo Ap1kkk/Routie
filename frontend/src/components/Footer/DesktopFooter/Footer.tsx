@@ -6,11 +6,8 @@ import { ReactComponent as Compass } from '../../../assets/images/compass.svg';
 export const Footer = () => {
 	const currentYear = new Date().getFullYear();
 
-	const [isLightTheme, setIsLightTheme] = useState<boolean>(() => {
+	const [theme] = useState<boolean>(() => {
 		const saved = localStorage.getItem('theme');
-		if (saved === null) {
-			return !window.matchMedia('(prefers-color-scheme: dark)').matches;
-		}
 		return saved === 'light';
 	});
 
@@ -20,7 +17,7 @@ export const Footer = () => {
 				<Link to='/routie' className={styles.logoContainer}>
 					<Compass
 						className={
-							isLightTheme ? styles.logoLight : styles.logoDark
+							theme ? styles.logoLight : styles.logoDark
 						}
 					/>
 					<span className={styles.logoTitle}>Routie</span>

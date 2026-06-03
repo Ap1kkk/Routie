@@ -430,7 +430,7 @@ const pokrovskayaCheckpoints: Checkpoint[] = [
 
 export const mockRoutePokrovskaya: Route = {
 	id: ROUTE_UUIDS.POKROVSKAYA,
-	name: 'Большая Покровская улица',
+	name: 'Большая Покровская',
 	distance: 1400,
 	checkpoints: pokrovskayaCheckpoints,
 	tags: [tags[3], tags[4], tags[5]],

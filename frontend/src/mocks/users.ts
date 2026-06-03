@@ -1,4 +1,3 @@
-import userExample from '../assets/images/avatarProfile/avatar2.png';
 import {
 	User,
 	Friend,
@@ -37,14 +36,12 @@ const friend1: Friend = {
 	id: USER_UUIDS.FRIEND_1,
 	username: '@anna_smirnova',
 	name: 'Анна Смирнова',
-	avatar: '/avatars/anna.jpg',
 };
 
 const friend2: Friend = {
 	id: USER_UUIDS.FRIEND_2,
 	username: '@dima_ivanov',
 	name: 'Дмитрий Иванов',
-	avatar: '/avatars/dima.jpg',
 };
 
 const routeTags: Tags[] = [
@@ -228,10 +225,10 @@ export const MOCK_USER_FRIENDS: FriendsUser = {
 	friends: [friend1, friend2],
 };
 
-export const MOCK_USER_AVATAR: AvatarUser = {
+export const MOCK_USER_AVATAR: { id: string; user_id: string } = {
 	id: generateUUID(),
 	user_id: USER_UUIDS.CURRENT,
-	avatar: userExample,
+	avatar:
 };
 
 export const MOCK_USER_TAGS: UserTags = {
@@ -291,7 +288,7 @@ export const getUserById = (id: string): User | undefined => {
 };
 
 export const getUserAvatar = (userId: string): string | undefined => {
-	if (userId === USER_UUIDS.CURRENT) return userExample;
+	userId === USER_UUIDS.CURRENT;
 	if (userId === USER_UUIDS.FRIEND_1) return '/avatars/anna.jpg';
 	if (userId === USER_UUIDS.FRIEND_2) return '/avatars/dima.jpg';
 	return undefined;

@@ -2,6 +2,6 @@ export interface AchievementItem {
 	id: string;
 	title: string;
 	value: number;
-	finishValue: number; // цель
+	finishValue: number;
 	caption: string;
 }

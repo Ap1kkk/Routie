@@ -59,9 +59,13 @@
 	--color-error: #bf3920;
 
 	/* Тени */
-	--shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
-	--shadow-blur: 0 8px 20px rgba(0, 0, 0, 0.08);
 	--shadow-card: 0 6px 12px rgba(0, 0, 0, 0.15);
+	--shadow-blur: 0 3px 10px 3px rgba(0, 0, 0, 0.2);
+
+	/* Фон для блюра */
+	--blur-background: rgba(255, 255, 255, 0.65);
+	--blur-border: rgba(255, 255, 255, 0.8);
+	--blur-accent: rgba(171, 210, 122, 0.65);
 
 	/* Теги (категории) */
 	--color-tag-business: #eee7f7;
@@ -129,9 +133,13 @@
 	--color-button-hover: #2a3a1c;
 
 	/* Тени */
-	--shadow-soft: 0 2px 6px rgba(255, 255, 255, 0.05);
-	--shadow-blur: 0 8px 20px rgba(255, 255, 255, 0.08);
 	--shadow-card: 0 0 20px rgba(255, 255, 255, 0.04);
+	--shadow-blur: 0 3px 10px 3px rgba(255, 255, 255, 0.05);
+
+	/* Фон для блюра */
+	--blur-background: rgba(15, 18, 12, 0.45);
+	--blur-border: rgba(15, 18, 12, 0.1);
+	--blur-accent: rgba(74, 107, 46, 0.65);
 
 	/* Статусы */
 	--color-alarm: #e0796e;
