@@ -1,9 +1,13 @@
 package ru.ngtu.v1.routie.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,8 +24,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import ru.ngtu.v1.routie.config.properties.CorsConfigProperties;
 import ru.ngtu.v1.routie.config.properties.JwtConfigProperties;
+import ru.ngtu.v1.routie.dto.common.ApiError;
+import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.security.JwtAuthenticationFilter;
 import ru.ngtu.v1.routie.security.UserDetailsServiceImpl;
+
+import java.time.LocalDateTime;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -43,6 +51,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsServiceImpl userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(CorsConfigProperties corsProperties) {
@@ -69,6 +78,14 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                writeError(response, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Необходима авторизация")
+                        )
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                writeError(response, HttpStatus.FORBIDDEN, "FORBIDDEN", "Недостаточно прав")
+                        )
+                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -86,5 +103,20 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    private void writeError(
+            HttpServletResponse response,
+            HttpStatus status,
+            String code,
+            String message
+    ) throws java.io.IOException {
+        ApiError error = new ApiError(code, message, null, LocalDateTime.now());
+        ApiResponse<Void> body = new ApiResponse<>(false, null, error);
+
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getWriter(), body);
     }
 }

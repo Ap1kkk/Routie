@@ -50,7 +50,7 @@ public class ProfileControllerV1 {
     return ApiResponse.of(profileService.getShortUserProfile(userId));
   }
 
-  @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PatchMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Загрузка или обновление аватарки")
   public ApiResponse<MediaFileResponse> uploadAvatar(@RequestPart("file") MultipartFile file) {
     return ApiResponse.of(profileService.uploadAvatar(file));

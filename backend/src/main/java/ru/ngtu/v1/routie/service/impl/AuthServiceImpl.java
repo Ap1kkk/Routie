@@ -2,8 +2,11 @@ package ru.ngtu.v1.routie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import ru.ngtu.v1.routie.exception.BadRequestException;
+import ru.ngtu.v1.routie.exception.ConflictException;
+import ru.ngtu.v1.routie.exception.EntityNotFoundException;
+import ru.ngtu.v1.routie.exception.UnauthorizedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +38,10 @@ public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
     @Transactional
     public AuthResponse register(UserRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email уже используется");
+            throw new ConflictException("Email уже используется");
         }
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username уже занят");
+            throw new ConflictException("Username уже занят");
         }
 
         User user = User.builder()
@@ -59,10 +62,10 @@ public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Неверный email или пароль"));
+                .orElseThrow(() -> new UnauthorizedException("Неверный email или пароль"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new BadCredentialsException("Неверный email или пароль");
+            throw new UnauthorizedException("Неверный email или пароль");
         }
 
         log.info("Авторизация пользователя: {}", user.getEmail());
@@ -75,11 +78,11 @@ public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
         String tokenHash = jwtService.hashToken(request.getRefreshToken());
 
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new IllegalArgumentException("Refresh-токен недействителен"));
+                .orElseThrow(() -> new UnauthorizedException("Refresh-токен недействителен"));
 
         if (refreshToken.getExpiresAt().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new IllegalArgumentException("Refresh-токен истёк");
+            throw new UnauthorizedException("Refresh-токен истёк");
         }
 
         refreshTokenRepository.delete(refreshToken);
@@ -137,6 +140,6 @@ public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
                 .getPrincipal();
 
         return userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new IllegalStateException("Аутентифицированный пользователь не найден в БД"));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь", userDetails.getId()));
     }
 }
