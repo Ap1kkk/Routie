@@ -44,7 +44,7 @@ export const updateAchievementProgress = async (
 			{
 				method: 'PATCH',
 				headers: getHeaders(true),
-				body: JSON.stringify({ value: `${progress}%` }),
+				body: JSON.stringify({ value: progress }),
 			}
 		);
 		return await handleResponse<AchievementItem>(response);
