@@ -86,44 +86,48 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 	}
 );
 
-export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
-	'user/fetchUser',
-	async (_, { rejectWithValue }) => {
-		const response = await getUserApi();
-		if (!response.success || response.error)
-			return rejectWithValue(
-				response.error?.message || 'Ошибка получения пользователя'
-			);
-
-		if (!response.data)
-			return rejectWithValue('Ошибка получения пользователя: данные не получены');
-
-		return response.data as unknown as User;
-	}
-);
-
 export const refreshToken = createAsyncThunk<
-	LoginResponseWithTokens,
+	LoginResponseWithTokens | null,
 	void,
 	{ rejectValue: string }
->('user/refreshToken',
-	async (_, { rejectWithValue }) => {
-		const response = await refreshTokenApi();
-		if (!response.success || response.error) {
-			clearTokens();
-			return rejectWithValue(
-				response.error?.message || 'Ошибка обновления токена'
-			);
-		}
+>('user/refreshToken', async (_, { rejectWithValue }) => {
+	const response = await refreshTokenApi();
 
-		if (!response.data) {
-			clearTokens();
-			return rejectWithValue('Ошибка обновления токена: данные не получены');
-		}
-
-		return response.data;
+	if (!response.success || !response.data) {
+		clearTokens();
+		return rejectWithValue(
+			response.error?.message || 'Ошибка обновления токена'
+		);
 	}
-);
+
+	return response.data;
+});
+
+export const fetchUser = createAsyncThunk<
+	User,
+	void,
+	{ rejectValue: string }
+>('user/fetchUser', async (_, { rejectWithValue, dispatch }) => {
+	let response = await getUserApi();
+
+	if (!response.success) {
+		const refreshResult = await dispatch(refreshToken())
+			.unwrap()
+			.catch(() => null);
+
+		if (refreshResult) {
+			response = await getUserApi();
+		}
+	}
+
+	if (!response.success || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения пользователя'
+		);
+	}
+
+	return response.data as User;
+});
 
 const userSlice = createSlice({
 	name: 'user',
@@ -183,11 +187,11 @@ const userSlice = createSlice({
 				state.data = null;
 			})
 
-			.addCase(refreshToken.fulfilled, (state) => {
-			})
+			.addCase(refreshToken.fulfilled, (state) => {})
 			.addCase(refreshToken.rejected, (state) => {
 				state.isAuthenticated = false;
 				state.data = null;
+				state.isAuthChecked = true;
 			});
 	},
 });

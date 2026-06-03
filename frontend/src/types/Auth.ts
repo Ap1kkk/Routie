@@ -22,6 +22,7 @@ export interface AuthTokensResponse {
 	accessToken: string;
 	tokenType: string;
 	expiresIn: number;
+	refreshToken: string;
 }
 
 export interface RegisterResponse extends AuthTokensResponse {
