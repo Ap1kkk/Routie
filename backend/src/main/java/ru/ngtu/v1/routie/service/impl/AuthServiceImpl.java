@@ -132,12 +132,16 @@ public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
     }
 
     private User getCurrentAuthenticatedUser() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getPrincipal();
 
-        return userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь", userDetails.getId()));
+            return userRepository.findById(userDetails.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Пользователь", userDetails.getId()));
+        } catch (ClassCastException e) {
+            throw new UnauthorizedException("Необходима авторизация");
+        }
     }
 }
