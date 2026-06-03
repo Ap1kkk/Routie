@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../../../types/User';
-import { clearTokens, storeTokens } from '../../../utils/auth';
+import { clearTokens } from '../../../utils/auth';
 import {
 	getUserApi,
 	loginUserApi,

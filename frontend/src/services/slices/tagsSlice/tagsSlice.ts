@@ -1,4 +1,4 @@
-import { Tag, TagCreateRequest, TagUpdateRequest } from '../../../types/Tags';
+import { Tags, TagCreateRequest, TagUpdateRequest } from '../../../types/Tags';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
 	createTagApi,
@@ -9,8 +9,8 @@ import {
 } from '../../../utils/api/TagApi';
 
 type TTagState = {
-	allTags: Tag[] | null;
-	currentTag: Tag | null;
+	allTags: Tags[] | null;
+	currentTag: Tags | null;
 	isLoading: boolean;
 	error: string | null;
 };
@@ -23,7 +23,7 @@ const tagInitialState: TTagState = {
 };
 
 export const fetchAllTags = createAsyncThunk<
-	Tag[],
+	Tags[],
 	void,
 	{ rejectValue: string }
 >('tag/fetchAllTags', async (_, { rejectWithValue }) => {
@@ -40,7 +40,7 @@ export const fetchAllTags = createAsyncThunk<
 });
 
 export const fetchTag = createAsyncThunk<
-	Tag,
+	Tags,
 	string,
 	{ rejectValue: string }
 >('tag/fetchTag', async (tagId, { rejectWithValue }) => {
@@ -57,7 +57,7 @@ export const fetchTag = createAsyncThunk<
 });
 
 export const createTag = createAsyncThunk<
-	Tag,
+	Tags,
 	TagCreateRequest,
 	{ rejectValue: string }
 >('tag/createTag', async (data, { rejectWithValue }) => {
@@ -74,7 +74,7 @@ export const createTag = createAsyncThunk<
 });
 
 export const updateTag = createAsyncThunk<
-	Tag,
+	Tags,
 	{ tagId: string; data: TagUpdateRequest },
 	{ rejectValue: string }
 >('tag/updateTag', async ({ tagId, data }, { rejectWithValue }) => {

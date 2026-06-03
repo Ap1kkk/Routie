@@ -87,10 +87,6 @@ export const router = createBrowserRouter([
 						element: <StatisticPage />,
 					},
 					{
-						path: '/achievement',
-						element: <AchievementPage />,
-					},
-					{
 						path: '/profile/edit',
 						element: <EditProfilePage />,
 					},

@@ -9,7 +9,6 @@ export const EditProfilePage = () => {
 		weight: MOCK_USER.weight,
 		height: MOCK_USER.height,
 		avatar: null,
-		avatarUrl: MOCK_USER_AVATAR.avatar,
 		preferences: MOCK_USER_TAGS.tags.map((tag : any) => tag.id),
 	};
 
