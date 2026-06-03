@@ -9,30 +9,32 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "routie_users")
+@Table(
+        name = "friendships",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"requester_id", "addressee_id"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Friendship {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "requester_id", nullable = false)
+    private User requester;
 
-    @Column(nullable = false, unique = true)
-    private String username;
-
-    @Column(nullable = false)
-    private String passwordHash;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "addressee_id", nullable = false)
+    private User addressee;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role;
+    private FriendshipStatus status;
 
     @CreationTimestamp
     private Instant createdAt;
