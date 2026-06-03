@@ -7,14 +7,14 @@ import {
 	validateWeight,
 	validateHeight,
 	validateAge,
-} from '../../../utils/validator';
+} from '../../utils/validator';
 import { Avatar, Input, Button, Select } from '@ui';
-import { DatePicker } from '../../../ui/DataPicker';
-import { useDeviceType } from '../../../hooks/useDeviceType';
+import { DatePicker } from '../../ui/DataPicker';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
-import { ReactComponent as IconAdd } from '../../../assets/icons/IconAdd.svg';
+import { ReactComponent as IconAdd } from '../../assets/icons/IconAdd.svg';
 
-import s from '../RegistrationForm.module.scss';
+import s from '../RegistrationForm/RegistrationForm.module.scss';
 import styles from './RegistrationForm2.module.scss';
 
 interface RegistrationForm2Props {
@@ -38,6 +38,7 @@ export const RegistrationForm2 = ({
 	onPrev,
 }: RegistrationForm2Props) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(
 		data.avatar ? URL.createObjectURL(data.avatar) : null
 	);
@@ -62,6 +63,7 @@ export const RegistrationForm2 = ({
 		height: false,
 	});
 
+	// Очистка preview при размонтировании
 	useEffect(() => {
 		return () => {
 			if (avatarPreview) {
@@ -70,24 +72,27 @@ export const RegistrationForm2 = ({
 		};
 	}, [avatarPreview]);
 
+	// Синхронизация данных из props
 	useEffect(() => {
-		if (data.birthDate !== birthDate) {
-			setBirthDate(data.birthDate || null);
-		}
-	}, [data.birthDate]);
+		setName(data.name || '');
+		setGender(data.gender || '');
+		setBirthDate(data.birthDate || null);
+		setWeight(data.weight || '');
+		setHeight(data.height || '');
+	}, [data]);
 
+	// Валидации
 	const nameValidation = useMemo(() => {
-		if (!name) {
+		if (!name?.trim()) {
 			return { isValid: false, errorMessage: 'Имя обязательно' };
 		}
 		return validateName(name);
 	}, [name]);
 
 	const genderValidation = useMemo(() => {
-		if (!gender) {
-			return { isValid: false, errorMessage: 'Выберите пол' };
-		}
-		return { isValid: true, errorMessage: '' };
+		return gender
+			? { isValid: true, errorMessage: '' }
+			: { isValid: false, errorMessage: 'Выберите пол' };
 	}, [gender]);
 
 	const birthDateValidation = useMemo(() => {
@@ -101,35 +106,27 @@ export const RegistrationForm2 = ({
 		return validateAge(selectedDate);
 	}, [birthDate]);
 
-	const weightValidation = useMemo(() => {
-		if (!weight && weight !== 0) {
-			return { isValid: false, errorMessage: 'Вес обязателен' };
-		}
-		return validateWeight(weight);
-	}, [weight]);
-
-	const heightValidation = useMemo(() => {
-		if (!height && height !== 0) {
-			return { isValid: false, errorMessage: 'Рост обязателен' };
-		}
-		return validateHeight(height);
-	}, [height]);
+	const weightValidation = useMemo(() => validateWeight(weight), [weight]);
+	const heightValidation = useMemo(() => validateHeight(height), [height]);
 
 	const showNameError = touched.name && !nameValidation.isValid;
 	const showGenderError = touched.gender && !genderValidation.isValid;
 	const showWeightError = touched.weight && !weightValidation.isValid;
 	const showHeightError = touched.height && !heightValidation.isValid;
 
+	// Основная проверка заполненности и валидности
 	const isAllFieldsFilled = useMemo(() => {
 		return (
-			name.trim() !== '' &&
-			gender !== '' &&
-			birthDate !== null &&
+			name?.trim().length > 0 &&
+			gender?.length > 0 &&
+			birthDate != null &&
 			birthDate !== '' &&
 			weight !== '' &&
 			weight !== null &&
+			Number(weight) > 0 &&
 			height !== '' &&
-			height !== null
+			height !== null &&
+			Number(height) > 0
 		);
 	}, [name, gender, birthDate, weight, height]);
 
@@ -151,6 +148,7 @@ export const RegistrationForm2 = ({
 		heightValidation.isValid,
 	]);
 
+	// Обработчики
 	const handleAvatarClick = () => {
 		fileInputRef.current?.click();
 	};
@@ -188,15 +186,13 @@ export const RegistrationForm2 = ({
 	const handleGenderChange = (value: string) => {
 		setGender(value);
 		setTouched((prev) => ({ ...prev, gender: true }));
-		if (value) {
-			updateData('gender', value);
-		}
+		updateData('gender', value);
 	};
 
 	const handleBirthDateChange = (date: number | string | null) => {
 		setBirthDate(date);
 		setTouched((prev) => ({ ...prev, birthDate: true }));
-		if (date && validateAge(new Date(date)).isValid) {
+		if (date) {
 			updateData('birthDate', date);
 		}
 	};
@@ -242,39 +238,18 @@ export const RegistrationForm2 = ({
 			height: true,
 		});
 
-		console.log('Form validation:', {
-			isFormValid,
-			name: { value: name, isValid: nameValidation.isValid },
-			gender: { value: gender, isValid: genderValidation.isValid },
-			birthDate: {
-				value: birthDate,
-				isValid: birthDateValidation.isValid,
-			},
-			weight: { value: weight, isValid: weightValidation.isValid },
-			height: { value: height, isValid: heightValidation.isValid },
-		});
-
 		if (isFormValid) {
-			if (nameValidation.isValid && name) {
-				updateData('name', name);
-			}
-			if (gender) {
-				updateData('gender', gender);
-			}
-			if (birthDate && birthDateValidation.isValid) {
-				updateData('birthDate', birthDate);
-			}
-			if (weightValidation.isValid && weight !== '') {
-				updateData('weight', weight);
-			}
-			if (heightValidation.isValid && height !== '') {
-				updateData('height', height);
-			}
+			// Финальное сохранение данных
+			updateData('name', name);
+			updateData('gender', gender);
+			updateData('birthDate', birthDate);
+			updateData('weight', weight);
+			updateData('height', height);
 
-			console.log('Form is valid, moving to next step');
+			console.log('✅ Форма валидна — переходим на следующий шаг');
 			onNext();
 		} else {
-			console.log('Form is invalid, cannot proceed');
+			console.log('❌ Форма ещё не заполнена корректно');
 		}
 	};
 
@@ -290,6 +265,7 @@ export const RegistrationForm2 = ({
 			</div>
 
 			<form onSubmit={handleSubmit} className={styles.form} noValidate>
+				{/* Аватар */}
 				<div className={styles.avatarSection}>
 					<div
 						className={styles.userPhotoAdd}
@@ -316,6 +292,7 @@ export const RegistrationForm2 = ({
 					)}
 				</div>
 
+				{/* Имя */}
 				<Input
 					id='name'
 					type='text'
@@ -331,6 +308,7 @@ export const RegistrationForm2 = ({
 					}
 				/>
 
+				{/* Пол */}
 				<Select
 					label='Выберите пол'
 					options={[
@@ -348,6 +326,7 @@ export const RegistrationForm2 = ({
 					}
 				/>
 
+				{/* Дата рождения */}
 				<DatePicker
 					label='Дата рождения'
 					date={birthDate}
@@ -355,6 +334,7 @@ export const RegistrationForm2 = ({
 					placeholder='дд.мм.гггг'
 				/>
 
+				{/* Вес и Рост */}
 				<div className={styles.row}>
 					<Input
 						type='number'
@@ -393,6 +373,7 @@ export const RegistrationForm2 = ({
 					/>
 				</div>
 
+				{/* Кнопки */}
 				<div className={styles.buttons}>
 					<Button
 						type='button'

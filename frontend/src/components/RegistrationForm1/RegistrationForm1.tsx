@@ -3,11 +3,11 @@ import {
 	validateConfirmPassword,
 	validateEmail,
 	validatePassword,
-} from '../../../utils/validator';
+} from '../../utils/validator';
 import { Button, Input } from '@ui';
 import { Link } from 'react-router-dom';
 
-import s from '../RegistrationForm.module.scss';
+import s from '../RegistrationForm/RegistrationForm.module.scss';
 import styles from './RegistrationForm1.module.scss';
 
 interface RegistrationForm1Props {

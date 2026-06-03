@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { RegistrationForm1 } from './RegistrationForm1/RegistrationForm1';
-import { RegistrationForm2 } from './RegistrationForm2/RegistrationForm2';
-import { RegistrationForm3 } from './RegistrationForm3/RegistrationForm3';
+import { RegistrationForm1 } from '../RegistrationForm1/RegistrationForm1';
+import { RegistrationForm2 } from '../RegistrationForm2/RegistrationForm2';
+import { RegistrationForm3 } from '../RegistrationForm3/RegistrationForm3';
 
 import { useNavigate } from 'react-router-dom';
 
