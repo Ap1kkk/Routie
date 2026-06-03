@@ -228,6 +228,7 @@ export const MOCK_USER_FRIENDS: FriendsUser = {
 export const MOCK_USER_AVATAR: { id: string; user_id: string } = {
 	id: generateUUID(),
 	user_id: USER_UUIDS.CURRENT,
+	avatar:
 };
 
 export const MOCK_USER_TAGS: UserTags = {

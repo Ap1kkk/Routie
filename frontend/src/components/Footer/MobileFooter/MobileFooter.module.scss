@@ -9,11 +9,10 @@
 	left: 10px;
 	right: 10px;
 	border-radius: 36px;
-	background: transparent;
+	background: var(--blur-background);
 	backdrop-filter: blur(4px);
 	-webkit-backdrop-filter: blur(4px);
-	box-shadow: var(--shadow-card);
-	border: 1px solid var(--color-card);
+	border: 1px solid var(--blur-border);
 	display: flex;
 	align-items: center;
 	justify-content: space-around;
@@ -28,7 +27,7 @@
 	bottom: 3px;
 	left: 0;
 	border-radius: 36px;
-	background: rgba(128, 128, 128, 0.15);
+	background: rgba(128, 128, 128, 0.5);
 	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
 		width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 	pointer-events: none;

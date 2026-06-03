@@ -8,14 +8,14 @@
 	position: fixed;
 	top: 15px;
 	display: flex;
-	background: transparent;
+	background: var(--blur-background);
 	border-radius: 36px;
 	backdrop-filter: blur(4px);
 	-webkit-backdrop-filter: blur(4px);
-	box-shadow: var(--shadow-card);
-	border: 1px solid var(--color-card);
+	box-shadow: var(--shadow-blur);
+	border: 1px solid var(--blur-border);
 	transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-	z-index: 1;
+	z-index: 5;
 }
 
 .closeButton {
