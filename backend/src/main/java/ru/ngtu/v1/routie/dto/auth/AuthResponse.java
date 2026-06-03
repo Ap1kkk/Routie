@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
 
-  @Schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-  private String accessToken;
-  private String tokenType = "Bearer";
-  private Integer expiresIn;
+    @Schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    private String accessToken;
+    private String tokenType = "Bearer";
+    private Integer expiresIn;
+    private String refreshToken;
 }

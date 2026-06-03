@@ -2,42 +2,22 @@ package ru.ngtu.v1.routie.service;
 
 import ru.ngtu.v1.routie.dto.auth.AuthResponse;
 import ru.ngtu.v1.routie.dto.auth.LoginRequest;
+import ru.ngtu.v1.routie.dto.auth.RefreshTokenRequest;
 import ru.ngtu.v1.routie.dto.auth.RolesResponse;
 import ru.ngtu.v1.routie.dto.auth.UserMeResponse;
 import ru.ngtu.v1.routie.dto.auth.UserRegisterRequest;
 
-/**
- * Сервис идентификации и авторизации пользователей
- */
 public interface AuthService {
 
-  /**
-   * Регистрация нового пользователя
-   */
-  AuthResponse register(UserRegisterRequest request);
+    AuthResponse register(UserRegisterRequest request);
 
-  /**
-   * Авторизация пользователя по email и паролю
-   */
-  AuthResponse login(LoginRequest request);
+    AuthResponse login(LoginRequest request);
 
-  /**
-   * Обновление access-токена с помощью refresh-токена
-   */
-  AuthResponse refreshToken();
+    AuthResponse refreshToken(RefreshTokenRequest request);
 
-  /**
-   * Выход из системы (инвалидация refresh-токена)
-   */
-  void logout();
+    void logout(RefreshTokenRequest request);
 
-  /**
-   * Получение информации о текущем авторизованном пользователе
-   */
-  UserMeResponse getCurrentUser();
+    UserMeResponse getCurrentUser();
 
-  /**
-   * Получение ролей текущего пользователя
-   */
-  RolesResponse getCurrentUserRoles();
+    RolesResponse getCurrentUserRoles();
 }

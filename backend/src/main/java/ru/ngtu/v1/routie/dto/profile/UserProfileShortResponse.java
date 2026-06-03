@@ -11,12 +11,11 @@ import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 @AllArgsConstructor
 public class UserProfileShortResponse {
 
-  private UUID id;
-  private String firstName;
-  private String lastName;
-  private MediaFileResponse avatar;
-  private Integer currentLevel;
-  private Integer totalXp;
-  private String city;
-  private Boolean isFriend;
+    private UUID id;
+    private String name;
+    private MediaFileResponse avatar;
+    private Integer currentLevel;
+    private Integer totalXp;
+    private String city;
+    private Boolean isFriend;
 }

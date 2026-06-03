@@ -228,8 +228,7 @@ public class FakeDataFactory {
     public static UserProfileShortResponse fakeUserProfileShort() {
         return new UserProfileShortResponse(
                 UUID.randomUUID(),
-                faker.name().firstName(),
-                faker.name().lastName(),
+                faker.name().fullName(),
                 fakeMediaFile(),
                 faker.number().numberBetween(1, 50),
                 faker.number().numberBetween(0, 10000),

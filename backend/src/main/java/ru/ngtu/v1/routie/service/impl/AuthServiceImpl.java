@@ -2,82 +2,141 @@ package ru.ngtu.v1.routie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.ngtu.v1.routie.config.properties.JwtConfigProperties;
+import ru.ngtu.v1.routie.dto.auth.*;
+import ru.ngtu.v1.routie.model.RefreshToken;
+import ru.ngtu.v1.routie.model.User;
+import ru.ngtu.v1.routie.model.UserRole;
+import ru.ngtu.v1.routie.repository.RefreshTokenRepository;
+import ru.ngtu.v1.routie.repository.UserRepository;
+import ru.ngtu.v1.routie.security.CustomUserDetails;
+import ru.ngtu.v1.routie.security.JwtService;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
-import ru.ngtu.v1.routie.dto.auth.AuthResponse;
-import ru.ngtu.v1.routie.dto.auth.LoginRequest;
-import ru.ngtu.v1.routie.dto.auth.RolesResponse;
-import ru.ngtu.v1.routie.dto.auth.UserMeResponse;
-import ru.ngtu.v1.routie.dto.auth.UserRegisterRequest;
-import ru.ngtu.v1.routie.service.AuthService;
 
-/**
- * Мок-реализация AuthService для локальной разработки и тестирования
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class AuthServiceImpl implements ru.ngtu.v1.routie.service.AuthService {
 
-  private static final String MOCK_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mok-token-1234567890";
-  private static final UUID MOCK_USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final JwtConfigProperties jwtProperties;
 
-  @Override
-  public AuthResponse register(UserRegisterRequest request) {
-    log.info("Мок-регистрация пользователя: {}", request.getEmail());
+    @Override
+    @Transactional
+    public AuthResponse register(UserRegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email уже используется");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username уже занят");
+        }
 
-    return createMockAuthResponse();
-  }
+        User user = User.builder()
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .name(request.getName())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(UserRole.USER)
+                .build();
 
-  @Override
-  public AuthResponse login(LoginRequest request) {
-    log.info("Мок-авторизация пользователя: {}", request.getEmail());
+        userRepository.save(user);
+        log.info("Зарегистрирован новый пользователь: {}", user.getEmail());
 
-    return createMockAuthResponse();
-  }
+        return buildAuthResponse(user);
+    }
 
-  @Override
-  public AuthResponse refreshToken() {
-    log.info("Мок-обновление access token");
-    return createMockAuthResponse();
-  }
+    @Override
+    @Transactional
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("Неверный email или пароль"));
 
-  @Override
-  public void logout() {
-    log.info("Мок-выход из системы");
-    // В мок-реализации ничего не делаем
-  }
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("Неверный email или пароль");
+        }
 
-  @Override
-  public UserMeResponse getCurrentUser() {
-    log.info("Мок-получение текущего пользователя");
+        log.info("Авторизация пользователя: {}", user.getEmail());
+        return buildAuthResponse(user);
+    }
 
-    return new UserMeResponse(
-        MOCK_USER_ID,
-        "user@example.com",
-        "Иван",
-        "Иванов",
-        List.of("USER")
-    );
-  }
+    @Override
+    @Transactional
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        String tokenHash = jwtService.hashToken(request.getRefreshToken());
 
-  @Override
-  public RolesResponse getCurrentUserRoles() {
-    log.info("Мок-получение ролей пользователя");
-    return new RolesResponse(List.of("USER", "ADMIN"));
-  }
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh-токен недействителен"));
 
-  /**
-   * Вспомогательный метод для создания мокового токена
-   */
-  private AuthResponse createMockAuthResponse() {
-    return new AuthResponse(
-        MOCK_ACCESS_TOKEN,
-        "Bearer",
-        900 // 15 минут
-    );
-  }
+        if (refreshToken.getExpiresAt().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new IllegalArgumentException("Refresh-токен истёк");
+        }
+
+        refreshTokenRepository.delete(refreshToken);
+
+        User user = refreshToken.getUser();
+        log.info("Обновление токена для пользователя: {}", user.getEmail());
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public void logout(RefreshTokenRequest request) {
+        String tokenHash = jwtService.hashToken(request.getRefreshToken());
+        refreshTokenRepository.deleteByTokenHash(tokenHash);
+        log.info("Выход из системы, refresh-токен инвалидирован");
+    }
+
+    @Override
+    public UserMeResponse getCurrentUser() {
+        User user = getCurrentAuthenticatedUser();
+        return new UserMeResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getUsername(),
+                List.of(user.getRole().name())
+        );
+    }
+
+    @Override
+    public RolesResponse getCurrentUserRoles() {
+        User user = getCurrentAuthenticatedUser();
+        return new RolesResponse(List.of(user.getRole().name()));
+    }
+
+    private AuthResponse buildAuthResponse(User user) {
+        String accessToken = jwtService.generateAccessToken(user);
+        String rawRefreshToken = jwtService.generateRefreshToken();
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .tokenHash(jwtService.hashToken(rawRefreshToken))
+                .user(user)
+                .expiresAt(Instant.now().plusSeconds(jwtProperties.getRefreshExpiration()))
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        return new AuthResponse(accessToken, "Bearer", jwtProperties.getExpiration(), rawRefreshToken);
+    }
+
+    private User getCurrentAuthenticatedUser() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        return userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new IllegalStateException("Аутентифицированный пользователь не найден в БД"));
+    }
 }
