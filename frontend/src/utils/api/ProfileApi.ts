@@ -124,12 +124,13 @@ export const uploadAvatarApi = async (
 		formData.append('file', file);
 
 		const token = localStorage.getItem('accessToken');
+
 		const headers: HeadersInit = {
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
 		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/avatar`, {
-			method: 'POST',
+			method: 'PATCH', // ✅ исправили
 			headers,
 			body: formData,
 		});
@@ -152,10 +153,32 @@ export const updateProfileApi = async (
 	data: UpdateProfileRequest
 ): Promise<ApiResponse<FullProfile>> => {
 	try {
+		const formatDate = (date: string | number | Date) => {
+			const d = new Date(date);
+
+			const year = d.getFullYear();
+			const month = String(d.getMonth() + 1).padStart(2, '0');
+			const day = String(d.getDate()).padStart(2, '0');
+
+			return `${year}-${month}-${day}`;
+		};
+
+		const payload: Record<string, any> = {};
+
+		if (data.name) payload.name = data.name;
+		if (data.dateOfBirth)
+			payload.dateOfBirth = formatDate(data.dateOfBirth);
+
+		if (data.gender) payload.gender = data.gender;
+
+		if (data.city) payload.city = data.city;
+		if (data.preferredTransport)
+			payload.preferredTransport = data.preferredTransport;
+
 		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/me`, {
 			method: 'PUT',
 			headers: getHeaders(true),
-			body: JSON.stringify(data),
+			body: JSON.stringify(payload),
 		});
 
 		return await handleResponse<FullProfile>(response);

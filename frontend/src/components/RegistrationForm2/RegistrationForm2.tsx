@@ -63,7 +63,6 @@ export const RegistrationForm2 = ({
 		height: false,
 	});
 
-	// Очистка preview при размонтировании
 	useEffect(() => {
 		return () => {
 			if (avatarPreview) {
@@ -72,7 +71,6 @@ export const RegistrationForm2 = ({
 		};
 	}, [avatarPreview]);
 
-	// Синхронизация данных из props
 	useEffect(() => {
 		setName(data.name || '');
 		setGender(data.gender || '');
@@ -312,9 +310,9 @@ export const RegistrationForm2 = ({
 				<Select
 					label='Выберите пол'
 					options={[
-						{ value: 'male', label: 'Мужской' },
-						{ value: 'female', label: 'Женский' },
-						{ value: 'other', label: 'Другой' },
+						{ value: 'MALE', label: 'Мужской' },
+						{ value: 'FEMALE', label: 'Женский' },
+						{ value: 'OTHER', label: 'Другой' },
 					]}
 					value={gender}
 					onChange={handleGenderChange}
