@@ -1,6 +1,7 @@
 package ru.ngtu.v1.routie.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -40,6 +41,7 @@ public class AuthControllerV1 {
 
     @PostMapping("/logout")
     @Operation(summary = "Выход из системы")
+    @SecurityRequirement(name = "bearerAuth")
     public ApiResponseVoid logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request);
         return ApiResponse.empty();
@@ -47,12 +49,14 @@ public class AuthControllerV1 {
 
     @GetMapping("/me")
     @Operation(summary = "Получение информации о текущем пользователе")
+    @SecurityRequirement(name = "bearerAuth")
     public ApiResponse<UserMeResponse> getCurrentUser() {
         return ApiResponse.of(authService.getCurrentUser());
     }
 
     @GetMapping("/roles")
     @Operation(summary = "Получение ролей текущего пользователя")
+    @SecurityRequirement(name = "bearerAuth")
     public ApiResponse<RolesResponse> getRoles() {
         return ApiResponse.of(authService.getCurrentUserRoles());
     }
