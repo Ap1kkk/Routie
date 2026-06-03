@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { Layout, ProtectedRoute } from '@components';
+import { Layout, ProfileRedirect, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
 	AuthorizationPage,
@@ -17,9 +17,6 @@ import {
 	SettingsPage,
 	StatisticPage,
 } from '@pages';
-import { hasTokens } from './utils/auth';
-
-const tokens = hasTokens();
 
 export const router = createBrowserRouter([
 	{
@@ -43,7 +40,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute isAuthenticated={tokens} />,
+				element: <ProtectedRoute />,
 				children: [
 					{
 						path: '/routie',
@@ -63,12 +60,7 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/profile',
-						element: (
-							<Navigate
-								to={`/profile/${getCurrentUsername()}`}
-								replace
-							/>
-						),
+						element: <ProfileRedirect />,
 					},
 					{
 						path: '/filter',
