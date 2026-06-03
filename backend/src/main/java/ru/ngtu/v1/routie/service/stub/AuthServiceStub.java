@@ -54,6 +54,7 @@ public class AuthServiceStub implements AuthService {
         return new UserMeResponse(
                 UUID.randomUUID(),
                 faker.internet().emailAddress(),
+                faker.name().fullName(),
                 faker.internet().username(),
                 List.of("USER")
         );
