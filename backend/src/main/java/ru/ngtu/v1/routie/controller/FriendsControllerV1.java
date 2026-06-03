@@ -25,7 +25,7 @@ public class FriendsControllerV1 {
 
   private final ProfileService profileService;
 
-  @GetMapping
+  @GetMapping("/friends")
   @Operation(summary = "Получение списка друзей и запросов")
   public ApiResponse<PageResponse<UserProfileShortResponse>> getFriends(
       @RequestParam(defaultValue = "0") int page,
@@ -36,28 +36,28 @@ public class FriendsControllerV1 {
     return ApiResponse.of(profileService.getFriends(page, size, sort, search, status));
   }
 
-  @PostMapping("/request/{friendId}")
+  @PostMapping("/friends/request/{friendId}")
   @Operation(summary = "Отправить запрос в друзья")
   public ApiResponseVoid sendFriendRequest(@PathVariable UUID friendId) {
     profileService.sendFriendRequest(friendId);
     return ApiResponse.empty();
   }
 
-  @PostMapping("/accept/{friendshipId}")
+  @PostMapping("/friends/accept/{friendshipId}")
   @Operation(summary = "Принять запрос в друзья")
   public ApiResponseVoid acceptFriendRequest(@PathVariable UUID friendshipId) {
     profileService.acceptFriendRequest(friendshipId);
     return ApiResponse.empty();
   }
 
-  @PostMapping("/reject/{friendshipId}")
+  @PostMapping("/friends/reject/{friendshipId}")
   @Operation(summary = "Отклонить запрос в друзья")
   public ApiResponseVoid rejectFriendRequest(@PathVariable UUID friendshipId) {
     profileService.rejectFriendRequest(friendshipId);
     return ApiResponse.empty();
   }
 
-  @DeleteMapping("/{friendId}")
+  @DeleteMapping("/friends/{friendId}")
   @Operation(summary = "Удалить из друзей")
   public ApiResponseVoid removeFriend(@PathVariable UUID friendId) {
     profileService.removeFriend(friendId);
