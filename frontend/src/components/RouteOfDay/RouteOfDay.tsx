@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './RouteOfDay.module.scss';
 import { Button } from '@ui';
-import { Route } from '../../types/Route';
+import { Route } from '../../types/route';
 
 interface RouteOfTheDayProps {
 	route: Route;

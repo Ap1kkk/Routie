@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tag } from '@ui';
-import { Route } from '../../types/Route';
-import { Tags } from '../../types/Tags';
+import { Route } from '../../types/route';
+import { Tags } from '../../types/tags';
 
 import { ReactComponent as Like } from '../../assets/icons/like.svg';
 import { ReactComponent as LikeActive } from '../../assets/icons/like-green.svg';
