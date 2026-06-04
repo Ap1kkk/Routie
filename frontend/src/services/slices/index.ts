@@ -6,6 +6,7 @@ import landmarkReducer from './landmarkSlice/landmarkSlice';
 import audioGuideReducer from './audioGuideSlice/audioGuideSlice';
 import fileReducer from './fileSlice/fileSlice';
 import friendsReducer from './friendsSlice/friendsSlice';
+import profileReducer from './profileSlice/profileSlice';
 
 export const rootReducer = combineReducers({
 	user: userReducer,
@@ -15,4 +16,5 @@ export const rootReducer = combineReducers({
 	audioGuides: audioGuideReducer,
 	file: fileReducer,
 	friends: friendsReducer,
+	profile: profileReducer,
 });
