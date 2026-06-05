@@ -11,3 +11,9 @@ export const selectRegisterError = (state: RootState) =>
 	state.user.registerError;
 export const selectUserError = (state: RootState) =>
 	state.user.loginError || state.user.registerError;
+
+export const selectUserRoles = (state: RootState) =>
+	state.user.roles;
+
+export const selectIsAdmin = (state: RootState) =>
+	state.user.roles.includes('ADMIN');

@@ -7,6 +7,7 @@ import {
 	logoutApi,
 	registerUserApi,
 	refreshTokenApi,
+	getUserRolesApi,
 } from '../../../utils/api/AuthApi';
 import {
 	LoginRequest,
@@ -20,6 +21,7 @@ type TUserState = {
 	isAuthChecked: boolean;
 	isAuthenticated: boolean;
 	data: User | null;
+	roles: string[];
 	isLoading: boolean;
 	loginError: string | null;
 	registerError: string | null;
@@ -29,6 +31,7 @@ const initialState: TUserState = {
 	isAuthChecked: false,
 	isAuthenticated: false,
 	data: null,
+	roles: [],
 	isLoading: false,
 	loginError: null,
 	registerError: null,
@@ -129,6 +132,25 @@ export const fetchUser = createAsyncThunk<
 	return response.data as User;
 });
 
+export const fetchUserRoles = createAsyncThunk<
+	string[],
+	void,
+	{ rejectValue: string }
+>(
+	'user/fetchRoles',
+	async (_, { rejectWithValue }) => {
+		const response = await getUserRolesApi();
+
+		if (!response.success || !response.data) {
+			return rejectWithValue(
+				response.error?.message || 'Ошибка получения ролей'
+			);
+		}
+
+		return response.data.roles;
+	}
+);
+
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
@@ -174,6 +196,7 @@ const userSlice = createSlice({
 			.addCase(logout.fulfilled, (state) => {
 				state.isAuthenticated = false;
 				state.data = null;
+				state.roles = [];
 			})
 
 			.addCase(fetchUser.fulfilled, (state, action) => {
@@ -192,6 +215,13 @@ const userSlice = createSlice({
 				state.isAuthenticated = false;
 				state.data = null;
 				state.isAuthChecked = true;
+			})
+
+			.addCase(fetchUserRoles.fulfilled, (state, action) => {
+				state.roles = action.payload;
+			})
+			.addCase(fetchUserRoles.rejected, (state) => {
+				state.roles = [];
 			});
 	},
 });

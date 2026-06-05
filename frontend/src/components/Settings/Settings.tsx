@@ -105,6 +105,15 @@ export const Settings: React.FC<SettingsProps> = ({
 
 				<article className={styles.card}>
 					<Button
+						onClick={() => navigate('/Admin')}
+						variant={'tertiary'}
+						className={`${styles.buttons} ${styles.exit}`}
+						children='Панель администратора'
+					/>
+				</article>
+
+				<article className={styles.card}>
+					<Button
 						onClick={handleLogout}
 						variant={'tertiary'}
 						className={`${styles.buttons} ${styles.exit}`}

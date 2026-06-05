@@ -1,0 +1,1 @@
+export { PointsEdit } from "./PointsEdit";
