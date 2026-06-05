@@ -10,12 +10,16 @@ import {
 	MainPage,
 	MapPage,
 	NotFoundPage,
+	PointsEdit,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
+	RouteEdit,
 	RoutesMobilePage,
 	SettingsPage,
 	StatisticPage,
+	TagsEdit,
+	Workbench,
 } from '@pages';
 
 export const router = createBrowserRouter([
@@ -40,7 +44,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute />,
+				element: <ProtectedRoute allowedRoles={[ 'USER' ]}/>,
 				children: [
 					{
 						path: '/routie',
@@ -82,6 +86,27 @@ export const router = createBrowserRouter([
 						path: '/profile/edit',
 						element: <EditProfilePage />,
 					},
+				],
+			},
+			{
+				element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+				children: [
+					{
+						path: '/admin',
+						element: <Workbench />,
+					},
+					{
+						path: '/admin/landmarks',
+						element: <PointsEdit />,
+					},
+					{
+						path: '/admin/routes',
+						element: <RouteEdit />,
+					},
+					{
+						path: '/admin/tags',
+						element: <TagsEdit />,
+					}
 				],
 			},
 			{

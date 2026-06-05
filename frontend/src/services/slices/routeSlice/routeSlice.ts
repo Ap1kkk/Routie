@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
 	Route,
 	FullRoute,
@@ -10,7 +10,6 @@ import {
 } from '../../../types/Route';
 import {
 	deleteRouteApi,
-	getRouteApi,
 	searchRoutesApi,
 	getFullRouteApi,
 	getRecommendedRoutesApi,

@@ -1,0 +1,66 @@
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  padding: 20px 0 40px;
+  text-align: center;
+}
+
+.cardList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.editCard {
+  transition: all 0.2s ease;
+
+  &:hover {
+    scale: 1.05;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  .iconWrapper {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .iconWrapper {
+    transform: scale(1.1) rotate(8deg);
+  }
+}
+
+.editCard {
+  width: 200px;
+  height: 200px;
+  background-color: var(--color-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  cursor: pointer;
+
+  &:hover{
+    scale: 1.05;
+  }
+}
+
+.cardTitle {
+  text-align: center;
+}
+
+.icons {
+}

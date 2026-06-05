@@ -1,3 +1,10 @@
+// Admin
+export * from './ADMIN/Workbench';
+export * from './ADMIN/PointsEdit';
+export * from './ADMIN/RouteEdit';
+export * from './ADMIN/TagsEdit'
+
+// User
 export * from './AchievementPage';
 export * from './AuthorizationPage';
 export * from './EditProfilePage';
