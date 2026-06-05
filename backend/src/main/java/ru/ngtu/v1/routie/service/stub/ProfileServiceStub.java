@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-profile")
 @Primary
 public class ProfileServiceStub implements ProfileService {
 
