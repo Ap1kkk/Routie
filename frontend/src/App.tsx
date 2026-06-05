@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
-	AchievementsEdit,
 	AuthorizationPage,
 	EditProfilePage,
 	Error500Page,
@@ -105,37 +104,6 @@ export const router = createBrowserRouter([
 					{
 						path: '/profile/edit',
 						element: <EditProfilePage />,
-					},
-				],
-			},
-			{
-				element: (
-					<ProtectedRoute
-						isAuthenticated={checkAuth()}
-						userRole={getCurrentRole()}
-						allowedRoles={['ADMIN']}
-					/>
-				),
-				children: [
-					{
-						path: '/admin',
-						element: <Workbench />,
-					},
-					{
-						path: '/admin/routes/edit',
-						element: <RouteEdit />,
-					},
-					{
-						path: '/admin/routes/points',
-						element: <PointsEdit />,
-					},
-					{
-						path: '/admin/users',
-						element: <UsersEdit />,
-					},
-					{
-						path: '/admin/achievements',
-						element: <AchievementsEdit />,
 					},
 				],
 			},
