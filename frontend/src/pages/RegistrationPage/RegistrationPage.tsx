@@ -114,7 +114,7 @@ export const RegistrationPage: React.FC = () => {
 		setError(null);
 
 		const result = await updateProfileApi({
-			preferredTransport: data.tags.join(','),
+			preferredTags: data.tags,
 		});
 
 		setIsLoading(false);

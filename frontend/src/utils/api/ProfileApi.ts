@@ -175,6 +175,10 @@ export const updateProfileApi = async (
 		if (data.preferredTransport)
 			payload.preferredTransport = data.preferredTransport;
 
+		if (data.preferredTags?.length) {
+			payload.preferredTags = data.preferredTags;
+		}
+
 		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/me`, {
 			method: 'PUT',
 			headers: getHeaders(true),

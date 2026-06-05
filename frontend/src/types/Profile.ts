@@ -50,6 +50,8 @@ export interface UpdateProfileRequest {
 	gender?: Gender;
 	city?: string;
 	preferredTransport?: string;
+
+	preferredTags?: string[];
 }
 
 export interface ProfileImage {
