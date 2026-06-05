@@ -35,8 +35,6 @@ public class ProfileServiceStub implements ProfileService {
         if (request.getName() != null) profile.setName(request.getName());
         if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
         if (request.getGender() != null) profile.setGender(request.getGender());
-        if (request.getCity() != null) profile.setCity(request.getCity());
-        if (request.getPreferredTransport() != null) profile.setPreferredTransport(request.getPreferredTransport());
         return profile;
     }
 
