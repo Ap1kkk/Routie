@@ -221,9 +221,8 @@ public class FakeDataFactory {
                 .avatar(fakeMediaFile())
                 .dateOfBirth(LocalDate.now().minusYears(faker.number().numberBetween(18, 50)))
                 .gender(gender)
-                .city(faker.address().cityName())
-                .favoriteSportType(faker.options().option("Бег", "Велоспорт", "Пешие прогулки", "Скандинавская ходьба"))
-                .preferredTransport(faker.options().option("Пешком", "Велосипед", "Самокат", "Общественный транспорт"))
+                .height(faker.number().numberBetween(155, 200))
+                .weight(faker.number().numberBetween(50, 120))
                 .preferredTags(fakeTags(faker.number().numberBetween(1, 5)))
                 .totalXp(faker.number().numberBetween(0, 10000))
                 .currentLevel(faker.number().numberBetween(1, 50))
@@ -246,7 +245,6 @@ public class FakeDataFactory {
                 .avatar(fakeMediaFile())
                 .currentLevel(faker.number().numberBetween(1, 50))
                 .totalXp(faker.number().numberBetween(0, 10000))
-                .city(faker.address().cityName())
                 .isFriend(faker.bool().bool())
                 .build();
     }

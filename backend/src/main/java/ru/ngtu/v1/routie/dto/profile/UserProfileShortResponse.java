@@ -18,6 +18,5 @@ public class UserProfileShortResponse {
     private MediaFileResponse avatar;
     private Integer currentLevel;
     private Integer totalXp;
-    private String city;
     private Boolean isFriend;
 }
