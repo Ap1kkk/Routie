@@ -62,14 +62,14 @@ export const router = createBrowserRouter([
 						path: '/profile',
 						element: <ProfileRedirect />,
 					},
-					{
-						path: '/filter',
-						element: <FilterDesktopPage />,
-					},
-					{
-						path: '/filter-mobile',
-						element: <FilterMobilePage />,
-					},
+					// {
+					// 	path: '/filter',
+					// 	element: <FilterDesktopPage />,
+					// },
+					// {
+					// 	path: '/filter-mobile',
+					// 	element: <FilterMobilePage />,
+					// },
 					{
 						path: '/routes',
 						element: <RoutesMobilePage />,

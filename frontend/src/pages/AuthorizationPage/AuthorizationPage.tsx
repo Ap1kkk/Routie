@@ -26,10 +26,7 @@ export const AuthorizationPage = () => {
 
 	useEffect(() => {
 		if (isAuthenticated) {
-			const timer = setTimeout(() => {
-				navigate('/routie', { replace: true });
-			}, 800);
-			return () => clearTimeout(timer);
+			navigate('/routie', { replace: true });
 		}
 	}, [isAuthenticated, navigate]);
 
