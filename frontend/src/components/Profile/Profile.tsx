@@ -191,7 +191,109 @@ export const Profile: React.FC<ProfileProps> = ({
 					</div>
 				</div>
 			) : (
-				<div className={styles.containerDesktop}></div>
+				<div className={styles.containerMobile}>
+					<div className={styles.headerMobile}>
+						<Avatar src={avatar} size={'large'} />
+						<h4 className={styles.profileName}>
+							{name}
+							<span
+								ref={levelRef}
+								className={styles.profileLevel}
+								onClick={handleLevelClick}>
+								{level}
+								{showMenu && (
+									<div
+										className={styles.levelMenu}
+										ref={menuRef}
+										onClick={(e) => e.stopPropagation()}>
+										<span>Ваш текущий уровень</span>
+									</div>
+								)}
+							</span>
+						</h4>
+						<p className={styles.profileUsername}>{username}</p>
+					</div>
+					<Button variant={'tertiary'}
+					onClick={() => {navigate('/admin')}}>
+						Admin panel
+					</Button>
+					<div className={styles.containerMenu}>
+						<div className={styles.containerContext}>
+							<h5 className={styles.containerContextTitle}>
+								Информация
+							</h5>
+							<p>Почта: {email}</p>
+							<span className={styles.separator}></span>
+							{birthday && <p>Дата рождения: {birthday}</p>}
+							<span className={styles.separator}></span>
+							<p>Пройдено маршрутов: {routesCounter}</p>
+						</div>
+
+						<div className={styles.containerContext}>
+							<h5 className={styles.containerContextTitle}>
+								Друзья ({friends.length})
+							</h5>
+							<div className={styles.friendsList}>
+								{displayedFriends.length > 0 ? (
+									<>
+										{displayedFriends.map((friend) => (
+											<div
+												key={friend.id}
+												className={styles.friendsBody}
+												onClick={() =>
+													friend.username &&
+													navigate(
+														`/profile/${friend.username}`
+													)
+												}>
+												<Avatar
+													src={friend.avatar}
+													size={'small'}
+												/>
+												<p
+													className={
+														styles.friendsName
+													}>
+													{friend.name}
+												</p>
+											</div>
+										))}
+									</>
+								) : (
+									<span className={styles.emptyText}>
+										Нет друзей
+									</span>
+								)}
+							</div>
+						</div>
+
+						<div className={styles.containerContext}>
+							<span className={styles.containerContextTittle}>
+								Последние маршруты
+							</span>
+							<div className={styles.routesList}>
+								{recentRoutes.length > 0 ? (
+									recentRoutes.map((route) => (
+										<div className={styles.routeCards}>
+											<RouteCard
+												key={route.id}
+												route={route}
+											/>
+											<span
+												className={
+													styles.separator
+												}></span>
+										</div>
+									))
+								) : (
+									<span className={styles.emptyText}>
+										Нет пройденных маршрутов
+									</span>
+								)}
+							</div>
+						</div>
+					</div>
+				</div>
 			)}
 		</div>
 	);

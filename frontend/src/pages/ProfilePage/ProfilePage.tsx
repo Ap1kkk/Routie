@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Profile } from '@components';
-
-import styles from './ProfilePage.module.scss';
-
 import { useDispatch, useSelector } from '@store';
-import {
-	getMyProfile,
-	getUserProfile,
-} from '../../services/slices/profileSlice/profileSlice';
+import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
 import { downloadFileApi } from '../../utils/api/FileApi';
 
-const TEST_USER_ID = '32228023-8dab-4616-b5b7-37866753b8d2';
+import styles from './ProfilePage.module.scss';
 
 export const ProfilePage = () => {
 	const dispatch = useDispatch();
 
-	const { myProfile, loading, error } = useSelector(
-		(state) => state.profile
-	);
+	const { myProfile, loading, error } = useSelector((state) => state.profile);
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
 
