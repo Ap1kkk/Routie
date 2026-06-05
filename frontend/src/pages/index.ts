@@ -2,7 +2,6 @@ export * from './AchievementPage';
 
 // ADMIN
 export * from './ADMIN/RouteEdit'
-export * from './ADMIN/UsersEdit'
 export * from './ADMIN/PointsEdit'
 export * from './ADMIN/Workbench';
 
