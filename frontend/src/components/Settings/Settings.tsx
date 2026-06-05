@@ -13,10 +13,20 @@ import { ReactComponent as Moon } from '../../assets/icons/moon.svg';
 import { ReactComponent as ArrowRight } from '../../assets/icons/chevron-right.svg';
 
 interface SettingsProps {
+	username?: string;
+	name?: string;
+	level?: number;
+	avatar?: string;
 	onLogout?: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
+export const Settings: React.FC<SettingsProps> = ({
+	username,
+	name,
+	level,
+	avatar,
+	onLogout,
+}) => {
 	const navigate = useNavigate();
 	const { isLight, toggleTheme } = useTheme();
 
@@ -29,12 +39,12 @@ export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
 	return (
 		<div className={styles.container}>
 			<article className={styles.headerContent}>
-				<Avatar size={'big'} />
+				<Avatar src={avatar} size={'big'} />
 				<p className={styles.profileUsername}>
-					Eвгений
-					<span className={styles.level}>100</span>
+					{name}
+					<span className={styles.level}>{level}</span>
 				</p>
-				<p className={styles.profileEmail}>evgeniinaumov04@gmail.com</p>
+				<p className={styles.profileEmail}>@{username}</p>
 			</article>
 			<div className={styles.sectionCards}>
 				<article className={styles.card}>
