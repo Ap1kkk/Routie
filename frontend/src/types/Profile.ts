@@ -21,6 +21,8 @@ export interface FullProfile {
 	city?: string;
 	favoriteSportType?: string;
 	preferredTransport?: string;
+	weight?: number;
+	height?: number;
 
 	preferredTags?: Tag[];
 
@@ -46,11 +48,13 @@ export interface ShortProfile {
 
 export interface UpdateProfileRequest {
 	name?: string;
+	username?: string;
+	email?: string;
 	dateOfBirth?: string;
 	gender?: Gender;
 	city?: string;
-	preferredTransport?: string;
-
+	weight?: number;
+	height?: number;
 	preferredTags?: string[];
 }
 

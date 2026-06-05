@@ -166,14 +166,20 @@ export const updateProfileApi = async (
 		const payload: Record<string, any> = {};
 
 		if (data.name) payload.name = data.name;
+		if (data.username) {
+			payload.username = data.username;
+		}
+		if (data.email) {
+			payload.email = data.email;
+		}
 		if (data.dateOfBirth)
 			payload.dateOfBirth = formatDate(data.dateOfBirth);
 
 		if (data.gender) payload.gender = data.gender;
 
 		if (data.city) payload.city = data.city;
-		if (data.preferredTransport)
-			payload.preferredTransport = data.preferredTransport;
+		if (data.weight !== undefined) payload.weight = data.weight;
+		if (data.height !== undefined) payload.height = data.height;
 
 		if (data.preferredTags?.length) {
 			payload.preferredTags = data.preferredTags;
