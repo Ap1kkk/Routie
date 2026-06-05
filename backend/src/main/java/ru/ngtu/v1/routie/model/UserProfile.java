@@ -28,17 +28,15 @@ public class UserProfile {
     private User user;
 
     private String name;
-    private String city;
 
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Enumerated(EnumType.STRING)
-    private SportType favoriteSportType;
+    private Integer height;
 
-    private String preferredTransport;
+    private Integer weight;
 
     private UUID avatarFileId;
 
@@ -69,7 +67,8 @@ public class UserProfile {
             joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "tag_id")
-    private List<UUID> preferredTagIds;
+    @Builder.Default
+    private List<UUID> preferredTagIds = new ArrayList<>();
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;

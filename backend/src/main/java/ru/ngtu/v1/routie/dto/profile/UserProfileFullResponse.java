@@ -17,22 +17,21 @@ import ru.ngtu.v1.routie.dto.tag.TagResponse;
 @AllArgsConstructor
 public class UserProfileFullResponse {
 
-  private UUID id;
-  private String email;
-  private String name;
-  private String username;
-  private MediaFileResponse avatar;
-  private LocalDate dateOfBirth;
-  private Gender gender;
-  private String city;
-  private String favoriteSportType;
-  private String preferredTransport;
-  private List<TagResponse> preferredTags;
-  private Integer totalXp;
-  private Integer currentLevel;
-  private Integer totalDistanceMeters;
-  private Integer totalRoutesCompleted;
-  private Integer totalLandmarksVisited;
-  private Boolean isFriend;
-  private LocalDateTime createdAt;
+    private UUID id;
+    private String email;
+    private String username;
+    private String name;
+    private MediaFileResponse avatar;
+    private LocalDate dateOfBirth;
+    private Gender gender;
+    private Integer height;
+    private Integer weight;
+    private List<TagResponse> preferredTags;
+    private Integer totalXp;
+    private Integer currentLevel;
+    private Integer totalDistanceMeters;
+    private Integer totalRoutesCompleted;
+    private Integer totalLandmarksVisited;
+    private Boolean isFriend;
+    private LocalDateTime createdAt;
 }
