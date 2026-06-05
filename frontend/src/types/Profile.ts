@@ -21,6 +21,9 @@ export interface FullProfile {
 	city?: string;
 	favoriteSportType?: string;
 	preferredTransport?: string;
+
+	preferredTags?: Tag[];
+
 	totalXp: number;
 	currentLevel: number;
 	totalDistanceMeters: number;
