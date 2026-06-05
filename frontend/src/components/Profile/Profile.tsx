@@ -19,8 +19,17 @@ interface ProfileProps {
 	email?: string;
 	phone?: string;
 	avatar?: string;
+
+	city?: string;
+	gender?: string;
+
 	level?: number;
+	totalXp?: number;
+
 	routesCounter?: number;
+	totalDistanceMeters?: number;
+	totalLandmarksVisited?: number;
+
 	birthday?: string;
 	friends?: Friend[];
 	recentRoutes?: Route[];
@@ -32,8 +41,17 @@ export const Profile: React.FC<ProfileProps> = ({
 	email,
 	phone,
 	avatar,
+
+	city,
+	gender,
+
 	level,
+	totalXp,
+
 	routesCounter,
+	totalDistanceMeters,
+	totalLandmarksVisited,
+
 	birthday,
 	friends = [],
 	recentRoutes = [],
@@ -93,17 +111,18 @@ export const Profile: React.FC<ProfileProps> = ({
 								)}
 							</span>
 						</h4>
+						<p className={styles.profileUsername}>{username}</p>
 					</div>
 					<div className={styles.containerMenu}>
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
 							</h5>
-							<p>Email: {email}</p>
-							<span className={styles.separator}></span>
-							<p>Телефон: {phone}</p>
+							<p>Почта: {email}</p>
 							<span className={styles.separator}></span>
 							{birthday && <p>Дата рождения: {birthday}</p>}
+							<span className={styles.separator}></span>
+							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
 						<div className={styles.containerContext}>
@@ -169,13 +188,6 @@ export const Profile: React.FC<ProfileProps> = ({
 								)}
 							</div>
 						</div>
-					</div>
-					<div className={styles.containerButtons}>
-						<Button
-							variant='secondary'
-							onClick={() => navigate('/recovery-page')}>
-							Редактировать
-						</Button>
 					</div>
 				</div>
 			) : (

@@ -71,7 +71,9 @@ export const uploadFileApi = async (
 /**
  * Скачивание файла
  */
-export const downloadFileApi = async (fileId: string): Promise<string> => {
+export const downloadFileApi = async (
+	fileId: string
+): Promise<string> => {
 	try {
 		const response = await fetch(
 			`${API_URL}/${API_FILE_URL}/download/${fileId}`,
@@ -82,19 +84,17 @@ export const downloadFileApi = async (fileId: string): Promise<string> => {
 		);
 
 		if (!response.ok) {
-			const contentType = response.headers.get('content-type');
-			if (contentType && contentType.includes('application/json')) {
-				const errorData: ApiResponse = await response.json();
-				throw new Error(
-					errorData.error?.message || 'Ошибка при скачивании файла'
-				);
-			}
-			throw new Error(`Ошибка сервера: ${response.status}`);
+			throw new Error(
+				`Ошибка скачивания файла: ${response.status}`
+			);
 		}
 
-		const text = await response.text();
-		return text;
+		const blob = await response.blob();
+
+		return URL.createObjectURL(blob);
 	} catch (error: any) {
-		throw new Error(error.message || 'Ошибка при скачивании файла');
+		throw new Error(
+			error.message || 'Ошибка при скачивании файла'
+		);
 	}
 };
