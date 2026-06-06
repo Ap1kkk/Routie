@@ -28,7 +28,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 }) => {
 	const Icon = useMemo(() => {
 		const iconIndex = index % ACHIEVEMENT_ICONS.length;
-		console.log('Index:', index, 'IconIndex:', iconIndex); // Для проверки
+		console.log('Index:', index, 'IconIndex:', iconIndex);
 		return ACHIEVEMENT_ICONS[iconIndex];
 	}, [index]);
 
