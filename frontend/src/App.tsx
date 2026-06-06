@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout, ProfileRedirect, ProtectedRoute } from '@components';
 import {
-	AchievementPage,
+	AchievementPage, AudioGuidesEdit,
 	AuthorizationPage,
 	EditProfilePage,
 	Error500Page,
@@ -100,16 +100,20 @@ export const router = createBrowserRouter([
 						element: <Workbench />,
 					},
 					{
-						path: '/admin/landmarks',
+						path: '/admin/landmarks-edit',
 						element: <PointsEdit />,
 					},
 					{
-						path: '/admin/routes',
+						path: '/admin/routes-edit',
 						element: <RouteEdit />,
 					},
 					{
-						path: '/admin/tags',
+						path: '/admin/tags-edit',
 						element: <TagsEdit />,
+					},
+					{
+						path: '/admin/audioguides-edit',
+						element: <AudioGuidesEdit />,
 					}
 				],
 			},

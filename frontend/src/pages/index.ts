@@ -2,7 +2,8 @@
 export * from './ADMIN/Workbench';
 export * from './ADMIN/PointsEdit';
 export * from './ADMIN/RouteEdit';
-export * from './ADMIN/TagsEdit'
+export * from './ADMIN/TagsEdit';
+export * from './ADMIN/AudioGuidesEdit'
 
 // User
 export * from './AchievementPage';

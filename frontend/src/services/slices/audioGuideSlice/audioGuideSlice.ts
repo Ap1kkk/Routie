@@ -174,8 +174,13 @@ const audioGuideSlice = createSlice({
 				state.isLoading = true;
 				state.error = null;
 			})
-			.addCase(createAudioGuide.fulfilled, (state) => {
+			.addCase(createAudioGuide.fulfilled, (state, action) => {
 				state.isLoading = false;
+
+				if (state.searchResults) {
+					state.searchResults.content.unshift(action.payload);
+					state.searchResults.totalElements += 1;
+				}
 			})
 			.addCase(createAudioGuide.rejected, (state, action) => {
 				state.isLoading = false;
@@ -198,6 +203,15 @@ const audioGuideSlice = createSlice({
 			})
 
 			.addCase(deleteAudioGuide.fulfilled, (state, action) => {
+				if (state.searchResults) {
+					state.searchResults.content =
+						state.searchResults.content.filter(
+							(x) => x.id !== action.payload
+						);
+
+					state.searchResults.totalElements -= 1;
+				}
+
 				if (state.currentAudioGuide?.id === action.payload) {
 					state.currentAudioGuide = null;
 				}
