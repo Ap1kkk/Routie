@@ -7,6 +7,7 @@ import audioGuideReducer from './audioGuideSlice/audioGuideSlice';
 import fileReducer from './fileSlice/fileSlice';
 import friendsReducer from './friendsSlice/friendsSlice';
 import profileReducer from './profileSlice/profileSlice';
+import gamificationReducer from "./gamificationSlice/gamificationSlice";
 
 export const rootReducer = combineReducers({
 	user: userReducer,
@@ -17,4 +18,5 @@ export const rootReducer = combineReducers({
 	file: fileReducer,
 	friends: friendsReducer,
 	profile: profileReducer,
+	gamification: gamificationReducer,
 });

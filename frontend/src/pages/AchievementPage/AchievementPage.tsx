@@ -1,28 +1,30 @@
-import { Achievement } from '@components';
-
-import styles from './AchievementPage.module.scss';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@store';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from '@store';
+
+import { Achievement } from '@components';
+import styles from './AchievementPage.module.scss';
+import { fetchAchievements } from '../../services/slices/gamificationSlice/gamificationSlice';
 
 export const AchievementPage = () => {
-	const dispatch = useDispatch<AppDispatch>();
-	// const { items, loading, error } = useSelector(
-	// 	// (state: RootState) => state.achievements
-	// );
+	const dispatch = useDispatch();
+
+	const { userAchievements, loading, error } = useSelector(
+		(state) => state.gamification
+	);
 
 	useEffect(() => {
-		// dispatch(fetchAchievements());
+		dispatch(fetchAchievements());
 	}, [dispatch]);
 
-	// if (loading) return <div>Загрузка...</div>;
-	// if (error) return <div>{error}</div>;
-	//
-	// return (
-	// 	<section className={styles.section}>
-	// 		<Achievement achievementsData={items} />
-	// 	</section>
-	// );
+	if (loading)
+		return <div className={styles.loading}>Загрузка достижений...</div>;
+	if (error) return <div className={styles.error}>Ошибка: {error}</div>;
+
+	return (
+		<section className={styles.section}>
+			<Achievement achievementsData={userAchievements} />
+		</section>
+	);
 };
 
 export default AchievementPage;

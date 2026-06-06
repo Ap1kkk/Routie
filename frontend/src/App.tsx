@@ -66,10 +66,10 @@ export const router = createBrowserRouter([
 						path: '/profile',
 						element: <ProfileRedirect />,
 					},
-					// {
+					//{
 					// 	path: '/filter',
 					// 	element: <FilterDesktopPage />,
-					// },
+					//},
 					// {
 					// 	path: '/filter-mobile',
 					// 	element: <FilterMobilePage />,
@@ -86,6 +86,10 @@ export const router = createBrowserRouter([
 						path: '/profile/edit',
 						element: <EditProfilePage />,
 					},
+					{
+						path: '/achievements',
+						element: <AchievementPage />
+					}
 				],
 			},
 			{

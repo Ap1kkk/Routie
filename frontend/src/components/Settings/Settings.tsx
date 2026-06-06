@@ -89,7 +89,7 @@ export const Settings: React.FC<SettingsProps> = ({
 							iconRight={<ArrowRight />}
 							variant={'tertiary'}
 							className={styles.buttonMenu}
-							onClick={() => navigate('/achievement')}
+							onClick={() => navigate('/achievements')}
 						/>
 					</div>
 				</article>
