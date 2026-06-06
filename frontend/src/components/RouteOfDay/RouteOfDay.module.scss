@@ -14,3 +14,11 @@
 	text-align: center;
 	white-space: nowrap;
 }
+
+.routeText {
+	font-family: var(--font-body);
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
+}

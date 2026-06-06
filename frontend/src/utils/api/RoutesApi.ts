@@ -4,6 +4,7 @@ import {
 	handleResponse,
 	ApiResponse,
 	getHeaders,
+	API_RECOMMENDATIONS_URL,
 } from './Api';
 import {
 	Route,
@@ -143,10 +144,14 @@ export const getRecommendedRoutesApi = async (
 ): Promise<ApiResponse<PaginatedRoutes>> => {
 	try {
 		const queryParams = new URLSearchParams();
-		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
-		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+		if (params?.page !== undefined)
+			queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined)
+			queryParams.append('size', params.size.toString());
 
-		const url = `${API_URL}/${API_ROUTES_URL}/recommended${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+		const url = `${API_URL}/${API_ROUTES_URL}/recommended${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
 
 		const response = await fetch(url, {
 			method: 'GET',
@@ -159,7 +164,33 @@ export const getRecommendedRoutesApi = async (
 			success: false,
 			error: {
 				code: 'GET_RECOMMENDED_ROUTES_ERROR',
-				message: error.message || 'Ошибка получения рекомендуемых маршрутов',
+				message:
+					error.message || 'Ошибка получения рекомендуемых маршрутов',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+//Возможно перенести в слайс отдельный
+export const getDailyRouteApi = async (): Promise<ApiResponse<Route>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_RECOMMENDATIONS_URL}/daily-route`,
+			{
+				method: 'GET',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<Route>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_DAILY_ROUTE_ERROR',
+				message: error.message || 'Ошибка получения маршрута дня',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),

@@ -93,34 +93,44 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					// alt={route.name}
+					alt={route.title}
 					className={styles.standartImage}
-					loading='lazy'
+					loading="lazy"
 				/>
+
 				<div className={styles.standartContent}>
-					{/*<h3 className={styles.standartCardTitle}>{route.name}</h3>*/}
+					{/* Название маршрута */}
+					<h3 className={styles.standartCardTitle}>{route.title}</h3>
+
+					{/* Длительность + дистанция */}
+					<div className={styles.routeInfo}>
+						<span className={styles.standartDistance}>
+							{formatDistance(route.lengthMeters)}
+						</span>
+					</div>
+
+					{/* Теги */}
+					{route.tags && route.tags.length > 0 && (
+						<div className={styles.compactTags}>
+							<Tag
+								items={route.tags.map(tag => tag.title)}
+								variant="small"
+								wrap={false}
+							/>
+						</div>
+					)}
+
+					{/* Кнопка лайка */}
 					{onToggleLike && (
 						<button
 							className={`${styles.standartLike} ${
 								localLiked ? styles.liked : ''
 							} ${isAnimating ? styles.animating : ''}`}
 							onClick={handleLikeClick}
-							aria-label='Добавить в избранное'
-							type='button'>
+							aria-label="Добавить в избранное"
+							type="button">
 							{localLiked ? <LikeActive /> : <Like />}
 						</button>
-					)}
-					<span className={styles.standartDistance}>
-						{/*{formatDistance(route.distance)}*/}
-					</span>
-					{displayTags.length > 0 && (
-						<div className={styles.compactTags}>
-							<Tag
-								items={['fsdfsf','sdasdasd']}
-								variant='small'
-								wrap={false}
-							/>
-						</div>
 					)}
 				</div>
 			</Blur>

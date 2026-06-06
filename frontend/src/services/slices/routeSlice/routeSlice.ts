@@ -17,12 +17,14 @@ import {
 	uploadRouteImagesApi,
 	createRouteApi,
 	updateRouteApi,
+	getDailyRouteApi,
 } from '../../../utils/api/RoutesApi';
 
 type TRouteState = {
 	currentRoute: FullRoute | null;
 	searchResults: PaginatedRoutes | null;
 	recommendedRoutes: PaginatedRoutes | null;
+	dailyRoute: Route | null;
 	isLoading: boolean;
 	error: string | null;
 };
@@ -31,6 +33,7 @@ const initialState: TRouteState = {
 	currentRoute: null,
 	searchResults: null,
 	recommendedRoutes: null,
+	dailyRoute: null,
 	isLoading: false,
 	error: null,
 };
@@ -42,11 +45,26 @@ export const fetchRoute = createAsyncThunk<
 >('route/fetchRoute', async (routeId, { rejectWithValue }) => {
 	const response = await getFullRouteApi(routeId);
 	if (!response.success || response.error)
-		return rejectWithValue(response.error?.message || 'Ошибка получения маршрута');
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения маршрута'
+		);
 
-	if (!response.data)
-		return rejectWithValue('Данные маршрута не найдены');
+	if (!response.data) return rejectWithValue('Данные маршрута не найдены');
 
+	return response.data;
+});
+
+export const fetchDailyRoute = createAsyncThunk<
+	Route,
+	void,
+	{ rejectValue: string }
+>('route/fetchDailyRoute', async (_, { rejectWithValue }) => {
+	const response = await getDailyRouteApi();
+	if (!response.success || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения маршрута дня'
+		);
+	}
 	return response.data;
 });
 
@@ -178,6 +196,19 @@ const routeSlice = createSlice({
 				state.currentRoute = action.payload;
 			})
 			.addCase(fetchRoute.rejected, (state, action) => {
+				state.isLoading = false;
+				state.error = action.payload as string;
+			})
+
+			.addCase(fetchDailyRoute.pending, (state) => {
+				state.isLoading = true;
+				state.error = null;
+			})
+			.addCase(fetchDailyRoute.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.dailyRoute = action.payload;
+			})
+			.addCase(fetchDailyRoute.rejected, (state, action) => {
 				state.isLoading = false;
 				state.error = action.payload as string;
 			})
