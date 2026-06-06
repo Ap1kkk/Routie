@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from '@store';
+import { useNavigate } from 'react-router-dom';
+
+import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
+import { logout } from '../../services/slices/userSlice/userSlice'; // ← добавь импорт
+import { downloadFileApi } from '../../utils/api/FileApi';
+
 import { Settings } from '@components';
 
 import styles from './SettingsPage.module.scss';
-import { useDispatch, useSelector } from '@store';
-import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
-import { downloadFileApi } from '../../utils/api/FileApi';
 
 export const SettingsPage = () => {
 	const dispatch = useDispatch();
-	const { myProfile, loading, error } = useSelector(
-		(state) => state.profile
-	);
+	const navigate = useNavigate();
+
+	const { myProfile, loading, error } = useSelector((state) => state.profile);
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
 
@@ -18,15 +22,14 @@ export const SettingsPage = () => {
 		dispatch(getMyProfile());
 	}, [dispatch]);
 
+	// Загрузка аватара
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!myProfile?.avatar?.id) return;
 
 			try {
 				const avatar = await downloadFileApi(myProfile.avatar.id);
-
 				setAvatarSrc(avatar);
-				console.log('avatar url', avatar);
 			} catch (error) {
 				console.error('Ошибка загрузки аватара', error);
 			}
@@ -34,6 +37,12 @@ export const SettingsPage = () => {
 
 		loadAvatar();
 	}, [myProfile]);
+
+	// Выход из аккаунта
+	const handleLogout = async () => {
+		await dispatch(logout()).unwrap(); // вызов thunk
+		navigate('/login', { replace: true }); // или '/' — куда хочешь перенаправить
+	};
 
 	if (loading) {
 		return (
@@ -65,6 +74,7 @@ export const SettingsPage = () => {
 			name={myProfile.name}
 			level={myProfile.currentLevel}
 			avatar={avatarSrc}
+			onLogout={handleLogout} // ← передаём обработчик
 		/>
 	);
 };

@@ -90,25 +90,24 @@ export const loginUserApi = async (
 /** Выход из системы */
 export const logoutApi = async (): Promise<ApiResponse> => {
 	try {
-		const token = getAccessToken();
+		const refreshToken = getRefreshToken();   // ← добавляем
 
-		if (token) {
-			await fetch(
-				`${API_URL}/${API_AUTH_URL}/logout`,
-				{
-					method: 'POST',
-					headers: getHeaders(true),
-				}
-			);
-		}
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/logout`,
+			{
+				method: 'POST',
+				headers: getHeaders(true),
+				body: JSON.stringify({ refreshToken }),   // ← отправляем refreshToken
+			}
+		);
 
-		clearTokens();
+		const result = await handleResponse(response);
 
-		return {
-			success: true,
-			timestamp: new Date().toISOString(),
-		};
+		clearTokens();   // очищаем токены после успешного запроса
+
+		return result;
 	} catch (error: any) {
+		clearTokens();   // на всякий случай очищаем
 		return {
 			success: false,
 			error: {
