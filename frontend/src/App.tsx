@@ -1,16 +1,17 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout, ProfileRedirect, ProtectedRoute } from '@components';
 import {
-	AchievementPage, AudioGuidesEdit,
+	AchievementPage,
+	AudioGuidesEdit,
 	AuthorizationPage,
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
 	FilterMobilePage,
+	LandmarksEdit,
 	MainPage,
 	MapPage,
 	NotFoundPage,
-	PointsEdit,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
@@ -44,7 +45,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute allowedRoles={[ 'USER' ]}/>,
+				element: <ProtectedRoute allowedRoles={['USER']} />,
 				children: [
 					{
 						path: '/routie',
@@ -88,8 +89,8 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/achievements',
-						element: <AchievementPage />
-					}
+						element: <AchievementPage />,
+					},
 				],
 			},
 			{
@@ -101,7 +102,7 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/admin/landmarks-edit',
-						element: <PointsEdit />,
+						element: <LandmarksEdit />,
 					},
 					{
 						path: '/admin/routes-edit',
@@ -114,7 +115,7 @@ export const router = createBrowserRouter([
 					{
 						path: '/admin/audioguides-edit',
 						element: <AudioGuidesEdit />,
-					}
+					},
 				],
 			},
 			{
