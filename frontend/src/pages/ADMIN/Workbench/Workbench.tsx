@@ -11,19 +11,24 @@ import styles from './Workbench.module.scss';
 
 const adminCards = [
 	{
-		to: '/admin/landmarks',
+		to: '/admin/landmarks-edit',
 		icon: <Marker />,
 		title: 'Изменение достопримечательностей',
 	},
 	{
-		to: '/admin/routes',
+		to: '/admin/routes-edit',
 		icon: <Route />,
 		title: 'Изменение маршрута',
 	},
 	{
-		to: '/admin/tags',
+		to: '/admin/tags-edit',
 		icon: <User />,
 		title: 'Изменение тегов',
+	},
+	{
+		to: '/admin/audioguides-edit',
+		icon: <User />,
+		title: 'Изменение аудиогидов',
 	},
 ];
 

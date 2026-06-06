@@ -106,7 +106,7 @@ export const TagsEdit = () => {
 				</thead>
 
 				<tbody>
-				{allTags?.map((tag : any) => (
+				{allTags?.map((tag) => (
 					<tr key={tag.id}>
 						<td
 							style={{
