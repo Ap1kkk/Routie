@@ -17,6 +17,12 @@ export const RouteOfTheDay: React.FC<RouteOfTheDayProps> = ({
 			<h2 className={styles.title}>
 				Маршрут дня: <br />
 			</h2>
+			<p className={styles.routeTitle}>
+				{route.title}
+			</p>
+			<p className={styles.routeText}>
+				Дальность: {route.lengthMeters} м.
+			</p>
 			<Button
 				variant='primary'
 				onClick={onNavigate}

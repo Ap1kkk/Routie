@@ -1,5 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { uploadFileApi, deleteFileApi } from '../../../utils/api/FileApi';
+import {
+	uploadFileApi,
+	deleteFileApi,
+	downloadFileApi,
+} from '../../../utils/api/FileApi';
 import { UploadedFile } from '../../../types/File';
 
 type TFileState = {
@@ -13,6 +17,19 @@ const initialState: TFileState = {
 	error: null,
 	uploadProgress: 0,
 };
+
+export const downloadFile = createAsyncThunk<
+	string,           // возвращаем blob URL
+	string,           // fileId
+	{ rejectValue: string }
+>('file/downloadFile', async (fileId, { rejectWithValue }) => {
+	try {
+		const url = await downloadFileApi(fileId);
+		return url;
+	} catch (error: any) {
+		return rejectWithValue(error.message || 'Ошибка скачивания файла');
+	}
+});
 
 export const uploadFile = createAsyncThunk<
 	UploadedFile,
@@ -61,6 +78,18 @@ const fileSlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		builder
+			.addCase(downloadFile.pending, (state) => {
+				state.isLoading = true;
+				state.error = null;
+			})
+			.addCase(downloadFile.fulfilled, (state) => {
+				state.isLoading = false;
+			})
+			.addCase(downloadFile.rejected, (state, action) => {
+				state.isLoading = false;
+				state.error = action.payload as string;
+			})
+
 			.addCase(uploadFile.pending, (state) => {
 				state.isLoading = true;
 				state.error = null;

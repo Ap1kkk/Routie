@@ -4,6 +4,7 @@ export const API_URL = 'http://two-steps.duckdns.org:8080';
 export const API_AUTH_URL = 'api/v1/auth';
 export const API_PROFILE_URL = 'api/v1/profile';
 export const API_ROUTES_URL = 'api/v1/routes';
+export const API_RECOMMENDATIONS_URL = 'api/v1/recommendations';
 export const API_AUDIO_GUIDES_URL = 'api/v1/audio-guides';
 export const API_FILE_URL = 'api/v1/file';
 export const API_LANDMARKS_URL = 'api/v1/landmarks';
