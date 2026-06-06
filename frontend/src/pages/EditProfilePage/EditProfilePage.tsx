@@ -2,18 +2,25 @@ import { useEffect, useState } from 'react';
 import styles from './EditProfilePage.module.scss';
 import { EditProfileForm } from '@components';
 import { useDispatch, useSelector } from '@store';
-import { getMyProfile, updateProfile, uploadAvatar } from '../../services/slices/profileSlice/profileSlice';
+import {
+	getMyProfile,
+	updateProfile,
+	uploadAvatar
+} from '../../services/slices/profileSlice/profileSlice';
 import { fetchAllTags } from '../../services/slices/tagsSlice/tagsSlice';
 import { downloadFileApi } from '../../utils/api/FileApi';
 
 export const EditProfilePage = () => {
 	const dispatch = useDispatch();
+
 	const profile = useSelector((state) => state.profile.myProfile);
 	const profileLoading = useSelector((state) => state.profile.loading);
 	const tags = useSelector((state) => state.tags.allTags || []);
 
-	const availablePreferences =
-		tags?.map((tag) => ({ id: tag.id, label: tag.title })) ?? [];
+	const availablePreferences = tags?.map((tag) => ({
+		id: tag.id,
+		label: tag.title
+	})) ?? [];
 
 	const [formData, setFormData] = useState({
 		name: '',
@@ -25,14 +32,16 @@ export const EditProfilePage = () => {
 		avatar: null as File | null,
 		preferences: [] as string[],
 	});
+
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-	// Load profile and tags
+	// Загрузка данных
 	useEffect(() => {
 		dispatch(getMyProfile());
 		dispatch(fetchAllTags());
 	}, [dispatch]);
 
+	// Заполнение формы существующими данными
 	useEffect(() => {
 		if (!profile) return;
 
@@ -41,14 +50,18 @@ export const EditProfilePage = () => {
 			username: profile.username || '',
 			email: profile.email || '',
 			birthDate: profile.dateOfBirth || null,
-			weight: '',
-			height: '',
+			weight: profile.weight !== null && profile.weight !== undefined
+				? String(profile.weight)
+				: '',
+			height: profile.height !== null && profile.height !== undefined
+				? String(profile.height)
+				: '',
 			avatar: null,
 			preferences: profile.preferredTags?.map((tag) => tag.id) || [],
 		});
 	}, [profile]);
 
-	// Load avatar from server
+	// Загрузка аватара
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!profile?.avatar?.id) return;
@@ -67,40 +80,48 @@ export const EditProfilePage = () => {
 	};
 
 	const handleSave = async () => {
-		if (!profile) return;
-
 		try {
-			// Загружаем новый аватар
+			// Загрузка нового аватара
 			if (formData.avatar) {
 				await dispatch(uploadAvatar(formData.avatar)).unwrap();
 			}
 
+			// Обновление профиля
 			await dispatch(
 				updateProfile({
-					name: formData.name,
-					username: formData.username,
-					email: formData.email,
-					dateOfBirth: formData.birthDate as string,
-					gender: profile.gender,
-					weight: profile.weight,
-					height: profile.height,
-					city: profile.city,
-					preferredTags: formData.preferences,
+					name: formData.name || undefined,
+					username: formData.username || undefined,
+					email: formData.email || undefined,
+					dateOfBirth: formData.birthDate || undefined,
+					weight: formData.weight ? Number(formData.weight) : undefined,
+					height: formData.height ? Number(formData.height) : undefined,
+					preferredTags: formData.preferences.length > 0
+						? formData.preferences
+						: undefined,
 				})
 			).unwrap();
 
+			// Обновляем данные профиля после сохранения
 			await dispatch(getMyProfile()).unwrap();
-		} catch (error) {
-			console.error(error);
+
+			alert('Профиль успешно обновлён!');
+		} catch (error: any) {
+			console.error('Ошибка сохранения:', error);
+			alert(error.message || 'Ошибка при сохранении профиля');
 		}
 	};
 
-	if (profileLoading || !profile) return <div>Загрузка...</div>;
+	if (profileLoading || !profile) {
+		return <div className={styles.loading}>Загрузка профиля...</div>;
+	}
 
 	return (
 		<section className={styles.container}>
 			<EditProfileForm
-				data={{ ...formData, avatarUrl }}
+				data={{
+					...formData,
+					avatarUrl
+				}}
 				updateData={handleUpdateData}
 				availablePreferences={availablePreferences}
 				onSubmit={handleSave}

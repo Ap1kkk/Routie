@@ -83,26 +83,26 @@ export const RegistrationPage: React.FC = () => {
 				name: formData.name,
 				dateOfBirth: formData.birthDate,
 				gender: formData.gender as 'MALE' | 'FEMALE' | 'OTHER',
-				city: 'Нижний Новгород',
+				city: 'Нижний Новгород',        // можно убрать или сделать динамическим
+				height: Number(formData.height), // ← добавлено
+				weight: Number(formData.weight), // ← добавлено
 			});
 
 			if (!profileResult.success) {
-				throw new Error(profileResult.error?.message);
+				throw new Error(profileResult.error?.message || 'Ошибка обновления профиля');
 			}
 
+			// Загрузка аватара (если есть)
 			if (formData.avatar) {
 				const avatarResult = await uploadAvatarApi(formData.avatar);
-
 				if (!avatarResult.success) {
-					throw new Error(avatarResult.error?.message);
+					console.warn('Аватар не загрузился, но профиль сохранён');
 				}
-
-				console.log('✅ Аватар загружен:', avatarResult.data);
 			}
 
 			setStep(3);
 		} catch (err: any) {
-			console.error('❌ Ошибка:', err);
+			console.error('❌ Ошибка обновления профиля:', err);
 			setError(err.message || 'Ошибка обновления профиля');
 		} finally {
 			setIsLoading(false);
