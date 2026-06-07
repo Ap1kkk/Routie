@@ -206,17 +206,6 @@ export const MainPage: React.FC = () => {
 								children='Смотреть все'
 								className={styles.buttonWatchAll}
 							/>
-							<Button
-								variant='blur'
-								onClick={() =>
-									navigate(
-										isMobile ? '/favorites' : '/favorites'
-									)
-								}
-								iconRight={<RightIcon />}
-								children='Смотреть все'
-								className={styles.buttonWatchAll}
-							/>
 						</div>
 
 						<div className={styles.positionGrid}>

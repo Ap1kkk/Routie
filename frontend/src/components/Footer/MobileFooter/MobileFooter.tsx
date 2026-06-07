@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from '@store';
 import { Avatar } from '@ui';
 
 import { ReactComponent as Home } from '../../../assets/icons/home.svg';
@@ -7,14 +8,40 @@ import { ReactComponent as Search } from '../../../assets/icons/search.svg';
 import { ReactComponent as Like } from '../../../assets/icons/like.svg';
 
 import styles from './MobileFooter.module.scss';
+import { getMyProfile } from '../../../services/slices/profileSlice/profileSlice';
+import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
 
 export const MobileFooter = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
+
+	const { myProfile } = useSelector((state) => state.profile);
+	const { isAuthenticated } = useSelector((state) => state.user);
+
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
 	const indicatorRef = useRef<HTMLDivElement>(null);
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
-	const paths = ['/routie', '/routes', '/favourites', '/settings'];
+	const paths = ['/routie', '/routes', '/favorites', '/settings'];
+
+	useEffect(() => {
+		if (isAuthenticated && !myProfile) {
+			dispatch(getMyProfile());
+		}
+	}, [dispatch, isAuthenticated, myProfile]);
+
+	useEffect(() => {
+		if (myProfile?.avatar?.id) {
+			dispatch(downloadFile(myProfile.avatar.id))
+				.unwrap()
+				.then((url) => setAvatarUrl(url))
+				.catch(() => setAvatarUrl(null));
+		} else {
+			setAvatarUrl(null);
+		}
+	}, [myProfile, dispatch]);
 
 	const updateIndicator = () => {
 		const activeIndex = paths.findIndex(
@@ -43,14 +70,11 @@ export const MobileFooter = () => {
 		return () => window.removeEventListener('resize', updateIndicator);
 	}, [location.pathname]);
 
-	useEffect(() => {
-		updateIndicator();
-	}, []);
-
 	return (
 		<footer className={styles.footer}>
 			<nav className={styles.navigation}>
 				<div ref={indicatorRef} className={styles.indicator} />
+
 				<button
 					ref={(el) => {
 						buttonsRef.current[0] = el;
@@ -75,19 +99,24 @@ export const MobileFooter = () => {
 					ref={(el) => {
 						buttonsRef.current[2] = el;
 					}}
-					onClick={() => navigate('/favourites')}
+					onClick={() => navigate('/favorites')}
 					className={styles.button}>
 					<Like />
 					<span className={styles.title}>Избранное</span>
 				</button>
 
+				{/* Кнопка профиля с реальным аватаром */}
 				<button
 					ref={(el) => {
 						buttonsRef.current[3] = el;
 					}}
 					onClick={() => navigate('/settings')}
 					className={styles.button}>
-					<Avatar alt='avatar' size='tiny' />
+					<Avatar
+						src={avatarUrl || undefined}
+						alt='avatar'
+						size='tiny'
+					/>
 					<span className={styles.title}>Профиль</span>
 				</button>
 			</nav>
