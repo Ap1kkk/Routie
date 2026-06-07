@@ -1,11 +1,3 @@
-import {
-	API_URL,
-	ApiResponse,
-	getHeaders,
-	handleResponse,
-} from '../utils/api/Api';
-import { API_LANDMARKS_URL } from '../utils/api/LandmarkApi';
-
 export interface LandmarkImage {
 	id: string;
 	filename: string;

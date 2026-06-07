@@ -19,8 +19,8 @@ const initialState: TFileState = {
 };
 
 export const downloadFile = createAsyncThunk<
-	string,           // возвращаем blob URL
-	string,           // fileId
+	string,
+	string,
 	{ rejectValue: string }
 >('file/downloadFile', async (fileId, { rejectWithValue }) => {
 	try {
