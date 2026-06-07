@@ -44,7 +44,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute allowedRoles={[ 'USER' ]}/>,
+				element: <ProtectedRoute allowedRoles={['USER']} />,
 				children: [
 					{
 						path: '/routie',
@@ -75,6 +75,18 @@ export const router = createBrowserRouter([
 					// 	element: <FilterMobilePage />,
 					// },
 					{
+						path: '/recommended',
+						element: <FilterDesktopPage />,
+					},
+					{
+						path: '/popular',
+						element: <FilterDesktopPage />,
+					},
+					{
+						path: '/favorites',
+						element: <FilterDesktopPage />,
+					},
+					{
 						path: '/routes',
 						element: <RoutesMobilePage />,
 					},
@@ -88,8 +100,8 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/achievements',
-						element: <AchievementPage />
-					}
+						element: <AchievementPage />,
+					},
 				],
 			},
 			{
@@ -114,7 +126,7 @@ export const router = createBrowserRouter([
 					{
 						path: '/admin/audioguides-edit',
 						element: <AudioGuidesEdit />,
-					}
+					},
 				],
 			},
 			{
