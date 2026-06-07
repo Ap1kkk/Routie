@@ -8,8 +8,10 @@ import { ReactComponent as Cross } from '../../../assets/icons/cross.svg';
 import { ReactComponent as Compass } from '../../../assets/images/compass.svg';
 import { ReactComponent as Moon } from '../../../assets/icons/moon.svg';
 import { ReactComponent as Sun } from '../../../assets/icons/sun.svg';
+import { ReactComponent as Heart } from '../../../assets/icons/like.svg'
+import { ReactComponent as Not } from '../../../assets/icons/notification.svg';
 
-import { MOCK_USER, MOCK_USER_AVATAR } from '../../../mocks/users';
+import { MOCK_USER } from '../../../mocks/users';
 
 import styles from './Header.module.scss';
 
@@ -67,15 +69,17 @@ export const Header = () => {
 				<div className={styles.themeButton} onClick={toggleTheme}>
 					{isLight ? <Moon /> : <Sun />}
 				</div>
+				<div className={styles.themeButton} onClick={() => navigate('/favorites')}>
+					<Heart />
+				</div>
+				<div className={styles.themeButton}>
+					<Not />
+				</div>
 				{isAuthenticated ? (
 					<Button
 						type={'button'}
 						variant={'tertiary'}
-						iconRight={
-							<Avatar
-								size={'small'}
-							/>
-						}
+						iconRight={<Avatar size={'small'} />}
 						children={MOCK_USER.name}
 						onClick={() => navigate('/profile')}
 						className={styles.userCard}

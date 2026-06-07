@@ -1,4 +1,5 @@
 import { UUID } from './User';
+import { ProfileImage } from './Profile';
 
 export interface RouteImage {
 	id: UUID;
@@ -73,14 +74,14 @@ export interface Route {
 	id: UUID;
 	title: string;
 	description: string;
-	type: RouteType;
+	type: string;
 	difficulty: number;
 	lengthMeters: number;
 	estimatedTimeMinutes: number;
 	city: string;
 	completionsCount: number;
 	isActive: boolean;
-	images: RouteImage[];
+	images: ProfileImage[];
 	tags: Tag[];
 }
 

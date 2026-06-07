@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Blur, Tag } from '@ui';
-import { Route } from '../../types/Route';
 import { Tags } from '../../types/Tags';
 
 import { ReactComponent as Like } from '../../assets/icons/like.svg';
 import { ReactComponent as LikeActive } from '../../assets/icons/like-green.svg';
 
 import styles from './RouteCard.module.scss';
+import { Route } from '../../types/Route';
 
 interface RouteCardProps {
 	route: Route;

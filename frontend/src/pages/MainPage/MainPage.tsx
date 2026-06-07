@@ -196,7 +196,22 @@ export const MainPage: React.FC = () => {
 							<Button
 								variant='blur'
 								onClick={() =>
-									navigate(isMobile ? '/routes' : '/filter')
+									navigate(
+										isMobile
+											? '/recommended'
+											: '/recommended'
+									)
+								}
+								iconRight={<RightIcon />}
+								children='Смотреть все'
+								className={styles.buttonWatchAll}
+							/>
+							<Button
+								variant='blur'
+								onClick={() =>
+									navigate(
+										isMobile ? '/favorites' : '/favorites'
+									)
 								}
 								iconRight={<RightIcon />}
 								children='Смотреть все'
