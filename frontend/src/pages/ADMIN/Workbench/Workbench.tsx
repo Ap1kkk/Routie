@@ -1,18 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import {
-	ReactComponent as User,
-	ReactComponent as Marker,
-	ReactComponent as Route,
-} from '../../../assets/icons/placeholder.svg';
+import {ReactComponent as Audio } from '../../../assets/icons/admin/audio.svg';
+import {ReactComponent as Tag } from '../../../assets/icons/admin/tag.svg';
+import {ReactComponent as Landmark } from '../../../assets/icons/admin/landmark.svg';
+import {ReactComponent as Route } from '../../../assets/icons/admin/route.svg';
 
 import styles from './Workbench.module.scss';
 
 const adminCards = [
 	{
 		to: '/admin/landmarks-edit',
-		icon: <Marker />,
+		icon: <Landmark />,
 		title: 'Изменение достопримечательностей',
 	},
 	{
@@ -22,12 +21,12 @@ const adminCards = [
 	},
 	{
 		to: '/admin/tags-edit',
-		icon: <User />,
+		icon: <Tag />,
 		title: 'Изменение тегов',
 	},
 	{
 		to: '/admin/audioguides-edit',
-		icon: <User />,
+		icon: <Audio />,
 		title: 'Изменение аудиогидов',
 	},
 ];
@@ -35,7 +34,7 @@ const adminCards = [
 export const Workbench = () => {
 	return (
 		<section className={styles.section}>
-			<h1 className={styles.title}>Панель администратора</h1>
+			<h2 className={styles.title}>Панель администратора</h2>
 
 			<div className={styles.cardList}>
 				{adminCards.map((card, index) => (
