@@ -47,6 +47,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.liquibase:liquibase-core:4.29.2'
     implementation 'io.micrometer:micrometer-registry-prometheus:1.14.5'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
     implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.10.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'

@@ -1,6 +1,7 @@
 package ru.ngtu.v1.routie.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.trace.Span;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,10 +27,9 @@ import ru.ngtu.v1.routie.config.properties.CorsConfigProperties;
 import ru.ngtu.v1.routie.config.properties.JwtConfigProperties;
 import ru.ngtu.v1.routie.dto.common.ApiError;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
+import ru.ngtu.v1.routie.filter.RequestTracingFilter;
 import ru.ngtu.v1.routie.security.JwtAuthenticationFilter;
 import ru.ngtu.v1.routie.security.UserDetailsServiceImpl;
-
-import java.time.LocalDateTime;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -59,6 +59,8 @@ public class SecurityConfig {
         configuration.addAllowedOrigin(corsProperties.getAllowedOrigin());
         configuration.addAllowedHeader(corsProperties.getAllowedHeader());
         configuration.addAllowedMethod(corsProperties.getAllowedMethod());
+        // Открываем X-Request-Id для чтения клиентом (браузер скрывает нестандартные заголовки)
+        configuration.addExposedHeader(RequestTracingFilter.HEADER_REQUEST_ID);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(corsProperties.getConfigurationPattern(), configuration);
@@ -111,8 +113,13 @@ public class SecurityConfig {
             String code,
             String message
     ) throws java.io.IOException {
-        ApiError error = new ApiError(code, message, null, LocalDateTime.now());
-        ApiResponse<Void> body = new ApiResponse<>(false, null, error);
+        ApiError error = ApiError.builder()
+            .code(code)
+            .message(message)
+            .traceId(Span.current().getSpanContext().getTraceId())
+            .build();
+
+        ApiResponse<Void> body = ApiResponse.error(error);
 
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

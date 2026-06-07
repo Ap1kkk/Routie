@@ -1,6 +1,9 @@
 package ru.ngtu.v1.routie.exception;
 
+import io.opentelemetry.api.trace.Span;
 import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.ngtu.v1.routie.dto.common.ApiError;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
@@ -87,8 +87,13 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiResponse<Void>> buildResponse(
             HttpStatus status, String code, String message, List<String> details
     ) {
-        ApiError error = new ApiError(code, message, details, LocalDateTime.now());
-        ApiResponse<Void> body = new ApiResponse<>(false, null, error);
+        ApiError error = ApiError.builder()
+            .traceId(Span.current().getSpanContext().getTraceId())
+            .code(code)
+            .message(message)
+            .details(details)
+            .build();
+        ApiResponse<Void> body = ApiResponse.error(error);
         return ResponseEntity.status(status).body(body);
     }
 }
