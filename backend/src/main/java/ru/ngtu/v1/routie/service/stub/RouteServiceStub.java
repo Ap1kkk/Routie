@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-route")
 @Primary
 public class RouteServiceStub implements RouteService {
 
