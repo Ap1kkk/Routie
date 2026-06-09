@@ -1,56 +1,77 @@
 .section {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
+	gap: 20px;
 }
 
 .title {
-	font-size: 28px;
-	font-weight: 600;
-	margin: 0;
+	text-align: center;
 }
 
 .headerActions {
+	width: 100%;
 	display: flex;
 	justify-content: flex-end;
 }
 
+.loading {
+	color: var(--color-caption);
+}
+
+.error {
+	color: var(--color-error);
+	font-weight: var(--font-medium);
+}
+
 .table {
-	width: 100%;
 	border-collapse: collapse;
-	background: #fff;
-	border-radius: 16px;
+	background: var(--color-card);
+	box-shadow: var(--shadow-blur);
+	border-radius: var(--border-radius);
 	overflow: hidden;
 }
 
 .tableHead {
-	background: #f5f5f5;
+	background: var(--color-accent);
+}
+
+.tableBody {
+	background: var(--color-card);
 }
 
 .tableRow {
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid var(--color-disabled);
+	transition: background-color 0.2s ease;
 }
 
 .tableHeader {
-	padding: 16px;
+	padding: 12px 24px;
 	text-align: left;
-	font-weight: 600;
+	font-size: var(--text-body-size);
+	font-weight: var(--font-medium);
+	color: var(--color-text);
 }
 
 .tableCell {
-	padding: 16px;
-	vertical-align: middle;
+	padding: 12px 24px;
+	color: var(--color-text);
+	font-size: var(--text-body-size);
 }
 
 .actions {
 	display: flex;
-	gap: 12px;
+	gap: 8px;
 	flex-wrap: wrap;
 }
 
+.buttonActions {
+	min-width: 160px;
+}
+
 .modal {
-	max-width: 800px;
-	width: 100%;
+	height: 80%;
 }
 
 .modalContent {
@@ -59,30 +80,8 @@
 	gap: 20px;
 }
 
-.formGroup {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.formRow {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16px;
-}
-
-.input,
-.select,
-.textarea {
-	width: 100%;
-	padding: 12px;
-	border: 1px solid #dcdcdc;
-	border-radius: 8px;
-}
-
-.textarea {
-	min-height: 120px;
-	resize: vertical;
+.modalTitle {
+	text-align: left;
 }
 
 .modalActions {
@@ -90,3 +89,42 @@
 	justify-content: flex-end;
 	gap: 12px;
 }
+
+.formRow {
+	display: flex;
+	gap: 5px;
+}
+
+.formColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.formGroup {
+	display: flex;
+	flex-direction: column;
+}
+
+.sectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.checkpointsArea {
+	width: 100%;
+	height: 190px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.checkpointCard {
+	display: flex;
+	flex-direction: column;
+}
+
+

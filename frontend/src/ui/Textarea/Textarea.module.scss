@@ -31,12 +31,17 @@
 }
 
 .label {
-	color: var(--color-text);
 	font-family: var(--font-body);
-	font-size: var(--text-h4-size);
-	font-weight: var(--font-medium);
-	line-height: var(--text-h4-lineheight);
-	user-select: none;
+	font-size: var(--text-body-size);
+	font-weight: var(--font-regular);
+	letter-spacing: var(--letter-spacing);
+	color: var(--color-text);
+	padding-bottom: 3px;
+
+	@media (max-width: 925px) {
+		font-size: var(--text-body-size-mobile);
+		padding-bottom: 0;
+	}
 }
 
 .textarea {

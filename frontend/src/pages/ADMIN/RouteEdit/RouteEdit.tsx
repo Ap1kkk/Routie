@@ -13,7 +13,7 @@ import {
 } from '../../../services/slices/routeSlice/routeSlice';
 import { fetchAllTags } from '../../../services/slices/tagsSlice/tagsSlice';
 import { searchLandmarks } from '../../../services/slices/landmarkSlice/landmarkSlice';
-import { Button, Input, Modal } from '@ui';
+import { Button, Input, Modal, Select, Tag, Textarea } from '@ui';
 
 import styles from './RouteEdit.module.scss';
 
@@ -371,66 +371,62 @@ export const RouteEdit = () => {
 				onClose={closeModal}
 				className={styles.modal}>
 				<div className={styles.modalContent}>
-					<h3>
+					<h3 className={styles.modalTitle}>
 						{editingRoute
 							? 'Редактирование маршрута'
 							: 'Создание маршрута'}
 					</h3>
 
-					<div className={styles.formGroup}>
-						<label>Название</label>
+					<Input
+						label={'Название'}
+						value={title}
+						inputPadding={'5px 10px'}
+						onChange={(e) => setTitle(e.target.value)}
+					/>
 
-						<Input
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-						/>
-					</div>
+					<Textarea
+						label={'Описание'}
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+					/>
 
-					<div className={styles.formGroup}>
-						<label>Описание</label>
-
-						<textarea
-							className={styles.textarea}
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-						/>
-					</div>
-
-					<div className={styles.formGroup}>
-						<label>Тип маршрута</label>
-
-						<select
-							className={styles.select}
-							value={type}
-							onChange={(e) =>
-								setType(e.target.value as RouteType)
-							}>
-							<option value='TOURIST'>TOURIST</option>
-							<option value='SPORT'>SPORT</option>
-							<option value='MIXED'>MIXED</option>
-						</select>
-					</div>
+					<Select
+						label='Тип маршрута'
+						value={type}
+						onChange={(value) => setType(value as RouteType)}
+						options={[
+							{ value: 'TOURIST', label: 'TOURIST' },
+							{ value: 'SPORT', label: 'SPORT' },
+							{ value: 'MIXED', label: 'MIXED' },
+						]}
+					/>
 
 					<div className={styles.formRow}>
 						<Input
+							label={'Сложность'}
 							type='number'
 							value={difficulty}
+							inputPadding={'5px 10px'}
 							onChange={(e) =>
 								setDifficulty(Number(e.target.value))
 							}
 						/>
 
 						<Input
+							label={'Длина'}
 							type='number'
 							value={lengthMeters}
+							inputPadding={'5px 10px'}
 							onChange={(e) =>
 								setLengthMeters(Number(e.target.value))
 							}
 						/>
 
 						<Input
+							label={'Время в минутах'}
 							type='number'
 							value={estimatedTimeMinutes}
+							inputPadding={'5px 10px'}
 							onChange={(e) =>
 								setEstimatedTimeMinutes(Number(e.target.value))
 							}
@@ -445,121 +441,123 @@ export const RouteEdit = () => {
 								Добавить точку
 							</Button>
 						</div>
-
-						{checkpoints.map((checkpoint, index) => (
-							<div key={index} className={styles.checkpointCard}>
-								<h4>Точка #{index + 1}</h4>
-
-								<div className={styles.formRow}>
-									<Input
-										type='number'
-										placeholder='Широта'
-										value={checkpoint.latitude}
-										onChange={(e) =>
-											updateCheckpoint(
-												index,
-												'latitude',
-												Number(e.target.value)
-											)
-										}
-									/>
-
-									<Input
-										type='number'
-										placeholder='Долгота'
-										value={checkpoint.longitude}
-										onChange={(e) =>
-											updateCheckpoint(
-												index,
-												'longitude',
-												Number(e.target.value)
-											)
-										}
-									/>
-								</div>
-
-								<select
-									className={styles.select}
-									value={checkpoint.landmarkId}
-									onChange={(e) =>
-										updateCheckpoint(
-											index,
-											'landmarkId',
-											e.target.value
-										)
-									}>
-									<option value=''>
-										Без достопримечательности
-									</option>
-
-									{landmarks?.content?.map((landmark) => (
-										<option
-											key={landmark.id}
-											value={landmark.id}>
-											{landmark.title}
-										</option>
-									))}
-								</select>
-
-								<Button
-									variant='secondary'
-									onClick={() => removeCheckpoint(index)}>
-									Удалить
-								</Button>
-							</div>
-						))}
-					</div>
-
-					<div className={styles.formGroup}>
-						<label>Город</label>
-
-						<Input
-							value={city}
-							onChange={(e) => setCity(e.target.value)}
-						/>
-					</div>
-
-					<div className={styles.formGroup}>
-						<label>Теги</label>
-
-						<div className={styles.tagsContainer}>
-							{allTags?.map((tag) => (
-								<label key={tag.id}>
-									<input
-										type='checkbox'
-										checked={selectedTags.includes(tag.id)}
-										onChange={(e) => {
-											if (e.target.checked) {
-												setSelectedTags((prev) => [
-													...prev,
-													tag.id,
-												]);
-											} else {
-												setSelectedTags((prev) =>
-													prev.filter(
-														(id) => id !== tag.id
+						<div className={styles.checkpointsArea}>
+							{checkpoints.map((checkpoint, index) => (
+								<div
+									key={index}
+									className={styles.checkpointCard}>
+									<span>Точка №{index + 1}</span>
+									<div className={styles.formRow}>
+										<div className={styles.formColumn}>
+											<Input
+												type='number'
+												showNumberArrows={false}
+												placeholder='Широта'
+												value={checkpoint.latitude}
+												inputPadding={'3px 12px'}
+												onChange={(e) =>
+													updateCheckpoint(
+														index,
+														'latitude',
+														Number(e.target.value)
 													)
-												);
-											}
-										}}
-									/>
+												}
+											/>
 
-									{tag.title}
-								</label>
+											<Input
+												type='number'
+												showNumberArrows={false}
+												placeholder='Долгота'
+												value={checkpoint.longitude}
+												inputPadding={'3px 12px'}
+												onChange={(e) =>
+													updateCheckpoint(
+														index,
+														'longitude',
+														Number(e.target.value)
+													)
+												}
+											/>
+										</div>
+										<Select
+											className={styles.selectLand}
+											value={checkpoint.landmarkId}
+											onChange={(value: string) =>
+												updateCheckpoint(
+													index,
+													'landmarkId',
+													value
+												)
+											}
+											options={[
+												{
+													value: '',
+													label: 'Без достопримечательности',
+												},
+												...(landmarks?.content?.map(
+													(landmark) => ({
+														value: landmark.id,
+														label: landmark.title,
+													})
+												) || []),
+											]}
+										/>
+
+										<Button
+											variant='secondary'
+											onClick={() =>
+												removeCheckpoint(index)
+											}
+											children={'Удалить'}
+										/>
+									</div>
+								</div>
 							))}
 						</div>
 					</div>
 
-					<div className={styles.formGroup}>
-						<label>Изображения</label>
+					<Input
+						label={'Город'}
+						value={city}
+						inputPadding={'5px 10px'}
+						onChange={(e) => setCity(e.target.value)}
+					/>
 
-						<input
-							type='file'
-							multiple
-							accept='image/*'
-							onChange={(e) => setImages(e.target.files)}
-						/>
+					<div>
+						<label>Теги</label>
+						{allTags != null ? (
+							<Tag
+								items={allTags.map((tag) => ({
+									id: tag.id,
+									label: tag.title,
+								}))}
+								wrap={false}
+								selectedIds={selectedTags}
+								onTagClick={(id) => {
+									if (!id) return;
+
+									const tagId = String(id);
+
+									setSelectedTags((prev) =>
+										prev.includes(tagId)
+											? prev.filter((x) => x !== tagId)
+											: [...prev, tagId]
+									);
+								}}
+							/>
+						) : (
+							<span>Нет тегов</span>
+						)}
 					</div>
+
+					<Input
+						label={'Изображения'}
+						type='file'
+						multiple
+						accept='image/*'
+						inputPadding={'5px 10px'}
+						onChange={(e) => setImages(e.target.files)}
+					/>
 
 					<div className={styles.modalActions}>
 						<Button variant='secondary' onClick={closeModal}>
@@ -579,4 +577,3 @@ export const RouteEdit = () => {
 		</section>
 	);
 };
-
