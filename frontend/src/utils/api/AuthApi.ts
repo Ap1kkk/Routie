@@ -123,35 +123,17 @@ export const logoutApi = async (): Promise<ApiResponse> => {
 /** Получение данных текущего пользователя */
 export const getUserApi = async (): Promise<ApiResponse> => {
 	try {
-		const token = getAccessToken();
-
-		if (!token) {
-			return {
-				success: false,
-				error: {
-					code: 'AUTH_ERROR',
-					message: 'Токен не найден. Пожалуйста, войдите снова.',
-					timestamp: new Date().toISOString(),
-				},
-				timestamp: new Date().toISOString(),
-			};
-		}
-
-		const response = await fetch(
-			`${API_URL}/${API_AUTH_URL}/me`,
-			{
-				method: 'GET',
-				headers: getHeaders(true),
-			}
-		);
+		const response = await fetchWithAuth(`${API_URL}/${API_AUTH_URL}/me`, {
+			method: 'GET',
+		});
 
 		return await handleResponse(response);
-	} catch (error: any) {
+	} catch (e: any) {
 		return {
 			success: false,
 			error: {
 				code: 'AUTH_ERROR',
-				message: error.message || 'Ошибка получения данных пользователя',
+				message: e.message,
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),
@@ -160,63 +142,95 @@ export const getUserApi = async (): Promise<ApiResponse> => {
 };
 
 /** Получение ролей текущего пользователя */
-export const getUserRolesApi = async (): Promise<ApiResponse<RolesResponse>> => {
-	try {
-		const response = await fetch(
-			`${API_URL}/${API_AUTH_URL}/roles`,
-			{
-				method: 'GET',
-				headers: getHeaders(true),
-			}
-		);
+export const getUserRolesApi = async (): Promise<
+	ApiResponse<RolesResponse>
+> => {
+	const response = await fetchWithAuth(`${API_URL}/${API_AUTH_URL}/roles`, {
+		method: 'GET',
+	});
 
-		return await handleResponse<RolesResponse>(response);
-	} catch (error: any) {
-		return {
-			success: false,
-			error: {
-				code: 'ROLES_ERROR',
-				message: error.message || 'Ошибка получения ролей',
-				timestamp: new Date().toISOString(),
-			},
-			timestamp: new Date().toISOString(),
-		};
-	}
+	return handleResponse(response);
 };
 
 /** Обновление access токена с использованием refresh токена */
-export const refreshTokenApi = async (): Promise<
-	ApiResponse<LoginResponseWithTokens>
-> => {
+export const refreshTokenApi = async (): Promise<boolean> => {
 	try {
 		const refreshToken = getRefreshToken();
+
 		if (!refreshToken) {
-			throw new Error('Refresh token не найден');
+			clearTokens();
+			return false;
 		}
 
 		const response = await fetch(`${API_URL}/${API_AUTH_URL}/refresh`, {
 			method: 'POST',
 			headers: getHeaders(),
-			body: JSON.stringify({ refreshToken }),
+			body: JSON.stringify({
+				refreshToken,
+			}),
 		});
 
 		const result = await handleResponse<LoginResponseWithTokens>(response);
 
-		if (result.success && result.data) {
-			storeTokens(result.data.accessToken, result.data.refreshToken);
+		if (!result.success || !result.data) {
+			clearTokens();
+			return false;
 		}
 
-		return result;
-	} catch (error: any) {
+		storeTokens(result.data.accessToken, result.data.refreshToken);
+
+		return true;
+	} catch {
 		clearTokens();
-		return {
-			success: false,
-			error: {
-				code: 'REFRESH_TOKEN_ERROR',
-				message: error.message || 'Ошибка обновления токена',
-				timestamp: new Date().toISOString(),
-			},
-			timestamp: new Date().toISOString(),
-		};
+		return false;
 	}
+};
+
+let isRefreshing = false;
+let queue: (() => void)[] = [];
+
+export const fetchWithAuth = async (
+	url: string,
+	options: RequestInit = {}
+): Promise<Response> => {
+	let token = getAccessToken();
+
+	const doRequest = () =>
+		fetch(url, {
+			...options,
+			headers: {
+				...options.headers,
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			},
+		});
+
+	let response = await doRequest();
+
+	if (response.status !== 401) return response;
+
+	if (isRefreshing) {
+		await new Promise<void>((resolve) => queue.push(resolve));
+		token = getAccessToken();
+		return doRequest();
+	}
+
+	isRefreshing = true;
+
+	const refreshed = await refreshTokenApi();
+
+	isRefreshing = false;
+
+	queue.forEach((cb) => cb());
+	queue = [];
+
+	if (!refreshed) {
+		clearTokens();
+		window.location.href = '/login';
+		throw new Error('Session expired');
+	}
+
+	token = getAccessToken();
+
+	return doRequest();
 };

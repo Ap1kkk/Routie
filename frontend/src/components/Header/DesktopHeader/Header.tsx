@@ -24,7 +24,7 @@ export const Header = () => {
 	const { isLight, toggleTheme } = useTheme();
 
 	const { myProfile } = useSelector((state) => state.profile);
-	const { isAuthenticated, isAuthChecked } = useSelector((state) => state.user);
+	const { isAuthenticated, initialized } = useSelector((state) => state.user);
 
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -34,10 +34,10 @@ export const Header = () => {
 		location.pathname === '/recovery-page';
 
 	useEffect(() => {
-		if (isAuthenticated && isAuthChecked && !myProfile) {
+		if (isAuthenticated && initialized && !myProfile) {
 			dispatch(getMyProfile());
 		}
-	}, [dispatch, isAuthenticated, isAuthChecked, myProfile]);
+	}, [dispatch, isAuthenticated, initialized, myProfile]);
 
 	useEffect(() => {
 		if (myProfile?.avatar?.id) {
