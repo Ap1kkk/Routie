@@ -30,7 +30,6 @@ import ru.ngtu.v1.routie.exception.BadRequestException;
 import ru.ngtu.v1.routie.exception.EntityNotFoundException;
 import ru.ngtu.v1.routie.model.*;
 import ru.ngtu.v1.routie.repository.*;
-import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.FileService;
 import ru.ngtu.v1.routie.service.RouteService;
 
@@ -50,7 +49,6 @@ public class RouteServiceImpl implements RouteService {
   private final TagRepository tagRepository;
   private final AudioGuideRepository audioGuideRepository;
   private final MediaFileRepository mediaFileRepository;
-  private final UserProfileRepository userProfileRepository;
   private final FileService fileService;
 
   // ==================== Чтение ====================
@@ -80,35 +78,6 @@ public class RouteServiceImpl implements RouteService {
         page.getTotalElements(),
         page.getTotalPages(),
         filter.getPage()
-    );
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public PageResponse<RouteShortResponse> getRecommendedRoutes(int page, int size) {
-    UUID userId = getCurrentUserId();
-    UserProfile profile = userProfileRepository.findById(userId)
-        .orElseThrow(() -> new EntityNotFoundException("Профиль", userId));
-
-    List<UUID> preferredTags = profile.getPreferredTagIds();
-    PageRequest pageable = PageRequest.of(page, size, Sort.by("completionsCount").descending());
-
-    Page<Route> result;
-    if (preferredTags == null || preferredTags.isEmpty()) {
-      // fallback: популярные активные маршруты
-      result = routeRepository.findAll(
-          (root, q, cb) -> cb.isTrue(root.get("isActive")),
-          pageable
-      );
-    } else {
-      result = routeRepository.findRecommendedByTags(preferredTags, pageable);
-    }
-
-    return new PageResponse<>(
-        result.getContent().stream().map(this::toShortResponse).toList(),
-        result.getTotalElements(),
-        result.getTotalPages(),
-        page
     );
   }
 
@@ -232,12 +201,6 @@ public class RouteServiceImpl implements RouteService {
         .orElseThrow(() -> new EntityNotFoundException("Маршрут", id));
   }
 
-  private UUID getCurrentUserId() {
-    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-        .getContext().getAuthentication().getPrincipal();
-    return userDetails.getId();
-  }
-
   private void validateTagsExist(List<UUID> tagIds) {
     if (tagIds == null || tagIds.isEmpty()) {
       return;
@@ -271,12 +234,20 @@ public class RouteServiceImpl implements RouteService {
 
   // ==================== Specification для поиска ====================
 
+  private boolean isCurrentUserAdmin() {
+    return SecurityContextHolder.getContext().getAuthentication()
+        .getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+  }
+
   private Specification<Route> buildSpecification(RouteSearchFilter filter) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
 
-      // Только активные маршруты в публичном поиске
-      predicates.add(cb.isTrue(root.get("isActive")));
+      // USER видит только активные маршруты, ADMIN — все
+      if (!isCurrentUserAdmin()) {
+        predicates.add(cb.isTrue(root.get("isActive")));
+      }
 
       if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
         predicates.add(cb.like(

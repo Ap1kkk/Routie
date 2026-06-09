@@ -49,15 +49,6 @@ public class RouteControllerV1 {
     return ApiResponse.of(routeService.searchRoutes(filter));
   }
 
-  @GetMapping("/recommended")
-  @Operation(summary = "Персонализированные рекомендуемые маршруты")
-  public ApiResponse<PageResponse<RouteShortResponse>> getRecommendedRoutes(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size
-  ) {
-    return ApiResponse.of(routeService.getRecommendedRoutes(page, size));
-  }
-
   @GetMapping("/{routeId}")
   @Operation(summary = "Получение краткой информации о маршруте")
   public ApiResponse<RouteShortResponse> getRouteShort(@PathVariable UUID routeId) {

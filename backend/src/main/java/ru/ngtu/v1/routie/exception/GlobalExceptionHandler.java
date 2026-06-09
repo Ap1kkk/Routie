@@ -1,18 +1,25 @@
 package ru.ngtu.v1.routie.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.opentelemetry.api.trace.Span;
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.ngtu.v1.routie.dto.common.ApiError;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 
@@ -46,6 +53,76 @@ public class GlobalExceptionHandler {
                 .toList();
         log.warn("Constraint violation: {}", details);
         return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Ошибка валидации запроса", details);
+    }
+
+    // ==================== Ошибки парсинга запроса (422) ====================
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        String technical = ex.getMessage();
+        String human = "Ошибка чтения тела запроса: невалидный JSON";
+
+        // Уточняем для enum и несовместимых типов
+        Throwable cause = ex.getCause();
+        if (cause instanceof InvalidFormatException ife) {
+            String fieldPath = ife.getPath().stream()
+                    .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "[" + ref.getIndex() + "]")
+                    .collect(Collectors.joining("."));
+            Class<?> targetType = ife.getTargetType();
+            if (targetType != null && targetType.isEnum()) {
+                String allowed = Arrays.stream(targetType.getEnumConstants())
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+                human = "Неверное значение поля \"" + fieldPath + "\": допустимые значения — " + allowed;
+            } else {
+                human = "Неверный тип данных в поле \"" + fieldPath + "\"";
+            }
+        }
+
+        log.warn("HttpMessageNotReadable: {}", technical);
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY", human,
+                List.of(technical != null ? technical : "unknown"));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        String value = ex.getValue() != null ? ex.getValue().toString() : "null";
+        Class<?> requiredType = ex.getRequiredType();
+        String typeName = requiredType != null ? requiredType.getSimpleName() : "неизвестный";
+
+        String human = "Неверный тип параметра \"" + paramName + "\": ожидается " + typeName;
+        String technical = "Параметр \"" + paramName + "\" = \"" + value + "\" не может быть приведён к типу " + typeName;
+
+        log.warn("MethodArgumentTypeMismatch: {}", technical);
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY", human,
+                List.of(technical));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
+        String human = "Отсутствует обязательный параметр \"" + ex.getParameterName() + "\"";
+        String technical = "Required parameter \"" + ex.getParameterName() + "\" of type "
+                + ex.getParameterType() + " is missing";
+
+        log.warn("MissingServletRequestParameter: {}", technical);
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY", human,
+                List.of(technical));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        String received = ex.getContentType() != null ? ex.getContentType().toString() : "не указан";
+        String supported = ex.getSupportedMediaTypes().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+
+        String human = "Неподдерживаемый тип содержимого: " + received;
+        String technical = "Content-Type \"" + received + "\" не поддерживается. Допустимые: " + supported;
+
+        log.warn("HttpMediaTypeNotSupported: {}", technical);
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY", human,
+                List.of(technical));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
