@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
 	deleteAudioGuideApi,
 	getAudioGuideApi,
@@ -7,7 +7,7 @@ import {
 	createAudioGuideApi,
 	updateAudioGuideApi,
 } from '../../../utils/api/AudioGuideApi';
-import { AudioGuide } from '../../../types/Route';
+import { AudioGuide } from '../../../types/Landmark';
 import {
 	AudioGuideCreateRequest,
 	AudioGuidesSearchParams,

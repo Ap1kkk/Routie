@@ -1,10 +1,8 @@
 .section {
   width: 100%;
-  padding: 10px 15px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 20px;
 }
 
@@ -12,13 +10,27 @@
   text-align: center;
 }
 
-.table {
+.headerActions {
   width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.loading {
+  color: var(--color-caption);
+}
+
+.error {
+  color: var(--color-error);
+  font-weight: var(--font-medium);
+}
+
+.table {
   border-collapse: collapse;
   background: var(--color-card);
+  box-shadow: var(--shadow-blur);
   border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
 }
 
 .tableHead {
@@ -35,7 +47,7 @@
 }
 
 .tableHeader {
-  padding: 16px;
+  padding: 12px 24px;
   text-align: left;
   font-size: var(--text-body-size);
   font-weight: var(--font-medium);
@@ -43,10 +55,9 @@
 }
 
 .tableCell {
-  padding: 16px;
-  vertical-align: middle;
-  font-size: var(--text-body-size);
+  padding: 12px 24px;
   color: var(--color-text);
+  font-size: var(--text-body-size);
 }
 
 .imagesContainer {
@@ -112,16 +123,19 @@
 .modalContent {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.formGroup {
+.modalTitle {
+  text-align: left;
+}
+
+.modalActions {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
-.input,
 .textarea,
 .select {
   width: 100%;
@@ -162,4 +176,47 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 12px;
+}
+
+.dropZone {
+  border: 2px dashed #bbb;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.previewGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.imageCard {
+  position: relative;
+}
+
+.previewImage {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.deleteButton {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(0,0,0,.6);
+  color: white;
+
+  cursor: pointer;
 }
