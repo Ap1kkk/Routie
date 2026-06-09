@@ -25,16 +25,21 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import ru.ngtu.v1.routie.config.properties.CorsConfigProperties;
 import ru.ngtu.v1.routie.config.properties.JwtConfigProperties;
+import ru.ngtu.v1.routie.config.properties.TestTokenProperties;
 import ru.ngtu.v1.routie.dto.common.ApiError;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.filter.RequestTracingFilter;
 import ru.ngtu.v1.routie.security.JwtAuthenticationFilter;
+import ru.ngtu.v1.routie.security.TestTokenAuthFilter;
 import ru.ngtu.v1.routie.security.UserDetailsServiceImpl;
+
+import java.util.Optional;
 
 @Configuration
 @EnableConfigurationProperties({
         JwtConfigProperties.class,
-        CorsConfigProperties.class
+        CorsConfigProperties.class,
+        TestTokenProperties.class
 })
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -52,6 +57,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsServiceImpl userDetailsService;
     private final ObjectMapper objectMapper;
+
+    /** Опционально: присутствует только при профиле {@code test} */
+    private final Optional<TestTokenAuthFilter> testTokenAuthFilter;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(CorsConfigProperties corsProperties) {
@@ -90,6 +98,10 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Добавляем TestTokenAuthFilter перед JWT-фильтром только при профиле test
+        testTokenAuthFilter.ifPresent(filter ->
+                http.addFilterBefore(filter, JwtAuthenticationFilter.class));
 
         return http.build();
     }
