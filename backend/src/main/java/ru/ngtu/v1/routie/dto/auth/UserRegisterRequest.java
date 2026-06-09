@@ -27,4 +27,11 @@ public class UserRegisterRequest {
   @NotBlank(message = "Пароль обязателен")
   @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
   private String password;
+
+  /** Стабильный ID устройства, генерируется клиентом при первом запуске и хранится локально. */
+  @NotBlank(message = "deviceId обязателен")
+  private String deviceId;
+
+  /** Читаемое имя устройства (необязательно). */
+  private String deviceName;
 }
