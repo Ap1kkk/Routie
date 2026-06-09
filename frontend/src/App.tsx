@@ -1,4 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import {
+	createBrowserRouter,
+	Navigate,
+	RouterProvider,
+} from 'react-router-dom';
 import { Layout, ProfileRedirect, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
@@ -18,10 +22,30 @@ import {
 	RouteEdit,
 	RoutesMobilePage,
 	SettingsPage,
+	Statistic,
 	StatisticPage,
 	TagsEdit,
 	Workbench,
 } from '@pages';
+import { useDispatch, useSelector } from '@store';
+import { useEffect } from 'react';
+import { initAuth } from './services/slices/userSlice/userSlice';
+import { selectInitialized } from './services/selectors/userSelectors';
+
+export function App() {
+	const dispatch = useDispatch();
+	const initialized = useSelector(selectInitialized);
+
+	useEffect(() => {
+		dispatch(initAuth());
+	}, [dispatch]);
+
+	if (!initialized) {
+		return <div>Loading...</div>;
+	}
+
+	return <RouterProvider router={router} />;
+}
 
 export const router = createBrowserRouter([
 	{
@@ -45,7 +69,7 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute allowedRoles={['USER']} />,
+				element: <ProtectedRoute allowedRoles={['USER', 'ADMIN']} />,
 				children: [
 					{
 						path: '/routie',
@@ -128,6 +152,10 @@ export const router = createBrowserRouter([
 						path: '/admin/audioguides-edit',
 						element: <AudioGuidesEdit />,
 					},
+					{
+						path: '/admin/statistic',
+						element: <Statistic />
+					}
 				],
 			},
 			{
@@ -137,8 +165,3 @@ export const router = createBrowserRouter([
 		],
 	},
 ]);
-
-function getCurrentUsername() {
-	const username = localStorage.getItem('username');
-	if (username) return username;
-}

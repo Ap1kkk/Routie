@@ -3,22 +3,20 @@ import { User } from '../../../types/User';
 import { clearTokens } from '../../../utils/auth';
 import {
 	getUserApi,
+	getUserRolesApi,
 	loginUserApi,
 	logoutApi,
 	registerUserApi,
-	refreshTokenApi,
-	getUserRolesApi,
 } from '../../../utils/api/AuthApi';
 import {
 	LoginRequest,
 	RegisterRequest,
 	RegisterResponse,
-	LoginResponseWithTokens,
 } from '../../../types/Auth';
 import { ApiResponse } from '../../../utils/api/Api';
 
 type TUserState = {
-	isAuthChecked: boolean;
+	initialized: boolean;
 	isAuthenticated: boolean;
 	data: User | null;
 	roles: string[];
@@ -28,7 +26,7 @@ type TUserState = {
 };
 
 const initialState: TUserState = {
-	isAuthChecked: false,
+	initialized: false,
 	isAuthenticated: false,
 	data: null,
 	roles: [],
@@ -51,32 +49,41 @@ export const register = createAsyncThunk<
 
 	const userResponse = await getUserApi();
 	if (!userResponse.success || userResponse.error || !userResponse.data)
-		return rejectWithValue(userResponse.error?.message || 'Ошибка получения данных пользователя');
+		return rejectWithValue(
+			userResponse.error?.message ||
+				'Ошибка получения данных пользователя'
+		);
 
 	return userResponse.data as unknown as User;
 });
 
 export const login = createAsyncThunk<
-	User,
+	{ user: User; roles: string[] },
 	LoginRequest,
 	{ rejectValue: string }
 >('user/login', async (data, { rejectWithValue }) => {
-	const response: ApiResponse<LoginResponseWithTokens> = await loginUserApi(data);
-	if (!response.success || response.error)
-		return rejectWithValue(response.error?.message || 'Ошибка входа');
+	const response = await loginUserApi(data);
 
-	if (!response.data)
-		return rejectWithValue('Ошибка входа: данные не получены');
-
-	if (response.data.user) {
-		return response.data.user as unknown as User;
-	}
+	if (!response.success || !response.data)
+		return rejectWithValue('Login error');
 
 	const userResponse = await getUserApi();
-	if (!userResponse.success || userResponse.error || !userResponse.data)
-		return rejectWithValue(userResponse.error?.message || 'Ошибка получения данных пользователя');
+	const rolesResponse = await getUserRolesApi();
 
-	return userResponse.data as unknown as User;
+	if (!userResponse.success || !userResponse.data) {
+		return rejectWithValue('No user');
+	}
+
+	const roles = rolesResponse.data?.roles;
+
+	if (!rolesResponse.success || !roles) {
+		return rejectWithValue('No roles');
+	}
+
+	return {
+		user: userResponse.data as User,
+		roles: roles,
+	};
 });
 
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
@@ -89,75 +96,35 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 	}
 );
 
-export const refreshToken = createAsyncThunk<
-	LoginResponseWithTokens | null,
+export const initAuth = createAsyncThunk<
+	{ user: User; roles: string[] },
 	void,
 	{ rejectValue: string }
->('user/refreshToken', async (_, { rejectWithValue }) => {
-	const response = await refreshTokenApi();
-
-	if (!response.success || !response.data) {
-		clearTokens();
-		return rejectWithValue(
-			response.error?.message || 'Ошибка обновления токена'
-		);
-	}
-
-	return response.data;
-});
-
-export const fetchUser = createAsyncThunk<
-	User,
-	void,
-	{ rejectValue: string }
->('user/fetchUser', async (_, { rejectWithValue, dispatch }) => {
-	let response = await getUserApi();
-
-	if (!response.success) {
-		const refreshResult = await dispatch(refreshToken())
-			.unwrap()
-			.catch(() => null);
-
-		if (refreshResult) {
-			response = await getUserApi();
-		}
-	}
-
-	if (!response.success || !response.data) {
-		return rejectWithValue(
-			response.error?.message || 'Ошибка получения пользователя'
-		);
-	}
-
-	return response.data as User;
-});
-
-export const fetchUserRoles = createAsyncThunk<
-	string[],
-	void,
-	{ rejectValue: string }
->(
-	'user/fetchRoles',
-	async (_, { rejectWithValue }) => {
-		const response = await getUserRolesApi();
-
-		if (!response.success || !response.data) {
-			return rejectWithValue(
-				response.error?.message || 'Ошибка получения ролей'
-			);
+>('user/initAuth', async (_, { rejectWithValue }) => {
+	try {
+		const userResponse = await getUserApi();
+		if (!userResponse.success || !userResponse.data) {
+			return rejectWithValue('No user');
 		}
 
-		return response.data.roles;
+		const rolesResponse = await getUserRolesApi();
+		if (!rolesResponse.success || !rolesResponse.data) {
+			return rejectWithValue('No roles');
+		}
+
+		return {
+			user: userResponse.data as User,
+			roles: rolesResponse.data.roles,
+		};
+	} catch (e: any) {
+		return rejectWithValue(e.message);
 	}
-);
+});
 
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
 	reducers: {
-		setAuthChecked: (state, action: PayloadAction<boolean>) => {
-			state.isAuthChecked = action.payload;
-		},
 		clearErrors: (state) => {
 			state.loginError = null;
 			state.registerError = null;
@@ -170,6 +137,7 @@ const userSlice = createSlice({
 				state.registerError = null;
 			})
 			.addCase(register.fulfilled, (state, action) => {
+				state.initialized = true;
 				state.isLoading = false;
 				state.isAuthenticated = true;
 				state.data = action.payload;
@@ -184,9 +152,12 @@ const userSlice = createSlice({
 				state.loginError = null;
 			})
 			.addCase(login.fulfilled, (state, action) => {
+				state.initialized = true;
 				state.isLoading = false;
 				state.isAuthenticated = true;
-				state.data = action.payload;
+
+				state.data = action.payload.user;
+				state.roles = action.payload.roles;
 			})
 			.addCase(login.rejected, (state, action) => {
 				state.isLoading = false;
@@ -197,34 +168,23 @@ const userSlice = createSlice({
 				state.isAuthenticated = false;
 				state.data = null;
 				state.roles = [];
+				state.initialized = false;
 			})
 
-			.addCase(fetchUser.fulfilled, (state, action) => {
+			.addCase(initAuth.fulfilled, (state, action) => {
+				state.initialized = true;
 				state.isAuthenticated = true;
-				state.isAuthChecked = true;
-				state.data = action.payload;
+				state.data = action.payload.user;
+				state.roles = action.payload.roles;
 			})
-			.addCase(fetchUser.rejected, (state) => {
-				state.isAuthChecked = true;
+			.addCase(initAuth.rejected, (state) => {
+				state.initialized = true;
 				state.isAuthenticated = false;
 				state.data = null;
-			})
-
-			.addCase(refreshToken.fulfilled, (state) => {})
-			.addCase(refreshToken.rejected, (state) => {
-				state.isAuthenticated = false;
-				state.data = null;
-				state.isAuthChecked = true;
-			})
-
-			.addCase(fetchUserRoles.fulfilled, (state, action) => {
-				state.roles = action.payload;
-			})
-			.addCase(fetchUserRoles.rejected, (state) => {
 				state.roles = [];
 			});
 	},
 });
 
-export const { setAuthChecked, clearErrors } = userSlice.actions;
+export const { clearErrors } = userSlice.actions;
 export default userSlice.reducer;
