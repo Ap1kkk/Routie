@@ -3,6 +3,8 @@ import { UUID } from './User';
 export interface LoginRequest {
 	email: string;
 	password: string;
+	deviceId: string;
+	deviceName: string;
 }
 
 export interface LoginResponse {

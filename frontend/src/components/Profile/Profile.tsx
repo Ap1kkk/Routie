@@ -213,9 +213,9 @@ export const Profile: React.FC<ProfileProps> = ({
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
-					<Button variant={'tertiary'}
+					<Button variant={'primary'}
 					onClick={() => {navigate('/Admin')}}>
-						Admin panel
+						Панель администратора
 					</Button>
 					<div className={styles.containerMenu}>
 						<div className={styles.containerContext}>

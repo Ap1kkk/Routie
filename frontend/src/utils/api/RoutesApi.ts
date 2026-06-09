@@ -173,7 +173,6 @@ export const getRecommendedRoutesApi = async (
 	}
 };
 
-//Возможно перенести в слайс отдельный
 export const getDailyRouteApi = async (): Promise<ApiResponse<Route>> => {
 	try {
 		const response = await fetch(
@@ -252,7 +251,8 @@ export const uploadRouteImagesApi = async (
 			success: false,
 			error: {
 				code: 'UPLOAD_ROUTE_IMAGES_ERROR',
-				message: error.message || 'Ошибка загрузки изображений маршрута',
+				message:
+					error.message || 'Ошибка загрузки изображений маршрута',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),
@@ -264,19 +264,28 @@ export const createRouteApi = async (
 	data: RouteCreateRequest
 ): Promise<ApiResponse<Route>> => {
 	try {
+		console.log('REQUEST BODY', data);
+
 		const response = await fetch(`${API_URL}/${API_ROUTES_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
 		});
 
-		return await handleResponse<Route>(response);
+		const text = await response.text();
+
+		console.log('STATUS', response.status);
+		console.log('RESPONSE', text);
+
+		return JSON.parse(text);
 	} catch (error: any) {
+		console.error(error);
+
 		return {
 			success: false,
 			error: {
 				code: 'CREATE_ROUTE_ERROR',
-				message: error.message || 'Ошибка создания маршрута',
+				message: error.message,
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),

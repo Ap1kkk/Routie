@@ -1,5 +1,39 @@
 import { UUID } from './User';
 import { ProfileImage } from './Profile';
+import { Tags } from './Tags';
+import { Landmark } from './Landmark';
+
+export type RouteType = 'TOURIST' | 'SPORT' | 'MIXED';
+
+export interface Checkpoint {
+	id: UUID;
+	latitude: number;
+	longitude: number;
+	sortOrder: number;
+	landmark: Landmark;
+}
+
+export interface CheckpointCreate {
+	latitude: number;
+	longitude: number;
+	sortOrder: number;
+	landmarkId: UUID;
+}
+
+export interface Route {
+	id: UUID;
+	title: string;
+	description: string;
+	type: string;
+	difficulty: number;
+	lengthMeters: number;
+	estimatedTimeMinutes: number;
+	city: string;
+	completionsCount: number;
+	isActive: boolean;
+	images: ProfileImage[];
+	tags: Tags[];
+}
 
 export interface RouteImage {
 	id: UUID;
@@ -17,74 +51,6 @@ export interface RouteImageUpload {
 	sortOrder: number;
 }
 
-export interface Tag {
-	id: UUID;
-	title: string;
-}
-
-export interface LandmarkImage {
-	id: UUID;
-	filename: string;
-	contentType: string;
-	createTs: string;
-	sortOrder: number;
-}
-
-export interface AudioGuideFile {
-	id: UUID;
-	filename: string;
-	contentType: string;
-	createTs: string;
-	sortOrder: number;
-}
-
-export interface AudioGuide {
-	id: UUID;
-	title: string;
-	durationSeconds: number;
-	file: AudioGuideFile;
-}
-
-export interface Landmark {
-	id: UUID;
-	title: string;
-	description: string;
-	images: LandmarkImage[];
-	audioGuide?: AudioGuide;
-}
-
-export interface Checkpoint {
-	id: UUID;
-	latitude: number;
-	longitude: number;
-	sortOrder: number;
-	landmark: Landmark;
-}
-
-export interface CheckpointCreate {
-	latitude: number;
-	longitude: number;
-	sortOrder: number;
-	landmarkId: UUID;
-}
-
-export type RouteType = 'SPORT' | 'CULTURAL' | 'HISTORICAL' | 'OTHER';
-
-export interface Route {
-	id: UUID;
-	title: string;
-	description: string;
-	type: string;
-	difficulty: number;
-	lengthMeters: number;
-	estimatedTimeMinutes: number;
-	city: string;
-	completionsCount: number;
-	isActive: boolean;
-	images: ProfileImage[];
-	tags: Tag[];
-}
-
 export interface FullRoute extends Route {
 	checkpoints: Checkpoint[];
 }
@@ -97,6 +63,7 @@ export interface RouteCreateRequest {
 	lengthMeters: number;
 	estimatedTimeMinutes: number;
 	city: string;
+	tagIds: string[];
 	checkpoints: CheckpointCreate[];
 }
 
@@ -108,6 +75,7 @@ export interface RouteUpdateRequest {
 	lengthMeters?: number;
 	estimatedTimeMinutes?: number;
 	city?: string;
+	tagIds?: string[];
 	checkpoints?: CheckpointCreate[];
 }
 

@@ -4,6 +4,7 @@ export * from './ADMIN/LandmarksEdit';
 export * from './ADMIN/RouteEdit';
 export * from './ADMIN/TagsEdit';
 export * from './ADMIN/AudioGuidesEdit'
+export * from './ADMIN/Statistic'
 
 // User
 export * from './AchievementPage';
