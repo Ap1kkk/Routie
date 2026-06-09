@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -42,4 +44,8 @@ public class RouteSession {
     private Integer totalDistanceMeters;
 
     private Double avgSpeedKmh;
+
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CheckpointProgress> checkpointProgresses = new ArrayList<>();
 }

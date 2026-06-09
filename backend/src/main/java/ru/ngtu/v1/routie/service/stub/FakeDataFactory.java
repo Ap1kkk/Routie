@@ -22,6 +22,7 @@ import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.dto.session.response.CheckpointProgressResponse;
 import ru.ngtu.v1.routie.dto.session.response.RouteSessionResponse;
+import ru.ngtu.v1.routie.dto.statistics.*;
 import ru.ngtu.v1.routie.dto.statistics.GamificationStatisticsResponse;
 import ru.ngtu.v1.routie.dto.statistics.PopularRouteResponse;
 import ru.ngtu.v1.routie.dto.statistics.PopularRoutesResponse;
@@ -447,6 +448,57 @@ public class FakeDataFactory {
                 .topAchievement(faker.options().option("Первый шаг", "Марафонец", "Исследователь", "Коллекционер"))
                 .usersByLevel(usersByLevel)
                 .mostPopularPeriod(faker.options().option("WEEK", "MONTH", "SEASON"))
+                .build();
+    }
+
+    public static SessionAdminResponse fakeSessionAdmin() {
+        RouteSessionStatus status = faker.options().option(RouteSessionStatus.values());
+        Instant startedAt = Instant.now().minusSeconds(faker.number().numberBetween(60, 86_400));
+        Instant finishedAt = status != RouteSessionStatus.ACTIVE
+                ? startedAt.plusSeconds(faker.number().numberBetween(300, 7_200))
+                : null;
+        Long duration = finishedAt != null ? finishedAt.getEpochSecond() - startedAt.getEpochSecond() : null;
+
+        return SessionAdminResponse.builder()
+                .id(UUID.randomUUID())
+                .userId(UUID.randomUUID())
+                .username(faker.internet().username())
+                .userDisplayName(faker.name().fullName())
+                .routeId(UUID.randomUUID())
+                .routeTitle("Маршрут «" + faker.address().cityName() + "»")
+                .status(status)
+                .startedAt(startedAt)
+                .finishedAt(finishedAt)
+                .totalDurationSeconds(duration)
+                .totalDistanceMeters(status != RouteSessionStatus.ACTIVE
+                        ? faker.number().numberBetween(500, 20_000) : null)
+                .avgSpeedKmh(status != RouteSessionStatus.ACTIVE
+                        ? faker.number().randomDouble(1, 3, 25) : null)
+                .build();
+    }
+
+    public static List<SessionAdminResponse> fakeSessionAdminList(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> fakeSessionAdmin())
+                .toList();
+    }
+
+    public static SessionSummaryResponse fakeSessionSummary() {
+        long finished = faker.number().numberBetween(50, 5_000);
+        long aborted  = faker.number().numberBetween(10, 1_000);
+        long active   = faker.number().numberBetween(0, 50);
+        long total    = finished + aborted + active;
+        long concluded = finished + aborted;
+
+        return SessionSummaryResponse.builder()
+                .totalSessions(total)
+                .finishedCount(finished)
+                .abortedCount(aborted)
+                .activeCount(active)
+                .completionRate(concluded > 0 ? (double) finished / concluded * 100.0 : null)
+                .avgDurationSeconds(faker.number().randomDouble(0, 600, 5_400))
+                .avgSpeedKmh(faker.number().randomDouble(1, 4, 20))
+                .avgDistanceMeters(faker.number().randomDouble(0, 1_000, 15_000))
                 .build();
     }
 
