@@ -118,11 +118,13 @@ export const searchLandmarksApi = async (
  */
 export const uploadLandmarkImagesApi = async (
 	landmarkId: string,
-	file: File
+	files: File[]
 ): Promise<ApiResponse<LandmarkImage[]>> => {
 	try {
 		const formData = new FormData();
-		formData.append('file', file);
+		files.forEach((file) => {
+			formData.append('files', file);
+		});
 
 		const token = localStorage.getItem('accessToken');
 		const headers: HeadersInit = {

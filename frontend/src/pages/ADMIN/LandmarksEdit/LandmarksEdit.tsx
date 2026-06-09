@@ -9,21 +9,21 @@ import {
 import { searchAudioGuides } from '../../../services/slices/audioGuideSlice/audioGuideSlice';
 import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
 import { Landmark } from '../../../types/Landmark';
-import { Button, Modal } from '@ui';
+import { Button, Input, Modal, Select, Textarea } from '@ui';
 import { useDispatch, useSelector } from '@store';
 
 import styles from './LandmarksEdit.module.scss';
 
 export const LandmarksEdit = () => {
 	const dispatch = useDispatch();
-	const { searchResults: landmarkResults, isLoading } = useSelector(
-		(state) => state.landmarks
-	);
-
+	const {
+		searchResults: landmarkResults,
+		isLoading,
+		error,
+	} = useSelector((state) => state.landmarks);
 	const { searchResults: audioGuideResults } = useSelector(
 		(state) => state.audioGuides
 	);
-
 	const [editingLandmark, setEditingLandmark] = useState<Landmark | null>(
 		null
 	);
@@ -31,10 +31,10 @@ export const LandmarksEdit = () => {
 	const [title, setTitle] = useState('');
 	const [description, setDescription] = useState('');
 	const [audioGuideId, setAudioGuideId] = useState('');
-	const [images, setImages] = useState<FileList | null>(null);
 	const [imageUrls, setImageUrls] = useState<Record<string, string[]>>({});
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
+	const [images, setImages] = useState<File[]>([]);
 
 	useEffect(() => {
 		loadData();
@@ -50,7 +50,7 @@ export const LandmarksEdit = () => {
 		setTitle('');
 		setDescription('');
 		setAudioGuideId('');
-		setImages(null);
+		setImages([]);
 	};
 
 	const handleCreate = async () => {
@@ -63,20 +63,15 @@ export const LandmarksEdit = () => {
 		);
 
 		if (createLandmark.fulfilled.match(result)) {
-			const landmark = result.payload;
-
-			if (images) {
-				for (const file of Array.from(images)) {
-					await dispatch(
-						uploadLandmarkImages({
-							landmarkId: landmark.id,
-							file,
-						})
-					);
-				}
+			if (images.length) {
+				await dispatch(
+					uploadLandmarkImages({
+						landmarkId: result.payload.id,
+						files: images,
+					})
+				);
 			}
-
-			resetForm();
+			closeModal();
 			loadData();
 		}
 	};
@@ -95,35 +90,42 @@ export const LandmarksEdit = () => {
 			})
 		);
 
-		if (images) {
-			for (const file of Array.from(images)) {
-				await dispatch(
-					uploadLandmarkImages({
-						landmarkId: editingLandmark.id,
-						file,
-					})
-				);
-			}
+		if (images.length) {
+			await dispatch(
+				uploadLandmarkImages({
+					landmarkId: editingLandmark.id,
+					files: images,
+				})
+			);
 		}
 
-		resetForm();
+		closeModal();
 		loadData();
 	};
 
 	const handleDelete = async (id: string) => {
 		if (!window.confirm('Удалить достопримечательность?')) return;
-
 		await dispatch(deleteLandmark(id));
-
 		loadData();
 	};
 
-	const startEdit = (landmark: Landmark) => {
+	const startEdit = async (landmark: Landmark) => {
 		setEditingLandmark(landmark);
 		setTitle(landmark.title);
 		setDescription(landmark.description);
 		setAudioGuideId(landmark.audioGuide?.id ?? '');
-		setImages(null);
+
+		if (landmark.images && landmark.images.length > 0) {
+			const imagesWithUrls = [];
+			for (const image of landmark.images) {
+				const result = await dispatch(downloadFile(image.id));
+				if (downloadFile.fulfilled.match(result)) {
+					imagesWithUrls.push({ id: image.id, url: result.payload });
+				}
+			}
+		}
+
+		setImages([]);
 		setIsModalOpen(true);
 	};
 
@@ -192,12 +194,16 @@ export const LandmarksEdit = () => {
 			<h3 className={styles.title}>Управление достопримечательностями</h3>
 
 			<div className={styles.headerActions}>
-				<Button variant='primary' onClick={openCreateModal}>
-					Создать достопримечательность
-				</Button>
+				<Button
+					variant='primary'
+					onClick={openCreateModal}
+					children={'Создать достопримечательность'}
+				/>
 			</div>
 
-			{isLoading && <p>Загрузка...</p>}
+			{isLoading && <p className={styles.loading}>Загрузка...</p>}
+
+			{error && <p className={styles.error}>Ошибка: {error}</p>}
 
 			<table className={styles.table}>
 				<thead className={styles.tableHead}>
@@ -281,42 +287,39 @@ export const LandmarksEdit = () => {
 							: 'Создание достопримечательности'}
 					</h3>
 
-					<div className={styles.formGroup}>
-						<label>Название</label>
-
-						<input
-							className={styles.input}
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-						/>
-					</div>
+					<Input
+						label={'Название'}
+						className={styles.input}
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+					/>
 
 					<div className={styles.formGroup}>
 						<label>Описание</label>
 
-						<textarea
+						<Textarea
 							className={styles.textarea}
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
 						/>
 					</div>
 
-					<div className={styles.formGroup}>
-						<label>Аудиогид</label>
-
-						<select
-							className={styles.select}
-							value={audioGuideId}
-							onChange={(e) => setAudioGuideId(e.target.value)}>
-							<option value=''>Без аудиогида</option>
-
-							{audioGuideResults?.content.map((guide) => (
-								<option key={guide.id} value={guide.id}>
-									{guide.title}
-								</option>
-							))}
-						</select>
-					</div>
+					<Select
+						label={'Аудиогид'}
+						className={styles.select}
+						value={audioGuideId}
+						onChange={setAudioGuideId}
+						options={[
+							{
+								value: '',
+								label: 'Без аудиогида',
+							},
+							...(audioGuideResults?.content.map((guide) => ({
+								value: guide.id,
+								label: guide.title,
+							})) ?? []),
+						]}
+					/>
 
 					{!!editingLandmark?.audioGuide &&
 						audioUrls[editingLandmark.id] && (
@@ -331,27 +334,47 @@ export const LandmarksEdit = () => {
 							</div>
 						)}
 
-					<div className={styles.formGroup}>
-						<label>Изображения</label>
-
-						<input
-							type='file'
-							multiple
-							accept='image/*'
-							onChange={(e) => setImages(e.target.files)}
-						/>
+					<div
+						className={styles.dropZone}
+						onDragOver={(e) => e.preventDefault()}
+						onDrop={(e) => {
+							e.preventDefault();
+							const files = Array.from(e.dataTransfer.files);
+							setImages((prev) => [...prev, ...files]);
+						}}>
+						Перетащите изображения сюда или нажмите для выбора
 					</div>
 
-					{!!editingLandmark && (
-						<div className={styles.previewGrid}>
-							{imageUrls[editingLandmark.id]?.map((url) => (
-								<img
-									key={url}
-									src={url}
-									className={styles.previewImage}
-									alt=''
-								/>
-							))}
+					{images.length > 0 && (
+						<div className={styles.formGroup}>
+							<label>Новые изображения:</label>
+							<div className={styles.previewGrid}>
+								{images.map((file, index) => (
+									<div
+										key={index}
+										className={styles.imagePreview}>
+										<img
+											src={URL.createObjectURL(file)}
+											alt={`Новое изображение ${
+												index + 1
+											}`}
+											className={styles.previewImage}
+										/>
+										<button
+											type='button'
+											className={styles.deleteImageBtn}
+											onClick={() =>
+												setImages((prev) =>
+													prev.filter(
+														(_, i) => i !== index
+													)
+												)
+											}>
+											✕
+										</button>
+									</div>
+								))}
+							</div>
 						</div>
 					)}
 

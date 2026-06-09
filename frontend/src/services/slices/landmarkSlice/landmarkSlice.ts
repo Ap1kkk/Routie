@@ -8,12 +8,13 @@ import {
 	updateLandmarkApi,
 } from '../../../utils/api/LandmarkApi';
 import {
+	Landmark,
 	LandmarkCreateRequest,
+	LandmarkImage,
 	LandmarksSearchParams,
 	LandmarkUpdateRequest,
 	PaginatedLandmarks,
 } from '../../../types/Landmark';
-import { Landmark } from '../../../types/Route';
 
 type TLandmarkState = {
 	currentLandmark: Landmark | null;
@@ -57,8 +58,7 @@ export const searchLandmarks = createAsyncThunk<
 			response.error?.message || 'Ошибка поиска достопримечательностей'
 		);
 
-	if (!response.data)
-		return rejectWithValue('Результаты поиска не найдены');
+	if (!response.data) return rejectWithValue('Результаты поиска не найдены');
 
 	return response.data;
 });
@@ -84,18 +84,22 @@ export const updateLandmark = createAsyncThunk<
 	Landmark,
 	{ landmarkId: string; data: LandmarkUpdateRequest },
 	{ rejectValue: string }
->('landmark/updateLandmark', async ({ landmarkId, data }, { rejectWithValue }) => {
-	const response = await updateLandmarkApi(landmarkId, data);
-	if (!response.success || response.error)
-		return rejectWithValue(
-			response.error?.message || 'Ошибка обновления достопримечательности'
-		);
+>(
+	'landmark/updateLandmark',
+	async ({ landmarkId, data }, { rejectWithValue }) => {
+		const response = await updateLandmarkApi(landmarkId, data);
+		if (!response.success || response.error)
+			return rejectWithValue(
+				response.error?.message ||
+					'Ошибка обновления достопримечательности'
+			);
 
-	if (!response.data)
-		return rejectWithValue('Не удалось обновить достопримечательность');
+		if (!response.data)
+			return rejectWithValue('Не удалось обновить достопримечательность');
 
-	return response.data;
-});
+		return response.data;
+	}
+);
 
 export const deleteLandmark = createAsyncThunk<
 	string,
@@ -112,21 +116,26 @@ export const deleteLandmark = createAsyncThunk<
 });
 
 export const uploadLandmarkImages = createAsyncThunk<
-	any[],
-	{ landmarkId: string; file: File },
+	LandmarkImage[],
+	{ landmarkId: string; files: File[] },
 	{ rejectValue: string }
->('landmark/uploadImages', async ({ landmarkId, file }, { rejectWithValue }) => {
-	const response = await uploadLandmarkImagesApi(landmarkId, file);
-	if (!response.success || response.error)
-		return rejectWithValue(
-			response.error?.message || 'Ошибка загрузки изображений достопримечательности'
-		);
+>(
+	'landmark/uploadImages',
+	async ({ landmarkId, files }, { rejectWithValue }) => {
+		const response = await uploadLandmarkImagesApi(landmarkId, files);
+		if (!response.success || response.error)
+			return rejectWithValue(
+				response.error?.message ||
+					'Ошибка загрузки изображений достопримечательности'
+			);
 
-	if (!response.data)
-		return rejectWithValue('Не удалось загрузить изображения');
+		if (!response.data)
+			return rejectWithValue('Не удалось загрузить изображения');
 
-	return response.data;
-});
+		return response.data;
+	}
+);
+
 
 const landmarkSlice = createSlice({
 	name: 'landmark',
@@ -213,9 +222,11 @@ const landmarkSlice = createSlice({
 			.addCase(uploadLandmarkImages.rejected, (state, action) => {
 				state.isLoading = false;
 				state.error = action.payload as string;
-			});
+			})
+
 	},
 });
 
-export const { clearLandmark, clearSearchResults, clearError } = landmarkSlice.actions;
+export const { clearLandmark, clearSearchResults, clearError } =
+	landmarkSlice.actions;
 export default landmarkSlice.reducer;

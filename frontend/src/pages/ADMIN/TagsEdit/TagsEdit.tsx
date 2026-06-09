@@ -4,154 +4,158 @@ import {
 	createTag,
 	deleteTag,
 	fetchAllTags,
+	updateTag,
 } from '../../../services/slices/tagsSlice/tagsSlice';
+import { Tags } from '../../../types/Tags';
+import { Button, Input, Modal } from '@ui';
+
+import styles from './TagsEdit.module.scss';
 
 export const TagsEdit = () => {
 	const dispatch = useDispatch();
+	const { allTags, isLoading, error } = useSelector((state) => state.tags);
 
-	const { allTags, isLoading, error } = useSelector(
-		(state) => state.tags
-	);
-
-	const [newTagTitle, setNewTagTitle] = useState('');
+	const [editingTag, setEditingTag] = useState<Tags | null>(null);
+	const [tagTitle, setTagTitle] = useState('');
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
 		dispatch(fetchAllTags());
 	}, [dispatch]);
 
-	const handleCreateTag = async () => {
-		if (!newTagTitle.trim()) return;
-
-		await dispatch(
-			createTag({
-				title: newTagTitle.trim(),
-			})
-		);
-
-		setNewTagTitle('');
-	};
-
 	const handleDeleteTag = async (tagId: string) => {
-		if (!window.confirm('Удалить тег?')) return;
-
 		await dispatch(deleteTag(tagId));
 	};
 
+	const openCreateModal = () => {
+		setEditingTag(null);
+		setTagTitle('');
+		setIsModalOpen(true);
+	};
+
+	const openEditModal = (tag: Tags) => {
+		setEditingTag(tag);
+		setTagTitle(tag.title);
+		setIsModalOpen(true);
+	};
+
+	const closeModal = () => {
+		setEditingTag(null);
+		setTagTitle('');
+		setIsModalOpen(false);
+	};
+
+	const handleSave = async () => {
+		if (!tagTitle.trim()) return;
+		if (editingTag) {
+			await dispatch(
+				updateTag({
+					tagId: editingTag.id,
+					data: {
+						title: tagTitle.trim(),
+					},
+				})
+			);
+		} else {
+			await dispatch(
+				createTag({
+					title: tagTitle.trim(),
+				})
+			);
+		}
+		closeModal();
+	};
+
 	return (
-		<div style={{ padding: '20px' }}>
-			<h1>Управление тегами</h1>
+		<section className={styles.section}>
+			<h3 className={styles.title}>Управление тегами</h3>
 
-			<div
-				style={{
-					display: 'flex',
-					gap: '10px',
-					marginBottom: '20px',
-				}}
-			>
-				<input
-					type="text"
-					placeholder="Название тега"
-					value={newTagTitle}
-					onChange={(e) => setNewTagTitle(e.target.value)}
+			<div className={styles.headerActions}>
+				<Button
+					variant='primary'
+					onClick={openCreateModal}
+					children={'Создать тег'}
 				/>
-
-				<button onClick={handleCreateTag}>
-					Добавить тег
-				</button>
 			</div>
 
-			{isLoading && <p>Загрузка...</p>}
+			{isLoading && <p className={styles.loading}>Загрузка...</p>}
 
-			{error && (
-				<p style={{ color: 'red' }}>
-					Ошибка: {error}
-				</p>
-			)}
+			{error && <p className={styles.error}>Ошибка: {error}</p>}
 
-			<table
-				style={{
-					width: '100%',
-					borderCollapse: 'collapse',
-				}}
-			>
-				<thead>
-				<tr>
-					<th
-						style={{
-							border: '1px solid #ddd',
-							padding: '8px',
-						}}
-					>
-						ID
-					</th>
-
-					<th
-						style={{
-							border: '1px solid #ddd',
-							padding: '8px',
-						}}
-					>
-						Название
-					</th>
-
-					<th
-						style={{
-							border: '1px solid #ddd',
-							padding: '8px',
-						}}
-					>
-						Действия
-					</th>
-				</tr>
+			<table className={styles.table}>
+				<thead className={styles.tableHead}>
+					<tr className={styles.tableRow}>
+						<th className={styles.tableHeader}>Название</th>
+						<th className={styles.tableHeader}>Действия</th>
+					</tr>
 				</thead>
 
-				<tbody>
-				{allTags?.map((tag) => (
-					<tr key={tag.id}>
-						<td
-							style={{
-								border: '1px solid #ddd',
-								padding: '8px',
-							}}
-						>
-							{tag.id}
-						</td>
+				<tbody className={styles.tableBody}>
+					{allTags?.map((tag) => (
+						<tr key={tag.id} className={styles.tableRow}>
+							<td className={styles.tableCell}>{tag.title}</td>
 
-						<td
-							style={{
-								border: '1px solid #ddd',
-								padding: '8px',
-							}}
-						>
-							{tag.title}
-						</td>
+							<td className={styles.tableCell}>
+								<div className={styles.actions}>
+									<Button
+										variant='primary'
+										onClick={() => openEditModal(tag)}
+										children={'Редактировать'}
+										className={styles.buttonActions}
+									/>
 
-						<td
-							style={{
-								border: '1px solid #ddd',
-								padding: '8px',
-							}}
-						>
-							<button
-								onClick={() =>
-									handleDeleteTag(tag.id)
-								}
-							>
-								Удалить
-							</button>
-						</td>
-					</tr>
-				))}
+									<Button
+										variant='secondary'
+										onClick={() => handleDeleteTag(tag.id)}
+										children={'Удалить'}
+										className={styles.buttonActions}
+									/>
+								</div>
+							</td>
+						</tr>
+					))}
 
-				{allTags?.length === 0 && (
-					<tr>
-						<td colSpan={3}>
-							Теги отсутствуют
-						</td>
-					</tr>
-				)}
+					{allTags?.length === 0 && (
+						<tr className={styles.tableRow}>
+							<td colSpan={3} className={styles.emptyState}>
+								Теги отсутствуют
+							</td>
+						</tr>
+					)}
 				</tbody>
 			</table>
-		</div>
+			<Modal
+				isOpen={isModalOpen}
+				onClose={closeModal}
+				className={styles.modal}>
+				<div className={styles.modalContent}>
+					<h3 className={styles.modalTitle}>
+						{editingTag ? 'Редактирование тега' : 'Создание тега'}
+					</h3>
+
+					<Input
+						label={'Название тега'}
+						type='text'
+						value={tagTitle}
+						inputPadding='12px 24px'
+						onChange={(e) => setTagTitle(e.target.value)}
+					/>
+
+					<div className={styles.modalActions}>
+						<Button
+							variant='secondary'
+							onClick={closeModal}
+							children={'Отмена'}
+						/>
+
+						<Button
+							variant='primary'
+							onClick={handleSave}
+							children={editingTag ? 'Сохранить' : 'Создать'}
+						/>
+					</div>
+				</div>
+			</Modal>
+		</section>
 	);
 };
