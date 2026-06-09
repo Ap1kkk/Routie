@@ -5,6 +5,7 @@ import {ReactComponent as Audio } from '../../../assets/icons/admin/audio.svg';
 import {ReactComponent as Tag } from '../../../assets/icons/admin/tag.svg';
 import {ReactComponent as Landmark } from '../../../assets/icons/admin/landmark.svg';
 import {ReactComponent as Route } from '../../../assets/icons/admin/route.svg';
+import {ReactComponent as Stats } from '../../../assets/icons/admin/stats.svg';
 
 import styles from './Workbench.module.scss';
 
@@ -12,22 +13,27 @@ const adminCards = [
 	{
 		to: '/admin/landmarks-edit',
 		icon: <Landmark />,
-		title: 'Изменение достопримечательностей',
+		title: 'Управление достопримечательностей',
 	},
 	{
 		to: '/admin/routes-edit',
 		icon: <Route />,
-		title: 'Изменение маршрута',
+		title: 'Управление маршрутами',
 	},
 	{
 		to: '/admin/tags-edit',
 		icon: <Tag />,
-		title: 'Изменение тегов',
+		title: 'Управление тегами',
 	},
 	{
 		to: '/admin/audioguides-edit',
 		icon: <Audio />,
-		title: 'Изменение аудиогидов',
+		title: 'Управление аудиогидами',
+	},
+	{
+		to: '/admin/statistic',
+		icon: <Stats />,
+		title: 'Статистика приложения',
 	},
 ];
 
