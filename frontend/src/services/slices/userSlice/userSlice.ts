@@ -129,6 +129,9 @@ const userSlice = createSlice({
 			state.loginError = null;
 			state.registerError = null;
 		},
+		setInitialized: (state) => {
+			state.initialized = true;
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -159,11 +162,11 @@ const userSlice = createSlice({
 				state.data = action.payload.user;
 				state.roles = action.payload.roles;
 			})
+
 			.addCase(login.rejected, (state, action) => {
 				state.isLoading = false;
 				state.loginError = action.payload as string;
 			})
-
 			.addCase(logout.fulfilled, (state) => {
 				state.isAuthenticated = false;
 				state.data = null;
@@ -186,5 +189,5 @@ const userSlice = createSlice({
 	},
 });
 
-export const { clearErrors } = userSlice.actions;
+export const { clearErrors, setInitialized } = userSlice.actions;
 export default userSlice.reducer;

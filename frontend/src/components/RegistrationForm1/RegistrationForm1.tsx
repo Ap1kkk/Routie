@@ -4,25 +4,34 @@ import {
 	validateEmail,
 	validatePassword,
 } from '../../utils/validator';
-import { Button, Input } from '@ui';
+import { Button, Checkbox, Input } from '@ui';
 import { Link } from 'react-router-dom';
 
 import s from '../RegistrationForm/RegistrationForm.module.scss';
 import styles from './RegistrationForm1.module.scss';
 
 interface RegistrationForm1Props {
-	onNext: (data: { email: string; password: string; username: string }) => void;
+	onNext: (data: {
+		email: string;
+		password: string;
+		username: string;
+	}) => void;
 	initialData?: { email: string; password: string; username?: string };
 }
 
 export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
-																		onNext,
-																		initialData,
-																	}) => {
+	onNext,
+	initialData,
+}) => {
 	const [email, setEmail] = useState(initialData?.email || '');
 	const [username, setUsername] = useState(initialData?.username || '');
 	const [password, setPassword] = useState(initialData?.password || '');
 	const [confirmPassword, setConfirmPassword] = useState('');
+
+	const [agreements, setAgreements] = useState({
+		terms: false,
+		privacy: false,
+	});
 
 	const [touched, setTouched] = useState({
 		email: false,
@@ -30,8 +39,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		password: false,
 		confirmPassword: false,
 	});
-
-	// ================= VALIDATION =================
 
 	const emailValidation = useMemo(() => {
 		if (!email) {
@@ -67,15 +74,20 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		return validateConfirmPassword(password, confirmPassword);
 	}, [password, confirmPassword]);
 
-	// ================= ERRORS =================
-
 	const showEmailError = touched.email && !emailValidation.isValid;
 	const showUsernameError = touched.username && !usernameValidation.isValid;
 	const showPasswordError = touched.password && !passwordValidation.isValid;
 	const showConfirmPasswordError =
 		touched.confirmPassword && !confirmPasswordValidation.isValid;
 
-	// ================= FORM STATE =================
+	const handleAgreementChange =
+		(key: 'terms' | 'privacy') =>
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setAgreements((prev) => ({
+				...prev,
+				[key]: e.target.checked,
+			}));
+		};
 
 	const isAllFieldsFilled = useMemo(() => {
 		return (
@@ -92,7 +104,9 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 			emailValidation.isValid &&
 			usernameValidation.isValid &&
 			passwordValidation.isValid &&
-			confirmPasswordValidation.isValid
+			confirmPasswordValidation.isValid &&
+			agreements.terms &&
+			agreements.privacy
 		);
 	}, [
 		isAllFieldsFilled,
@@ -100,9 +114,8 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		usernameValidation.isValid,
 		passwordValidation.isValid,
 		confirmPasswordValidation.isValid,
+		agreements,
 	]);
-
-	// ================= HANDLERS =================
 
 	const handleEmailChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,8 +179,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 		[email, password, username, isFormValid, onNext]
 	);
 
-	// ================= UI =================
-
 	return (
 		<div className={styles.container}>
 			<div className={s.stepCounter}>
@@ -190,7 +201,11 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					onBlur={handleEmailBlur}
 					placeholder='example@mail.com'
 					required
-					error={showEmailError ? emailValidation.errorMessage : undefined}
+					error={
+						showEmailError
+							? emailValidation.errorMessage
+							: undefined
+					}
 				/>
 
 				<Input
@@ -241,6 +256,38 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 						showConfirmPasswordError
 							? confirmPasswordValidation.errorMessage
 							: undefined
+					}
+				/>
+
+				<Checkbox
+					checked={agreements.terms}
+					onChange={handleAgreementChange('terms')}
+					label={
+						<div className={styles.containerAccess}>
+							Я принимаю &nbsp;
+							<Link
+								to='/terms'
+								target='_blank'
+								className={styles.link}>
+								Пользовательское соглашение
+							</Link>
+						</div>
+					}
+				/>
+
+				<Checkbox
+					checked={agreements.privacy}
+					onChange={handleAgreementChange('privacy')}
+					label={
+						<div className={styles.containerAccess}>
+							Я ознакомился с &nbsp;
+							<Link
+								to='/privacy'
+								target='_blank'
+								className={styles.link}>
+								Политикой конфиденциальности
+							</Link>
+						</div>
 					}
 				/>
 

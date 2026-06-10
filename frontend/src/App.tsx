@@ -15,7 +15,7 @@ import {
 	LandmarksEdit,
 	MainPage,
 	MapPage,
-	NotFoundPage,
+	NotFoundPage, Privacy,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
@@ -24,19 +24,31 @@ import {
 	SettingsPage,
 	Statistic,
 	StatisticPage,
-	TagsEdit,
+	TagsEdit, Terms,
 	Workbench,
 } from '@pages';
 import { useDispatch, useSelector } from '@store';
 import { useEffect } from 'react';
-import { initAuth } from './services/slices/userSlice/userSlice';
+import {
+	initAuth,
+	setInitialized,
+} from './services/slices/userSlice/userSlice';
 import { selectInitialized } from './services/selectors/userSelectors';
+import { getAccessToken, getRefreshToken } from './utils/auth';
 
 export function App() {
 	const dispatch = useDispatch();
 	const initialized = useSelector(selectInitialized);
 
 	useEffect(() => {
+		const accessToken = getAccessToken();
+		const refreshToken = getRefreshToken();
+
+		if (!accessToken && !refreshToken) {
+			dispatch(setInitialized());
+			return;
+		}
+
 		dispatch(initAuth());
 	}, [dispatch]);
 
@@ -67,6 +79,14 @@ export const router = createBrowserRouter([
 			{
 				path: '/recovery-page',
 				element: <RecoveryPasswordPage />,
+			},
+			{
+				path: '/privacy',
+				element: <Privacy />,
+			},
+			{
+				path: '/terms',
+				element: <Terms />,
 			},
 			{
 				element: <ProtectedRoute allowedRoles={['USER', 'ADMIN']} />,

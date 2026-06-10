@@ -22,3 +22,5 @@ export * from './RoutesMobilePage';
 export * from './SettingsPage';
 export * from './StatisticPage';
 export * from './RecoveryPasswordPage';
+export * from './Privacy'
+export * from './Terms'

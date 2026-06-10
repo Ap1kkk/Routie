@@ -9,3 +9,4 @@ export * from './Select';
 export * from './Slider'
 export * from './Tag';
 export * from './Textarea';
+export * from './Checkbox';
