@@ -1,0 +1,62 @@
+.container {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.container.disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.hidden-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+.custom-checkbox {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+}
+
+.icon {
+	width: 100%;
+	height: 100%;
+}
+
+.icon {
+	fill: var(--color-accent);
+}
+
+.empty {
+	/* Не удалять – используется в JSX для ховера */
+}
+
+/* Ховер только для пустого чекбокса */
+.container:not(.disabled):hover .custom-checkbox.empty .icon path {
+	stroke: var(--color-accent);
+}
+
+.hidden-input:focus-visible + .custom-checkbox {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
+
+.label {
+	font-family: Roboto-Regular, sans-serif;
+	font-size: 16px;
+	line-height: 1.2;
+	color: var(--color-text );
+	letter-spacing: 2%;
+}
