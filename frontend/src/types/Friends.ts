@@ -8,12 +8,10 @@ export interface FriendAvatar {
 
 export interface Friend {
 	id: string;
-	firstName: string;
-	lastName: string;
-	avatar?: FriendAvatar;
+	name: string;
+	avatar?: string;
 	currentLevel: number;
 	totalXp: number;
-	city: string;
 	isFriend: boolean;
 }
 
@@ -29,5 +27,5 @@ export interface FriendsSearchParams {
 	size?: number;
 	sort?: string;
 	search?: string;
-	status?: string;
+	status?: 'ALL' | 'FRIENDS' | 'INCOMING' | 'OUTGOING';
 }

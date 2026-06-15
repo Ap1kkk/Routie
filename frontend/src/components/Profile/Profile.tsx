@@ -5,13 +5,42 @@ import { useNavigate } from 'react-router-dom';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { RouteCard } from '../RouteCard';
 import { Route } from '../../types/Route';
+import { FriendCard } from '../FriendCard';
+import { Friend } from '../../types/Friend'; // ← убедись, что путь правильный
 
-interface Friend {
-	id: string;
-	name: string;
-	avatar?: string;
-	username?: string;
-}
+import { ReactComponent as Chevron } from '../../assets/icons/chevron-right.svg';
+
+// Моковые данные друзей
+const mockFriends: Friend[] = [
+	{
+		id: '1',
+		name: 'Андрей Смирнов',
+		currentLevel: 34,
+		totalXp: 12450,
+		isFriend: true,
+	},
+	{
+		id: '2',
+		name: 'Екатерина Морозова',
+		currentLevel: 28,
+		totalXp: 8750,
+		isFriend: true,
+	},
+	{
+		id: '3',
+		name: 'Максим Петров',
+		currentLevel: 41,
+		totalXp: 18900,
+		isFriend: true,
+	},
+	{
+		id: '4',
+		name: 'Анна Ковалёва',
+		currentLevel: 19,
+		totalXp: 3200,
+		isFriend: true,
+	},
+];
 
 interface ProfileProps {
 	username?: string;
@@ -53,7 +82,7 @@ export const Profile: React.FC<ProfileProps> = ({
 	totalLandmarksVisited,
 
 	birthday,
-	friends = [],
+	friends = mockFriends, // ← используем моки по умолчанию
 	recentRoutes = [],
 }) => {
 	const navigate = useNavigate();
@@ -86,7 +115,16 @@ export const Profile: React.FC<ProfileProps> = ({
 		};
 	}, [showMenu]);
 
-	const displayedFriends = friends.slice(0, 5);
+	const displayedFriends = friends.slice(0, 4); // показываем до 4 друзей
+
+	const handleFriendClick = (friendId: string) => {
+		navigate(`/profile/${friendId}`);
+	};
+
+	const handleFriendRemove = (friendId: string) => {
+		console.log('Удалить друга:', friendId);
+		// TODO: логика удаления
+	};
 
 	return (
 		<div className={styles.container}>
@@ -126,35 +164,24 @@ export const Profile: React.FC<ProfileProps> = ({
 						</div>
 
 						<div className={styles.containerContext}>
-							<h5 className={styles.containerContextTitle}>
-								Друзья ({friends.length})
-							</h5>
+							<div className={styles.containerContextHeader}>
+								<h5 className={styles.containerContextTitle}>
+									Друзья ({friends.length})
+								</h5>
+								<Chevron onClick={() => navigate('/friends')} />
+							</div>
 							<div className={styles.friendsList}>
 								{displayedFriends.length > 0 ? (
-									<>
-										{displayedFriends.map((friend) => (
-											<div
-												key={friend.id}
-												className={styles.friendsBody}
-												onClick={() =>
-													friend.username &&
-													navigate(
-														`/profile/${friend.username}`
-													)
-												}>
-												<Avatar
-													src={friend.avatar}
-													size={'small'}
-												/>
-												<p
-													className={
-														styles.friendsName
-													}>
-													{friend.name}
-												</p>
-											</div>
-										))}
-									</>
+									displayedFriends.map((friend) => (
+										<FriendCard
+											key={friend.id}
+											friend={friend}
+											variant='compact'
+											showRemoveButton={true}
+											onCardClick={handleFriendClick}
+											onRemove={handleFriendRemove}
+										/>
+									))
 								) : (
 									<span className={styles.emptyText}>
 										Нет друзей
@@ -213,8 +240,11 @@ export const Profile: React.FC<ProfileProps> = ({
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
-					<Button variant={'primary'}
-					onClick={() => {navigate('/Admin')}}>
+					<Button
+						variant={'primary'}
+						onClick={() => {
+							navigate('/Admin');
+						}}>
 						Панель администратора
 					</Button>
 					<div className={styles.containerMenu}>
@@ -235,34 +265,20 @@ export const Profile: React.FC<ProfileProps> = ({
 							</h5>
 							<div className={styles.friendsList}>
 								{displayedFriends.length > 0 ? (
-									<>
-										{displayedFriends.map((friend) => (
-											<div
-												key={friend.id}
-												className={styles.friendsBody}
-												onClick={() =>
-													friend.username &&
-													navigate(
-														`/profile/${friend.username}`
-													)
-												}>
-												<Avatar
-													src={friend.avatar}
-													size={'small'}
-												/>
-												<p
-													className={
-														styles.friendsName
-													}>
-													{friend.name}
-												</p>
-											</div>
-										))}
-									</>
+									displayedFriends.map((friend) => (
+										<FriendCard
+											key={friend.id}
+											friend={friend}
+											variant="standard"
+											showRemoveButton={true}
+											onCardClick={handleFriendClick}
+											onRemove={handleFriendRemove}
+										/>
+									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет друзей
-									</span>
+                                        Нет друзей
+                                    </span>
 								)}
 							</div>
 						</div>

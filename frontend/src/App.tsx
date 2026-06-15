@@ -11,7 +11,7 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage,
+	FilterMobilePage, FriendsPage,
 	LandmarksEdit,
 	MainPage,
 	MapPage,
@@ -91,6 +91,10 @@ export const router = createBrowserRouter([
 			{
 				element: <ProtectedRoute allowedRoles={['USER', 'ADMIN']} />,
 				children: [
+					{
+						path:'/friends',
+						element: <FriendsPage />
+					},
 					{
 						path: '/routie',
 						element: <MainPage />,
