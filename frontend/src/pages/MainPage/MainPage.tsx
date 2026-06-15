@@ -185,7 +185,6 @@ export const MainPage: React.FC = () => {
 				)}
 
 				{/* Рекомендованное */}
-				{recommendedList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
 							<Blur className={styles.containerBlur}>
@@ -224,7 +223,6 @@ export const MainPage: React.FC = () => {
 							))}
 						</div>
 					</article>
-				)}
 			</section>
 		</div>
 	);
