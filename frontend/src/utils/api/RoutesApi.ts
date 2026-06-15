@@ -149,7 +149,8 @@ export const getRecommendedRoutesApi = async (
 		if (params?.size !== undefined)
 			queryParams.append('size', params.size.toString());
 
-		const url = `${API_URL}/${API_ROUTES_URL}/recommended${
+		// ИСПРАВЛЕНИЕ
+		const url = `${API_URL}/${API_RECOMMENDATIONS_URL}/personal${
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
@@ -164,8 +165,7 @@ export const getRecommendedRoutesApi = async (
 			success: false,
 			error: {
 				code: 'GET_RECOMMENDED_ROUTES_ERROR',
-				message:
-					error.message || 'Ошибка получения рекомендуемых маршрутов',
+				message: error.message || 'Ошибка получения рекомендуемых маршрутов',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),
