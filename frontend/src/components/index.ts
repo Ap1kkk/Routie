@@ -5,6 +5,7 @@ export * from './EditProfileForm';
 export * from './Filter';
 export * from './Footer/DesktopFooter';
 export * from './Footer/MobileFooter';
+export * from './FriendCard'
 export * from './Header/DesktopHeader';
 export * from './Header/MobileHeader';
 export * from './Layout';
