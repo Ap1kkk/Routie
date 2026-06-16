@@ -11,11 +11,12 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage, FriendsPage,
+	FriendsPage,
 	LandmarksEdit,
 	MainPage,
 	MapPage,
-	NotFoundPage, Privacy,
+	NotFoundPage,
+	Privacy,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
@@ -24,7 +25,8 @@ import {
 	SettingsPage,
 	Statistic,
 	StatisticPage,
-	TagsEdit, Terms,
+	TagsEdit,
+	Terms,
 	Workbench,
 } from '@pages';
 import { useDispatch, useSelector } from '@store';
@@ -92,8 +94,8 @@ export const router = createBrowserRouter([
 				element: <ProtectedRoute allowedRoles={['USER', 'ADMIN']} />,
 				children: [
 					{
-						path:'/friends',
-						element: <FriendsPage />
+						path: '/friends',
+						element: <FriendsPage />,
 					},
 					{
 						path: '/routie',
@@ -178,8 +180,8 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/admin/statistic',
-						element: <Statistic />
-					}
+						element: <Statistic />,
+					},
 				],
 			},
 			{
