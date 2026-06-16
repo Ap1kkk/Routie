@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px;
+  padding: 5px 5px 5px 0;
 }
 
 .compactContent {
@@ -67,4 +67,16 @@
 
   border-radius: 50%;
   background: linear-gradient(var(--color-link-pressed), var(--color-accent));
+}
+
+.gold {
+  background: rgba(246, 192, 2, 0.5);     /* #F6C002 с 50% прозрачностью */
+}
+
+.silver {
+  background: rgba(215, 218, 217, 0.7);   /* #D7DAD9 с 70% прозрачностью */
+}
+
+.bronze {
+  background: rgba(197, 92, 18, 0.5);     /* #C55C12 с 50% прозрачностью */
 }

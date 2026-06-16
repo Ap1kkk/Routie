@@ -14,7 +14,8 @@ export * from './Error400Page';
 export * from './Error500Page';
 export * from './FilterDesktopPage';
 export * from './FilterMobilePage';
-export * from './FriendsPage'
+export * from './FriendsPage';
+export * from './LeaderBoardPage';
 export * from './MainPage';
 export * from './MapPage';
 export * from './ProfilePage';
