@@ -99,7 +99,7 @@ export const MobileFooter = () => {
 					ref={(el) => {
 						buttonsRef.current[2] = el;
 					}}
-					onClick={() => navigate('/favorites')}
+					onClick={() => navigate('/favorites-mobile')}
 					className={styles.button}>
 					<Like />
 					<span className={styles.title}>Избранное</span>

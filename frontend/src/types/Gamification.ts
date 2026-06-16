@@ -68,3 +68,11 @@ export interface LeaderboardResponse {
 	period: 'WEEK' | 'MONTH' | 'SEASON';
 	entries: LeaderboardEntry[];
 }
+
+export const PERIODS = [
+	{ key: 'week', label: 'Неделя' },
+	{ key: 'month', label: 'Месяц' },
+	{ key: 'season', label: 'Сезон' },
+] as const;
+
+export type PeriodKey = (typeof PERIODS)[number]['key'];

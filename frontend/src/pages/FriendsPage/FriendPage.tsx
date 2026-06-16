@@ -6,6 +6,7 @@ import { Button, Input } from '@ui';
 
 import { ReactComponent as Search } from '../../assets/icons/search.svg';
 import { ReactComponent as Dumbels } from '../../assets/icons/dumbells.svg';
+import { useNavigate } from 'react-router-dom';
 
 // Моковые данные
 const mockFriends: Friend[] = [
@@ -55,6 +56,7 @@ const mockFriends: Friend[] = [
 
 export const FriendsPage: React.FC = () => {
 	const [friends] = useState<Friend[]>(mockFriends);
+	const navigate = useNavigate();
 
 	const handleCardClick = (friendId: string) => {
 		console.log('Переход в профиль друга:', friendId);
@@ -80,7 +82,13 @@ export const FriendsPage: React.FC = () => {
 				/>
 				<Button
 					variant='tertiary'
-					iconRight={<Dumbels />}
+					iconRight={
+						<Dumbels
+							onClick={() => {
+								navigate('/leader-board');
+							}}
+						/>
+					}
 				/>
 			</div>
 

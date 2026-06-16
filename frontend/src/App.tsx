@@ -12,7 +12,7 @@ import {
 	Error500Page,
 	FilterDesktopPage,
 	FilterMobilePage, FriendsPage,
-	LandmarksEdit,
+	LandmarksEdit, LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage, Privacy,
@@ -96,6 +96,10 @@ export const router = createBrowserRouter([
 						element: <FriendsPage />
 					},
 					{
+						path:'/leader-board',
+						element: <LeaderBoardPage />
+					},
+					{
 						path: '/routie',
 						element: <MainPage />,
 					},
@@ -115,14 +119,22 @@ export const router = createBrowserRouter([
 						path: '/profile',
 						element: <ProfileRedirect />,
 					},
-					//{
-					// 	path: '/filter',
-					// 	element: <FilterDesktopPage />,
-					//},
-					// {
-					// 	path: '/filter-mobile',
-					// 	element: <FilterMobilePage />,
-					// },
+					{
+						path: '/recommended-mobile',
+						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/favorites-mobile',
+						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/popular-mobile',
+						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/filter-mobile',
+						element: <FilterMobilePage />,
+					},
 					{
 						path: '/recommended',
 						element: <FilterDesktopPage />,

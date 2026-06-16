@@ -6,9 +6,9 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { RouteCard } from '../RouteCard';
 import { Route } from '../../types/Route';
 import { FriendCard } from '../FriendCard';
-import { Friend } from '../../types/Friend'; // ← убедись, что путь правильный
 
 import { ReactComponent as Chevron } from '../../assets/icons/chevron-right.svg';
+import {Friend} from "../../types/Friends";
 
 // Моковые данные друзей
 const mockFriends: Friend[] = [
@@ -177,7 +177,6 @@ export const Profile: React.FC<ProfileProps> = ({
 											key={friend.id}
 											friend={friend}
 											variant='compact'
-											showRemoveButton={true}
 											onCardClick={handleFriendClick}
 											onRemove={handleFriendRemove}
 										/>
@@ -270,7 +269,6 @@ export const Profile: React.FC<ProfileProps> = ({
 											key={friend.id}
 											friend={friend}
 											variant="standard"
-											showRemoveButton={true}
 											onCardClick={handleFriendClick}
 											onRemove={handleFriendRemove}
 										/>

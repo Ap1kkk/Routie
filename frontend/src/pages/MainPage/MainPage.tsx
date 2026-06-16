@@ -6,12 +6,12 @@ import {
 	fetchDailyRoute,
 	fetchRecommendedRoutes,
 } from '../../services/slices/routeSlice/routeSlice';
+import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
 
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 
 import { mockRoutes, getRouteImage } from '../../mocks/route';
-
 import { useDeviceType } from '../../hooks/useDeviceType';
 
 import lightImage from '../../assets/images/main-page.png';
@@ -20,7 +20,6 @@ import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.sv
 
 import styles from './MainPage.module.scss';
 import { Route } from '../../types/Route';
-import {downloadFile} from "../../services/slices/fileSlice/fileSlice";
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -28,13 +27,13 @@ export const MainPage: React.FC = () => {
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
 
-	// Redux — ИСПРАВЛЕНО
+	// Redux
 	const {
 		dailyRoute,
 		recommendedRoutes: paginatedRecommended,
 		isLoading,
 		error,
-	} = useSelector((state) => state.routes); // ← routes !
+	} = useSelector((state) => state.routes);
 
 	const recommendedList = paginatedRecommended?.content || [];
 
@@ -47,22 +46,13 @@ export const MainPage: React.FC = () => {
 		return saved === 'light';
 	});
 
-	useEffect(() => {
-		const checkAuth = () => {
-			try {
-				const token = localStorage.getItem('accessToken');
-				const refreshToken = localStorage.getItem('refreshToken');
-			} catch {}
-		};
-		checkAuth();
-	}, []);
-
 	// Загрузка данных
 	useEffect(() => {
 		dispatch(fetchDailyRoute());
 		dispatch(fetchRecommendedRoutes({ page: 0, size: 8 }));
 	}, [dispatch]);
 
+	// Загрузка изображений для рекомендованных
 	useEffect(() => {
 		const loadImages = async () => {
 			const imageMap: Record<string, string> = { ...routeImages };
@@ -83,16 +73,12 @@ export const MainPage: React.FC = () => {
 					}
 				}
 			}
-
 			setRouteImages(imageMap);
 		};
 
-		if (recommendedList.length > 0) {
-			loadImages();
-		}
+		if (recommendedList.length > 0) loadImages();
 
 		return () => {
-			// Очистка blob URL при размонтировании
 			Object.values(routeImages).forEach((url) =>
 				URL.revokeObjectURL(url)
 			);
@@ -116,16 +102,21 @@ export const MainPage: React.FC = () => {
 		if (route) navigate(`/map/${route.id}`);
 	};
 
-	const popularCards = popularRoutes.map((route) => (
-		<RouteCard
-			key={route.id}
-			route={route}
-			imageUrl={getRouteImage(route.id)}
-			isLiked={likedRoutes[route.id] || false}
-			onToggleLike={handleToggleLike}
-			variant='compact'
-		/>
-	));
+	const goToPopular = () => {
+		if (isMobile) {
+			navigate('/popular-mobile');
+		} else {
+			navigate('/popular');
+		}
+	};
+
+	const goToRecommended = () => {
+		if (isMobile) {
+			navigate('/recommended-mobile');
+		} else {
+			navigate('/recommended');
+		}
+	};
 
 	return (
 		<div>
@@ -164,9 +155,7 @@ export const MainPage: React.FC = () => {
 							</Blur>
 							<Button
 								variant='blur'
-								onClick={() =>
-									navigate(isMobile ? '/routes' : '/filter')
-								}
+								onClick={goToPopular}
 								iconRight={<RightIcon />}
 								children='Смотреть все'
 								className={styles.buttonWatchAll}
@@ -174,7 +163,16 @@ export const MainPage: React.FC = () => {
 						</div>
 
 						<Slider
-							cards={popularCards}
+							cards={popularRoutes.map((route, index) => (
+								<RouteCard
+									key={route.id}
+									route={route}
+									imageUrl={getRouteImage(route.id)}
+									isLiked={likedRoutes[route.id] || false}
+									onToggleLike={handleToggleLike}
+									variant='compact'
+								/>
+							))}
 							gap={12}
 							infinite={true}
 							showArrows={true}
@@ -194,13 +192,7 @@ export const MainPage: React.FC = () => {
 							</Blur>
 							<Button
 								variant='blur'
-								onClick={() =>
-									navigate(
-										isMobile
-											? '/recommended'
-											: '/recommended'
-									)
-								}
+								onClick={goToRecommended}
 								iconRight={<RightIcon />}
 								children='Смотреть все'
 								className={styles.buttonWatchAll}
