@@ -1,61 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Select } from '@ui';
+import { useDispatch, useSelector } from '@store';
+
 import styles from './LeaderBoardPage.module.scss';
 
 import { PeriodKey, PERIODS } from '../../types/Gamification';
-import { Friend } from '../../types/Friends';
 import { FriendCard } from '@components';
-
-const mockLeaders: Friend[] = [
-	{
-		id: '1',
-		name: 'Андрей Смирнов',
-		currentLevel: 47,
-		totalXp: 28450,
-		isFriend: true,
-	},
-	{
-		id: '2',
-		name: 'Екатерина Морозова',
-		currentLevel: 290,
-		totalXp: 25100,
-		isFriend: false,
-	},
-	{
-		id: '3',
-		name: 'Максим Петров',
-		currentLevel: 79,
-		totalXp: 21800,
-		isFriend: true,
-	},
-	{
-		id: '4',
-		name: 'Анна Ковалёва',
-		currentLevel: 39,
-		totalXp: 18750,
-		isFriend: false,
-	},
-	{
-		id: '5',
-		name: 'Дмитрий Соколов',
-		currentLevel: 101,
-		totalXp: 16400,
-		isFriend: false,
-	},
-];
+import { fetchLeaderboard } from '../../services/slices/gamificationSlice/gamificationSlice';
 
 export const LeaderBoardPage: React.FC = () => {
+	const dispatch = useDispatch();
+
 	const [activePeriod, setActivePeriod] = useState<PeriodKey>('week');
-	const [selectedParam, setSelectedParam] = useState<'LEVEL' | 'TOTALXP'>(
-		'LEVEL'
+
+	const { leaderboard, loading, error } = useSelector(
+		(state) => state.gamification
 	);
+
+	const entries = leaderboard?.entries || [];
+
+	// Загрузка данных при смене периода
+	useEffect(() => {
+		const periodMap: Record<PeriodKey, 'WEEK' | 'MONTH' | 'SEASON'> = {
+			week: 'WEEK',
+			month: 'MONTH',
+			season: 'SEASON',
+		};
+
+		dispatch(
+			fetchLeaderboard({
+				period: periodMap[activePeriod],
+				limit: 50,
+			})
+		);
+	}, [dispatch, activePeriod]);
 
 	const handlePeriodChange = (period: PeriodKey) => {
 		setActivePeriod(period);
-	};
-
-	const handleParamChange = (value: string) => {
-		setSelectedParam(value as 'LEVEL' | 'TOTALXP');
 	};
 
 	return (
@@ -80,24 +61,47 @@ export const LeaderBoardPage: React.FC = () => {
 				<Select
 					className={styles.selectOptions}
 					placeholder='Выберите параметр'
-					value={selectedParam}
+					value='LEVEL'
 					options={[
 						{ value: 'LEVEL', label: 'Уровень' },
 						{ value: 'TOTALXP', label: 'Опыт' },
 					]}
-					onChange={handleParamChange}
+					disabled
 				/>
 			</div>
 
+			{/* Состояния загрузки и ошибки */}
+			{loading && (
+				<div className={styles.loading}>
+					Загрузка таблицы лидеров...
+				</div>
+			)}
+			{error && <div className={styles.error}>Ошибка: {error}</div>}
+
+			{!loading && !error && entries.length === 0 && (
+				<div className={styles.empty}>
+					В этом периоде пока нет данных
+				</div>
+			)}
+
 			<div className={styles.leaderboardList}>
-				{mockLeaders.map((leader, index) => (
-					<div key={leader.id} className={styles.leaderboardItem}>
+				{entries.map((entry) => (
+					<div key={entry.userId} className={styles.leaderboardItem}>
 						<FriendCard
-							friend={leader}
+							friend={{
+								id: entry.userId,
+								name: entry.name,
+								currentLevel: entry.currentLevel,
+								totalXp: entry.totalXp,
+								isFriend: false, // можно позже определять по друзьям пользователя
+							}}
 							variant='standard'
-							rank={index+1}
+							rank={entry.rank}
+							showRank={true}
 							showMedal={true}
-							showRank = {true}
+							onCardClick={(id) =>
+								console.log('Перейти в профиль:', id)
+							}
 						/>
 					</div>
 				))}
