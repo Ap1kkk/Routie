@@ -1,105 +1,97 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useDispatch, useSelector } from '@store';
+import { useNavigate } from 'react-router-dom';
+
 import { FriendCard } from '@components';
 import { Friend } from '../../types/Friends';
+import { fetchFriends, removeFriend } from '../../services/slices/friendsSlice/friendsSlice';
+
 import styles from './FriendPage.module.scss';
 import { Button, Input } from '@ui';
 
 import { ReactComponent as Search } from '../../assets/icons/search.svg';
 import { ReactComponent as Dumbels } from '../../assets/icons/dumbells.svg';
-import { useNavigate } from 'react-router-dom';
-
-// Моковые данные
-const mockFriends: Friend[] = [
-	{
-		id: '1',
-		name: 'Андрей Смирнов',
-		currentLevel: 34,
-		totalXp: 12450,
-		isFriend: true,
-	},
-	{
-		id: '2',
-		name: 'Екатерина Морозова',
-		currentLevel: 100,
-		totalXp: 8750,
-		isFriend: true,
-	},
-	{
-		id: '3',
-		name: 'Максим Петров',
-		currentLevel: 41,
-		totalXp: 18900,
-		isFriend: true,
-	},
-	{
-		id: '4',
-		name: 'Анна Ковалёва',
-		currentLevel: 153,
-		totalXp: 3200,
-		isFriend: true,
-	},
-	{
-		id: '5',
-		name: 'Дмитрий Соколов',
-		currentLevel: 25,
-		totalXp: 6700,
-		isFriend: true,
-	},
-	{
-		id: '6',
-		name: 'Ольга Васильева',
-		currentLevel: 32,
-		totalXp: 11200,
-		isFriend: true,
-	},
-];
 
 export const FriendsPage: React.FC = () => {
-	const [friends] = useState<Friend[]>(mockFriends);
+	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
-	const handleCardClick = (friendId: string) => {
-		console.log('Переход в профиль друга:', friendId);
-		// navigate(`/profile/${friendId}`);
+	const { friendsList, isLoading, error } = useSelector((state) => state.friends);
+
+	const [searchValue, setSearchValue] = useState('');
+	const [debouncedSearch, setDebouncedSearch] = useState('');
+
+	const friends = friendsList?.content || [];
+
+	// Debounce поиска
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(searchValue);
+		}, 500);
+
+		return () => clearTimeout(timer);
+	}, [searchValue]);
+
+	// Загрузка друзей
+	useEffect(() => {
+		dispatch(fetchFriends({
+			page: 0,
+			size: 50,
+			search: debouncedSearch || undefined,
+		}));
+	}, [dispatch, debouncedSearch]);
+
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchValue(e.target.value);
 	};
 
-	const handleRemove = (friendId: string) => {
-		console.log('Удаление друга:', friendId);
-		// Здесь будет логика удаления
+	const handleCardClick = (friendId: string) => {
+		navigate(`/profile/${friendId}`);
 	};
+
+	const handleRemove = useCallback((friendId: string) => {
+		if (window.confirm('Вы действительно хотите удалить друга?')) {
+			dispatch(removeFriend(friendId));
+		}
+	}, [dispatch]);
 
 	return (
 		<section className={styles.container}>
 			<div className={styles.headerTitle}>
-				<h2>Мои друзья</h2>
+				<h2>Мои друзья ({friendsList?.totalElements || 0})</h2>
 			</div>
+
 			<div className={styles.headerFriends}>
 				<Input
 					className={styles.search}
-					placeholder={'Введите имя друга...'}
+					placeholder="Введите имя друга..."
 					iconLeft={<Search />}
-					inputPadding='5px 10px'
+					value={searchValue}
+					onChange={handleSearchChange}
+					inputPadding="5px 10px"
 				/>
 				<Button
-					variant='tertiary'
+					variant="tertiary"
 					iconRight={
 						<Dumbels
-							onClick={() => {
-								navigate('/leader-board');
-							}}
+							onClick={() => navigate('/leader-board')}
+							style={{ cursor: 'pointer' }}
 						/>
 					}
 				/>
 			</div>
 
-			{friends.length > 0 ? (
+			{isLoading && <div className={styles.loading}>Загрузка друзей...</div>}
+			{error && <div className={styles.error}>Ошибка: {error}</div>}
+
+			{!isLoading && !error && friends.length > 0 ? (
 				<div className={styles.friendsContainer}>
 					<div className={styles.friendsGrid}>
-						{friends.map((friend) => (
+						{friends.map((friend: Friend) => (
 							<FriendCard
 								key={friend.id}
 								friend={friend}
-								variant='standard'
+								variant="standard"
 								onCardClick={handleCardClick}
 								onRemove={handleRemove}
 							/>
@@ -107,9 +99,11 @@ export const FriendsPage: React.FC = () => {
 					</div>
 				</div>
 			) : (
-				<div className={styles.emptyState}>
-					<p>У вас пока нет друзей</p>
-				</div>
+				!isLoading && (
+					<div className={styles.emptyState}>
+						<p>У вас пока нет друзей</p>
+					</div>
+				)
 			)}
 		</section>
 	);

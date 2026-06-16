@@ -8,39 +8,7 @@ import { Route } from '../../types/Route';
 import { FriendCard } from '../FriendCard';
 
 import { ReactComponent as Chevron } from '../../assets/icons/chevron-right.svg';
-import {Friend} from "../../types/Friends";
-
-// Моковые данные друзей
-const mockFriends: Friend[] = [
-	{
-		id: '1',
-		name: 'Андрей Смирнов',
-		currentLevel: 34,
-		totalXp: 12450,
-		isFriend: true,
-	},
-	{
-		id: '2',
-		name: 'Екатерина Морозова',
-		currentLevel: 70,
-		totalXp: 8750,
-		isFriend: true,
-	},
-	{
-		id: '3',
-		name: 'Максим Петров',
-		currentLevel: 41,
-		totalXp: 18900,
-		isFriend: true,
-	},
-	{
-		id: '4',
-		name: 'Анна Ковалёва',
-		currentLevel: 129,
-		totalXp: 3200,
-		isFriend: true,
-	},
-];
+import { Friend } from '../../types/Friends';
 
 interface ProfileProps {
 	username?: string;
@@ -62,6 +30,10 @@ interface ProfileProps {
 	birthday?: string;
 	friends?: Friend[];
 	recentRoutes?: Route[];
+
+	/** Обработчики для друзей */
+	onFriendClick?: (friendId: string) => void;
+	onRemoveFriend?: (friendId: string) => void;
 }
 
 export const Profile: React.FC<ProfileProps> = ({
@@ -82,21 +54,28 @@ export const Profile: React.FC<ProfileProps> = ({
 	totalLandmarksVisited,
 
 	birthday,
-	friends = mockFriends, // ← используем моки по умолчанию
+	friends = [], // по умолчанию пустой массив
 	recentRoutes = [],
+
+	onFriendClick,
+	onRemoveFriend,
 }) => {
 	const navigate = useNavigate();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
+
 	const [showMenu, setShowMenu] = useState(false);
 	const levelRef = useRef<HTMLSpanElement>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
+
+	const displayedFriends = friends.slice(0, 4);
 
 	const handleLevelClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setShowMenu(!showMenu);
 	};
 
+	// Закрытие меню при клике вне
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
 			if (
@@ -109,21 +88,18 @@ export const Profile: React.FC<ProfileProps> = ({
 				setShowMenu(false);
 			}
 		};
+
 		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
+		return () =>
 			document.removeEventListener('mousedown', handleClickOutside);
-		};
 	}, [showMenu]);
 
-	const displayedFriends = friends.slice(0, 4); // показываем до 4 друзей
-
-	const handleFriendClick = (friendId: string) => {
-		navigate(`/profile/${friendId}`);
+	const handleFriendCardClick = (friendId: string) => {
+		onFriendClick?.(friendId);
 	};
 
 	const handleFriendRemove = (friendId: string) => {
-		console.log('Удалить друга:', friendId);
-		// TODO: логика удаления
+		onRemoveFriend?.(friendId);
 	};
 
 	return (
@@ -131,25 +107,19 @@ export const Profile: React.FC<ProfileProps> = ({
 			{isMobile ? (
 				<div className={styles.containerMobile}>
 					<div className={styles.headerMobile}>
-						<Avatar src={avatar} size={'large'} />
+						<Avatar src={avatar} size='large' />
 						<h4 className={styles.profileName}>
 							{name}
 							<Circle
 								level={level}
 								size='small'
 							/>
-								{showMenu && (
-									<div
-										className={styles.levelMenu}
-										ref={menuRef}
-										onClick={(e) => e.stopPropagation()}>
-										<span>Ваш текущий уровень</span>
-									</div>
-								)}
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
+
 					<div className={styles.containerMenu}>
+						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -161,6 +131,7 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
+						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<div className={styles.containerContextHeader}>
 								<h5 className={styles.containerContextTitle}>
@@ -175,7 +146,7 @@ export const Profile: React.FC<ProfileProps> = ({
 											key={friend.id}
 											friend={friend}
 											variant='compact'
-											onCardClick={handleFriendClick}
+											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
 									))
@@ -187,6 +158,7 @@ export const Profile: React.FC<ProfileProps> = ({
 							</div>
 						</div>
 
+						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
 							<span className={styles.containerContextTittle}>
 								Последние маршруты
@@ -194,11 +166,10 @@ export const Profile: React.FC<ProfileProps> = ({
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
-										<div className={styles.routeCards}>
-											<RouteCard
-												key={route.id}
-												route={route}
-											/>
+										<div
+											key={route.id}
+											className={styles.routeCards}>
+											<RouteCard route={route} />
 											<span
 												className={
 													styles.separator
@@ -215,9 +186,10 @@ export const Profile: React.FC<ProfileProps> = ({
 					</div>
 				</div>
 			) : (
+				/* ===================== ДЕСКТОП ===================== */
 				<div className={styles.containerMobile}>
 					<div className={styles.headerMobile}>
-						<Avatar src={avatar} size={'large'} />
+						<Avatar src={avatar} size='large' />
 						<h4 className={styles.profileName}>
 							{name}
 							<span
@@ -237,14 +209,15 @@ export const Profile: React.FC<ProfileProps> = ({
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
+
 					<Button
-						variant={'primary'}
-						onClick={() => {
-							navigate('/Admin');
-						}}>
+						variant='primary'
+						onClick={() => navigate('/Admin')}>
 						Панель администратора
 					</Button>
+
 					<div className={styles.containerMenu}>
+						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -256,6 +229,7 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
+						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Друзья ({friends.length})
@@ -266,19 +240,20 @@ export const Profile: React.FC<ProfileProps> = ({
 										<FriendCard
 											key={friend.id}
 											friend={friend}
-											variant="standard"
-											onCardClick={handleFriendClick}
+											variant='standard'
+											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
 									))
 								) : (
 									<span className={styles.emptyText}>
-                                        Нет друзей
-                                    </span>
+										Нет друзей
+									</span>
 								)}
 							</div>
 						</div>
 
+						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
 							<span className={styles.containerContextTittle}>
 								Последние маршруты
@@ -286,11 +261,10 @@ export const Profile: React.FC<ProfileProps> = ({
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
-										<div className={styles.routeCards}>
-											<RouteCard
-												key={route.id}
-												route={route}
-											/>
+										<div
+											key={route.id}
+											className={styles.routeCards}>
+											<RouteCard route={route} />
 											<span
 												className={
 													styles.separator

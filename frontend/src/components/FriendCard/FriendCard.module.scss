@@ -37,7 +37,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 10px;
+  padding: 5px 15px;
 }
 
 .standardContent {
@@ -79,4 +79,8 @@
 
 .bronze {
   background: rgba(197, 92, 18, 0.5);     /* #C55C12 с 50% прозрачностью */
+}
+
+.rank {
+  font-weight: var(--font-medium);
 }

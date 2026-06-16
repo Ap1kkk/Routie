@@ -8,7 +8,7 @@ export const API_RECOMMENDATIONS_URL = 'api/v1/recommendations';
 export const API_AUDIO_GUIDES_URL = 'api/v1/audio-guides';
 export const API_FILE_URL = 'api/v1/file';
 export const API_LANDMARKS_URL = 'api/v1/landmarks';
-export const API_FRIENDS_URL = 'api/v1/profile/friends/friends';
+export const API_FRIENDS_URL = 'api/v1/profile/friends';
 export const API_TAGS_URL = 'api/v1/tags';
 export const API_GAMIFICATION_URL = 'api/v1/gamification';
 
