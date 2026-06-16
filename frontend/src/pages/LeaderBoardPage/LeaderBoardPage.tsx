@@ -17,14 +17,14 @@ const mockLeaders: Friend[] = [
 	{
 		id: '2',
 		name: 'Екатерина Морозова',
-		currentLevel: 44,
+		currentLevel: 290,
 		totalXp: 25100,
 		isFriend: false,
 	},
 	{
 		id: '3',
 		name: 'Максим Петров',
-		currentLevel: 42,
+		currentLevel: 79,
 		totalXp: 21800,
 		isFriend: true,
 	},
@@ -38,7 +38,7 @@ const mockLeaders: Friend[] = [
 	{
 		id: '5',
 		name: 'Дмитрий Соколов',
-		currentLevel: 37,
+		currentLevel: 101,
 		totalXp: 16400,
 		isFriend: false,
 	},

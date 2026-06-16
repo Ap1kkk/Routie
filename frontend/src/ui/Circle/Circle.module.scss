@@ -3,7 +3,7 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 5px;
+	gap: 6px;
 }
 
 .circle {
@@ -13,17 +13,60 @@
 	border-radius: 50%;
 	background-color: var(--color-accent);
 	box-shadow: var(--shadow-soft);
-	padding: 24px;
 	color: var(--color-text);
 	font-weight: var(--font-medium);
 	font-size: var(--text-h3-size);
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+/* Размеры */
+.small {
+	width: 24px;
+	height: 24px;
+	font-size: 12px;
+	padding: 0;
+}
+
+.medium {
+	width: 30px;
+	height: 30px;
+	font-size: 14px;
+	padding: 0;
+}
+
+.large {
+	width: auto;
+	min-width: 35px;
+	height: 35px;
+	font-size: 16px;
+}
+
+.levelGreen {
+	background-color: #4ade80 !important;   /* Зелёный */
+	color: #0f172a;
+}
+
+.levelBlue {
+	background-color: #60a5fa !important;   /* Синий */
+	color: #0f172a;
+}
+
+.levelOrange {
+	background-color: #fb923c !important;   /* Оранжевый */
+	color: #0f172a;
+}
+
+/* При наведении */
+.levelGreen:hover,
+.levelBlue:hover,
+.levelOrange:hover {
+	filter: brightness(1.08);
 }
 
 .circleLabel {
-	display: flex;
-	align-items: center;
-	white-space: nowrap;
 	color: var(--color-text);
+	white-space: nowrap;
 
 	@media (max-width: 925px) {
 		font-size: var(--text-body-size-mobile);

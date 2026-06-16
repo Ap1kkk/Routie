@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Settings.module.scss';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button } from '@ui';
+import { Avatar, Button, Circle } from '@ui';
 import { useTheme } from '../../hooks/useTheme';
 
 import { ReactComponent as User } from '../../assets/icons/user-circle.svg';
@@ -42,7 +42,10 @@ export const Settings: React.FC<SettingsProps> = ({
 				<Avatar src={avatar} size={'big'} />
 				<p className={styles.profileUsername}>
 					{name}
-					<span className={styles.level}>{level}</span>
+					<Circle
+						level={level}
+						size={'small'}
+					/>
 				</p>
 				<p className={styles.profileEmail}>@{username}</p>
 			</article>

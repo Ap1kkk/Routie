@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from '../../components/Profile/Profile.module.scss';
-import { Avatar, Button } from '@ui';
+import { Avatar, Button, Circle } from '@ui';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { RouteCard } from '../RouteCard';
@@ -22,7 +22,7 @@ const mockFriends: Friend[] = [
 	{
 		id: '2',
 		name: 'Екатерина Морозова',
-		currentLevel: 28,
+		currentLevel: 70,
 		totalXp: 8750,
 		isFriend: true,
 	},
@@ -36,7 +36,7 @@ const mockFriends: Friend[] = [
 	{
 		id: '4',
 		name: 'Анна Ковалёва',
-		currentLevel: 19,
+		currentLevel: 129,
 		totalXp: 3200,
 		isFriend: true,
 	},
@@ -134,11 +134,10 @@ export const Profile: React.FC<ProfileProps> = ({
 						<Avatar src={avatar} size={'large'} />
 						<h4 className={styles.profileName}>
 							{name}
-							<span
-								ref={levelRef}
-								className={styles.profileLevel}
-								onClick={handleLevelClick}>
-								{level}
+							<Circle
+								level={level}
+								size='small'
+							/>
 								{showMenu && (
 									<div
 										className={styles.levelMenu}
@@ -147,7 +146,6 @@ export const Profile: React.FC<ProfileProps> = ({
 										<span>Ваш текущий уровень</span>
 									</div>
 								)}
-							</span>
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>

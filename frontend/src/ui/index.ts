@@ -10,3 +10,4 @@ export * from './Slider'
 export * from './Tag';
 export * from './Textarea';
 export * from './Checkbox';
+export * from './Circle'

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Blur } from '@ui';
+import { Avatar, Blur, Circle } from '@ui';
 import styles from './FriendCard.module.scss'
 import { ReactComponent as Cross } from '../../assets/icons/cross.svg';
 import { Friend } from '../../types/Friends';
@@ -44,9 +44,10 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 				</div>
 
 				<div className={styles.compactCardButtons}>
-					<span className={styles.compactCardLevel}>
-						{friend.currentLevel}
-					</span>
+					<Circle
+						level={friend.currentLevel}
+						size='medium'
+					/>
 					<Cross />
 				</div>
 			</article>
@@ -67,9 +68,10 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 				</div>
 
 				<div className={styles.standardCardButtons}>
-					<span className={styles.standardCardLevel}>
-						{friend.currentLevel}
-					</span>
+					<Circle 
+						level={friend.currentLevel}
+						size='large'
+					/>
 					<Cross />
 				</div>
 			</Blur>

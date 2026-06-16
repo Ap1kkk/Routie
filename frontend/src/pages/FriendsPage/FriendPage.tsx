@@ -20,7 +20,7 @@ const mockFriends: Friend[] = [
 	{
 		id: '2',
 		name: 'Екатерина Морозова',
-		currentLevel: 28,
+		currentLevel: 100,
 		totalXp: 8750,
 		isFriend: true,
 	},
@@ -34,7 +34,7 @@ const mockFriends: Friend[] = [
 	{
 		id: '4',
 		name: 'Анна Ковалёва',
-		currentLevel: 19,
+		currentLevel: 153,
 		totalXp: 3200,
 		isFriend: true,
 	},
