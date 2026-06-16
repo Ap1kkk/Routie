@@ -1,0 +1,38 @@
+.panel {
+  width: 90%;
+  max-width: 800px;
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--blur-background);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-blur);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--blur-border);
+  z-index: 12;
+}
+
+.progress {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  border: 1px solid var(--blur-border);
+  letter-spacing: 0.2px;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}

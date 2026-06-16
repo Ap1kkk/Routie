@@ -1,24 +1,19 @@
 import styles from './Marker.module.scss'
 
 interface MarkerProps {
-	type: 'start' | 'finish';
+	type: 'active' | 'start' | 'finish';
+	animated?: boolean;
 }
 
-export const Marker = ({ type }: MarkerProps) => (
-	<div className={styles.marker}>
+export const Marker = ({ type, animated = false }: MarkerProps) => (
+	<div>
 		<div
-			className={`${styles.markerCircle} ${
-				type === 'start' ? styles.markerStart : styles.markerFinish
-			}`}>
-			{type === 'start' ? '🚩' : '🏁'}
-		</div>
-
-		<div
-			className={`${styles.markerArrow} ${
-				type === 'start'
-					? styles.markerArrowStart
-					: styles.markerArrowFinish
-			}`}
+			className={`
+                ${styles.pin}
+                ${animated ? styles.bounce : ''}
+            `}
 		/>
+
+		{animated && <div className={styles.pulse}></div>}
 	</div>
 );

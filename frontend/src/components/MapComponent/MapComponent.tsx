@@ -3,23 +3,36 @@ import mmrgl from 'mmr-gl';
 import { decodePolyline } from './map';
 import { useTheme } from '../../hooks/useTheme';
 import { createRoot } from 'react-dom/client';
+import { Marker } from './Marker/Marker';
+import { Checkpoint, FullRoute } from '../../types/Route';
+import { LandmarkPopup } from './LandmarkPopup/LandmarkPopup';
 
 import 'mmr-gl/dist/mmr-gl.css';
-
 import styles from './MapComponent.module.scss';
-import { Marker } from './Marker/Marker';
+import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
 
 interface RouteOnMapProps {
-	routeData?: {
-		checkpoints?: Array<{
-			id: string;
-			latitude: number;
-			longitude: number;
-			name?: string;
-			description?: string;
-		}>;
-		name?: string;
-	};
+	routeData?: FullRoute;
+}
+
+function calculateDistance(
+	lat1: number,
+	lon1: number,
+	lat2: number,
+	lon2: number
+) {
+	const R = 6371000;
+
+	const dLat = ((lat2 - lat1) * Math.PI) / 180;
+	const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+	const a =
+		Math.sin(dLat / 2) ** 2 +
+		Math.cos((lat1 * Math.PI) / 180) *
+			Math.cos((lat2 * Math.PI) / 180) *
+			Math.sin(dLon / 2) ** 2;
+
+	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 type RouteType = 'pedestrian' | 'bicycle' | 'auto';
@@ -35,6 +48,43 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const controlsContainerRef = useRef<HTMLDivElement | null>(null);
 	const controlsButtonRef = useRef<HTMLDivElement | null>(null);
 	const [routeType, setRouteType] = useState<RouteType>('pedestrian');
+	const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
+	const CHECKPOINT_RADIUS = 50;
+
+	const progress = routeData?.checkpoints?.length
+		? Math.round(
+				(activeCheckpointIndex / routeData.checkpoints.length) * 100
+		  )
+		: 0;
+
+	const checkDistance = (lat: number, lon: number) => {
+		const checkpoint = routeData?.checkpoints?.[activeCheckpointIndex];
+		if (!checkpoint) return;
+
+		const distance = calculateDistance(
+			lat,
+			lon,
+			checkpoint.latitude,
+			checkpoint.longitude
+		);
+
+		if (distance < CHECKPOINT_RADIUS) {
+			handleCheckpointReached(checkpoint);
+		}
+	};
+
+	const handleCheckpointReached = async (checkpoint: Checkpoint) => {
+		await fetch('/api/v1/sessions/checkpoint', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				checkpointId: checkpoint.id,
+				avgSpeedKmh: 0,
+			}),
+		});
+
+		setActiveCheckpointIndex((i) => i + 1);
+	};
 
 	const getRouteCosting = (type: RouteType): string => {
 		switch (type) {
@@ -234,95 +284,56 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const getUserLocation = () => {
-		navigator.geolocation.getCurrentPosition(
+		navigator.geolocation.watchPosition(
 			(position) => {
 				const { latitude, longitude } = position.coords;
 
-				if (mapRef.current) {
-					if (userMarkerRef.current) {
-						userMarkerRef.current.remove();
-					}
-
-					const userMarkerElement = document.createElement('div');
-					userMarkerElement.innerHTML = `
-						<div style="
-							width: 20px;
-							height: 20px;
-							background-color: #13BBFA;
-							border: 3px solid white;
-							border-radius: 50%;
-							box-shadow: 0 0 0 2px #13BBFA;
-						"></div>
-					`;
-
-					userMarkerRef.current = new mmrgl.Marker({
-						element: userMarkerElement,
-					})
-						.setLngLat([longitude, latitude])
-						.addTo(mapRef.current);
-
-					mapRef.current.flyTo({
-						center: [longitude, latitude],
-						zoom: 15,
-						duration: 1000,
-					});
-				}
+				checkDistance(latitude, longitude);
 			},
-			(error) => {
-				console.error('Ошибка получения геопозиции:', error);
+			console.error,
+			{
+				enableHighAccuracy: true,
 			}
 		);
 	};
 
-	const addMarkers = (map: mmrgl.Map, checkpoints: any[]) => {
+	const addMarkers = (map: mmrgl.Map, checkpoints: Checkpoint[]) => {
 		markersRef.current.forEach((marker) => marker.remove());
 		markersRef.current = [];
 
 		checkpoints.forEach((point, index) => {
-			const isFirst = index === 0;
-			const isLast = index === checkpoints.length - 1;
+			const el = document.createElement('div');
 
-			let markerElement: HTMLElement | undefined;
+			const root = createRoot(el);
 
-			if (isFirst || isLast) {
-				const markerElement = document.createElement('div');
+			root.render(
+				<Marker
+					type={
+						index === activeCheckpointIndex
+							? 'active'
+							: index === 0
+							? 'start'
+							: 'finish'
+					}
+				/>
+			);
 
-				const root = createRoot(markerElement);
+			const popupContainer = document.createElement('div');
 
-				root.render(<Marker type={isFirst ? 'start' : 'finish'} />);
+			const popupRoot = createRoot(popupContainer);
 
-				const marker = new mmrgl.Marker({
-					element: markerElement,
-				})
-					.setLngLat([point.longitude, point.latitude])
-					.addTo(map);
+			popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
 
-				markersRef.current.push(marker);
-
-				return;
-			}
+			const popup = new mmrgl.Popup({
+				offset: 1,
+			}).setDOMContent(popupContainer);
 
 			const marker = new mmrgl.Marker({
-				element: markerElement,
-				color: !markerElement
-					? isFirst
-						? '#4CAF50'
-						: isLast
-						? '#f44336'
-						: '#13BBFA'
-					: undefined,
+				element: el,
 			})
 				.setLngLat([point.longitude, point.latitude])
+				.setPopup(popup)
 				.addTo(map);
-
-			if (point.name) {
-				const popup = new mmrgl.Popup({ className: styles.popup })
-					.setHTML(`
-							<h3>${point.name}</h3>
-							<p>${point.description}</p>
-						`);
-				marker.setPopup(popup);
-			}
 
 			markersRef.current.push(marker);
 		});
@@ -346,6 +357,9 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const addControls = (map: mmrgl.Map) => {
+		controlsContainerRef.current?.remove();
+		controlsButtonRef.current?.remove();
+
 		const geolocateButton = document.createElement('button');
 		geolocateButton.className = `${styles.controlsButtons} ${styles.controleButtonUser}`;
 		geolocateButton.innerHTML = '📍';
@@ -458,5 +472,14 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	}, [routeType]);
 
-	return <div id='map' className={styles.mapContainer} />;
+	return (
+		<>
+			<div id='map' className={styles.mapContainer} />
+			<RouteSessionPanel
+				current={activeCheckpointIndex}
+				total={routeData?.checkpoints?.length || 0}
+				progress={progress}
+			/>
+		</>
+	);
 };
