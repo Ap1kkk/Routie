@@ -5,11 +5,13 @@ export * from './EditProfileForm';
 export * from './Filter';
 export * from './Footer/DesktopFooter';
 export * from './Footer/MobileFooter';
+export * from './FriendCard'
 export * from './Header/DesktopHeader';
 export * from './Header/MobileHeader';
 export * from './Layout';
 export * from './Profile';
-export * from './ProtectedRoute';
+export * from '../utils/redirect/ProtectedRoute';
+export * from '../utils/redirect/ProfileRedirect';
 export * from './RegistrationForm';
 export * from './RouteCard';
 export * from './RouteOfDay';

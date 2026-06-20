@@ -3,9 +3,7 @@ name: Deploy backend to VPS
 on:
   push:
     branches:
-      - main
-    paths:
-      - "**/backend/**"
+      - dev-be
   workflow_dispatch:
 
 env:

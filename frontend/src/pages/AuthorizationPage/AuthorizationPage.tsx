@@ -1,13 +1,13 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
-import { login } from '../../services/slices/userSlice/userSlice';
-import {
-	selectIsLoading,
-	selectLoginError,
-	selectIsAuthenticated,
-} from '../../services/selectors/userSelectors';
 import { AuthorizationForm } from '@components';
+import { login } from '../../services/slices/userSlice/userSlice';
+import { getDeviceId, getDeviceName } from '../../utils/UserAgent';
+import {
+	selectIsAuthenticated,
+	selectIsLoading,
+} from '../../services/selectors/userSelectors';
 
 import styles from './AuthorizationPage.module.scss';
 
@@ -21,16 +21,11 @@ export const AuthorizationPage = () => {
 	});
 
 	const isLoading = useSelector(selectIsLoading);
-	const error = useSelector(selectLoginError);
 	const isAuthenticated = useSelector(selectIsAuthenticated);
 
 	useEffect(() => {
 		if (isAuthenticated) {
-			const timer = setTimeout(() => {
-				navigate('/');
-			}, 1500);
-
-			return () => clearTimeout(timer);
+			navigate('/routie', { replace: true });
 		}
 	}, [isAuthenticated, navigate]);
 
@@ -55,17 +50,11 @@ export const AuthorizationPage = () => {
 			login({
 				email: formData.email,
 				password: formData.password,
+				deviceId: getDeviceId(),
+				deviceName: getDeviceName(),
 			})
 		);
 	};
-
-	const errorMessage = error
-		? typeof error === 'object' && 'message' in error
-			? error
-			: typeof error === 'string'
-			? error
-			: 'Ошибка входа'
-		: null;
 
 	return (
 		<section className={styles.container}>
@@ -75,7 +64,6 @@ export const AuthorizationPage = () => {
 				onSubmit={handleSubmit}
 				isFormValid={isFormValid}
 				isLoading={isLoading}
-				error={errorMessage}
 			/>
 		</section>
 	);

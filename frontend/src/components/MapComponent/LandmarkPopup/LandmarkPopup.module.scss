@@ -1,0 +1,24 @@
+.popup {
+  display: flex;
+  flex-direction: column;
+}
+
+.imagePopup {
+  width: 100%;
+  height: 120px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0 ;
+  object-fit: cover;
+}
+
+.popupContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.audioControle {
+  display: block;
+  width: 100%;
+  padding: 0;
+}

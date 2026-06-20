@@ -14,9 +14,11 @@ export const Layout = () => {
 	return (
 		<div className={styles.layout}>
 			{isMobile ? <MobileHeader /> : <Header />}
+
 			<main className={styles.content}>
 				<Outlet />
 			</main>
+
 			{isMobile ? <MobileFooter /> : <Footer />}
 		</div>
 	);

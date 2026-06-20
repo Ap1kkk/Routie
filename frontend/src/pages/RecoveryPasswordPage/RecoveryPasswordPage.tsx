@@ -3,7 +3,6 @@ import React, { ChangeEvent, useState } from 'react';
 import { useDispatch, useSelector } from '@store';
 import {
 	selectIsAuthenticated,
-	selectLoginError,
 } from '../../services/selectors/userSelectors';
 import { RecoveryPasswordForm } from '@components';
 import styles from './RecoveryPasswordPage.module.scss';
@@ -17,7 +16,6 @@ export const RecoveryPasswordPage = () => {
 		confirmPassword: '',
 	});
 
-	const error = useSelector(selectLoginError);
 	const isAuthenticated = useSelector(selectIsAuthenticated);
 
 	React.useEffect(() => {
@@ -45,21 +43,12 @@ export const RecoveryPasswordPage = () => {
 		});
 	};
 
-	const errorMessage = error
-		? typeof error === 'object' && 'message' in error
-			? error.message
-			: typeof error === 'string'
-			? error
-			: 'Ошибка при смене пароля'
-		: null;
-
 	return (
 		<section className={styles.container}>
 			<RecoveryPasswordForm
 				formData={formData}
 				onChange={handleChange}
 				onSubmit={handleSubmit}
-				error={errorMessage}
 				oldPassword={oldPassword}
 			/>
 		</section>

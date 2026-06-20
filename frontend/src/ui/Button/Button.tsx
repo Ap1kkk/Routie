@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import styles from './Button.module.scss';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-	variant?: 'primary' | 'secondary' | 'tertiary';
+	variant?: 'primary' | 'secondary' | 'tertiary' | 'blur';
 	isLoading?: boolean;
 	iconLeft?: React.ReactNode;
 	iconRight?: React.ReactNode;

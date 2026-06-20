@@ -1,0 +1,1 @@
+export { ProfileRedirect } from './ProfileRedirect';

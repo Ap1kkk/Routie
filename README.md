@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="http://two-steps.duckdns.org/">🏔️ Sport Line</a>
+  <a href="http://two-steps.duckdns.org/"> Routie </a>
   <p><strong>Спортивно-туристическое приложение для активных путешественников</strong></p>
   <p>Полноценная экосистема для планирования маршрутов, отслеживания активности и поиска идеальных мест для спорта и отдыха</p>
 </div>

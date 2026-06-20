@@ -1,30 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getMockRouteById } from '../../mocks/route';
-import { Route } from '../../types/route';
+import { useDispatch, useSelector } from '@store';
+import { fetchRoute } from '../../services/slices/routeSlice/routeSlice';
 import { MapComponent } from '@components';
 
-import styles from './MapPage.module.scss'
+import styles from './MapPage.module.scss';
 
 export const MapPage = () => {
 	const { routeId } = useParams<{ routeId: string }>();
-	const [route, setRoute] = useState<Route | null>(null);
-	const [loading, setLoading] = useState(true);
+	const dispatch = useDispatch();
+
+	const { currentRoute, isLoading, error } = useSelector(
+		(state) => state.routes
+	);
 
 	useEffect(() => {
 		if (routeId) {
-			const foundRoute = getMockRouteById(routeId);
-			setRoute(foundRoute || null);
+			dispatch(fetchRoute(routeId));
 		}
-		setLoading(false);
-	}, [routeId]);
+	}, [routeId, dispatch]);
 
-	if (loading) return <div>Загрузка...</div>;
-	if (!route) return <div>Маршрут не найден</div>;
+	if (isLoading) return <div>Загрузка...</div>;
+	if (error) return <div>Ошибка: {error}</div>;
+	if (!currentRoute) return <div>Маршрут не найден</div>;
 
 	return (
 		<section className={styles.mapPageWrapper}>
-			<MapComponent routeData={route} />
+			<MapComponent routeData={currentRoute} />
 		</section>
 	);
 };

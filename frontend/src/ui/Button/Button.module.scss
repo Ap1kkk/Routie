@@ -76,6 +76,15 @@
 	color: var(--color-text);
 }
 
+.blur {
+	background: var(--blur-background);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	border-radius: var(--border-radius);
+	border: 1px solid var(--blur-border);
+	color: var(--color-text);
+}
+
 .icon-only {
 	padding: 12px;
 	width: 48px;

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Tag } from '@ui';
-import { Route } from '../../types/route';
-import { Tags } from '../../types/tags';
+import { Link, useNavigate } from 'react-router-dom';
+import { Blur, Tag } from '@ui';
+import { Tags } from '../../types/Tags';
 
 import { ReactComponent as Like } from '../../assets/icons/like.svg';
 import { ReactComponent as LikeActive } from '../../assets/icons/like-green.svg';
 
 import styles from './RouteCard.module.scss';
+import { Route } from '../../types/Route';
 
 interface RouteCardProps {
 	route: Route;
@@ -28,6 +28,7 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 }) => {
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [localLiked, setLocalLiked] = useState(isLiked);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		setLocalLiked(isLiked);
@@ -71,54 +72,68 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 
 	if (variant === 'compact') {
 		return (
-			<Link className={styles.compactCard} to={`/map/${route.id}`}>
+			<Blur
+				className={styles.compactCard}
+				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					alt={route.name}
-					className={styles.compactRouteImage}
+					// alt={route.name}
+					className={styles.imageContainerCompact}
 					loading='lazy'
 				/>
-				<span className={styles.compactRouteName}>{route.name}</span>
-			</Link>
+				{/*<span className={styles.compactRouteName}>{route.name}</span>*/}
+			</Blur>
 		);
 	}
 
 	if (variant === 'standard') {
 		return (
-			<Link className={styles.standartCard} to={`/map/${route.id}`}>
+			<Blur
+				className={styles.standartCard}
+				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					alt={route.name}
+					alt={route.title}
 					className={styles.standartImage}
-					loading='lazy'
+					loading="lazy"
 				/>
+
 				<div className={styles.standartContent}>
-					<h3 className={styles.standartCardTitle}>{route.name}</h3>
-					<span className={styles.standartDistance}>
-						{formatDistance(route.distance)}
-					</span>
-					{displayTags.length > 0 && (
+					{/* Название маршрута */}
+					<h3 className={styles.standartCardTitle}>{route.title}</h3>
+
+					{/* Длительность + дистанция */}
+					<div className={styles.routeInfo}>
+						<span className={styles.standartDistance}>
+							{formatDistance(route.lengthMeters)}
+						</span>
+					</div>
+
+					{/* Теги */}
+					{route.tags && route.tags.length > 0 && (
 						<div className={styles.compactTags}>
 							<Tag
-								items={displayTags}
-								variant='small'
+								items={route.tags.map(tag => tag.title)}
+								variant="small"
 								wrap={false}
 							/>
 						</div>
 					)}
+
+					{/* Кнопка лайка */}
+					{onToggleLike && (
+						<button
+							className={`${styles.standartLike} ${
+								localLiked ? styles.liked : ''
+							} ${isAnimating ? styles.animating : ''}`}
+							onClick={handleLikeClick}
+							aria-label="Добавить в избранное"
+							type="button">
+							{localLiked ? <LikeActive /> : <Like />}
+						</button>
+					)}
 				</div>
-				{onToggleLike && (
-					<button
-						className={`${styles.standartLike} ${
-							localLiked ? styles.liked : ''
-						} ${isAnimating ? styles.animating : ''}`}
-						onClick={handleLikeClick}
-						aria-label='Добавить в избранное'
-						type='button'>
-						{localLiked ? <LikeActive /> : <Like />}
-					</button>
-				)}
-			</Link>
+			</Blur>
 		);
 	}
 

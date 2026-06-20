@@ -2,21 +2,37 @@ import React, { useEffect, useRef, useState } from 'react';
 import mmrgl from 'mmr-gl';
 import { decodePolyline } from './map';
 import { useTheme } from '../../hooks/useTheme';
+import { createRoot } from 'react-dom/client';
+import { Marker } from './Marker/Marker';
+import { Checkpoint, FullRoute } from '../../types/Route';
+import { LandmarkPopup } from './LandmarkPopup/LandmarkPopup';
 
 import 'mmr-gl/dist/mmr-gl.css';
 import styles from './MapComponent.module.scss';
+import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
 
 interface RouteOnMapProps {
-	routeData?: {
-		checkpoints?: Array<{
-			id: string;
-			latitude: number;
-			longitude: number;
-			name?: string;
-			description?: string;
-		}>;
-		name?: string;
-	};
+	routeData?: FullRoute;
+}
+
+function calculateDistance(
+	lat1: number,
+	lon1: number,
+	lat2: number,
+	lon2: number
+) {
+	const R = 6371000;
+
+	const dLat = ((lat2 - lat1) * Math.PI) / 180;
+	const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+	const a =
+		Math.sin(dLat / 2) ** 2 +
+		Math.cos((lat1 * Math.PI) / 180) *
+			Math.cos((lat2 * Math.PI) / 180) *
+			Math.sin(dLon / 2) ** 2;
+
+	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 type RouteType = 'pedestrian' | 'bicycle' | 'auto';
@@ -32,6 +48,43 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const controlsContainerRef = useRef<HTMLDivElement | null>(null);
 	const controlsButtonRef = useRef<HTMLDivElement | null>(null);
 	const [routeType, setRouteType] = useState<RouteType>('pedestrian');
+	const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
+	const CHECKPOINT_RADIUS = 50;
+
+	const progress = routeData?.checkpoints?.length
+		? Math.round(
+				(activeCheckpointIndex / routeData.checkpoints.length) * 100
+		  )
+		: 0;
+
+	const checkDistance = (lat: number, lon: number) => {
+		const checkpoint = routeData?.checkpoints?.[activeCheckpointIndex];
+		if (!checkpoint) return;
+
+		const distance = calculateDistance(
+			lat,
+			lon,
+			checkpoint.latitude,
+			checkpoint.longitude
+		);
+
+		if (distance < CHECKPOINT_RADIUS) {
+			handleCheckpointReached(checkpoint);
+		}
+	};
+
+	const handleCheckpointReached = async (checkpoint: Checkpoint) => {
+		await fetch('/api/v1/sessions/checkpoint', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				checkpointId: checkpoint.id,
+				avgSpeedKmh: 0,
+			}),
+		});
+
+		setActiveCheckpointIndex((i) => i + 1);
+	};
 
 	const getRouteCosting = (type: RouteType): string => {
 		switch (type) {
@@ -94,267 +147,193 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				`https://maps.vk.com/api/directions?api_key=${API_MAP_KEY}`,
 				{
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: {
+						'Content-Type': 'application/json',
+					},
 					body: JSON.stringify(requestBody),
 				}
 			);
 
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error(`Ошибка API (${response.status})`, errorText);
+				return;
+			}
+
 			const data = await response.json();
+
+			if (data.error?.code === 2200) {
+				if (type === 'bicycle') {
+					await buildRoute(map, checkpoints, 'pedestrian');
+					return;
+				}
+
+				console.error(data.error.message);
+				return;
+			}
+
+			if (!data?.trips?.length) {
+				console.error(`Маршрут "${type}" не построен`, data);
+				return;
+			}
 
 			let allPoints: [number, number][] = [];
 
-			if (data.trips?.[0]?.trip?.legs) {
-				data.trips[0].trip.legs.forEach((leg: any) => {
-					if (leg.shape) {
-						const points = decodePolyline(leg.shape);
-						const correctedPoints = points.map(
-							(point) =>
-								[point[0] / 10, point[1] / 10] as [
-									number,
-									number
-								]
-						);
+			data.trips[0].trip.legs.forEach((leg: any) => {
+				if (leg.shape) {
+					const points = decodePolyline(leg.shape);
 
-						allPoints = [...allPoints, ...correctedPoints];
-					}
-				});
+					const correctedPoints = points.map(
+						(point) =>
+							[point[0] / 10, point[1] / 10] as [number, number]
+					);
+
+					allPoints.push(...correctedPoints);
+				}
+			});
+
+			if (!allPoints.length) {
+				console.error('Пустой маршрут', data);
+				return;
 			}
 
-			if (allPoints.length > 0) {
-				clearRoute(map);
+			clearRoute(map);
 
-				map.addSource('route', {
-					type: 'geojson',
-					data: {
-						type: 'Feature',
-						geometry: {
-							type: 'LineString',
-							coordinates: allPoints,
-						},
+			map.addSource('route', {
+				type: 'geojson',
+				data: {
+					type: 'Feature',
+					geometry: {
+						type: 'LineString',
+						coordinates: allPoints,
 					},
-				});
+				},
+			});
 
-				const routeColor =
-					type === 'pedestrian'
-						? '#13BBFA'
-						: type === 'bicycle'
-						? '#4CAF50'
-						: '#FF9800';
-				const routeOutlineColor =
-					type === 'pedestrian'
-						? '#0D8BB8'
-						: type === 'bicycle'
-						? '#3D8E40'
-						: '#E68A00';
-				const routeStyleLine = type === 'pedestrian' ? [2, 2] : [];
+			const routeColor =
+				type === 'pedestrian'
+					? '#13BBFA'
+					: type === 'bicycle'
+					? '#4CAF50'
+					: '#FF9800';
+			const routeOutlineColor =
+				type === 'pedestrian'
+					? '#0D8BB8'
+					: type === 'bicycle'
+					? '#3D8E40'
+					: '#E68A00';
+			const routeStyleLine = type === 'pedestrian' ? [2, 2] : [];
 
-				map.addLayer({
-					id: 'route-outline',
-					type: 'line',
-					source: 'route',
-					layout: {
-						'line-join': 'round',
-						'line-cap': 'round',
-					},
-					paint: {
-						'line-color': routeOutlineColor,
-						'line-width': [
-							'interpolate',
-							['exponential', 1.5],
-							['zoom'],
-							5,
-							6,
-							18,
-							12,
-						],
-						'line-opacity': 0.8,
-					},
-				});
+			map.addLayer({
+				id: 'route-outline',
+				type: 'line',
+				source: 'route',
+				layout: {
+					'line-join': 'round',
+					'line-cap': 'round',
+				},
+				paint: {
+					'line-color': routeOutlineColor,
+					'line-width': [
+						'interpolate',
+						['exponential', 1.5],
+						['zoom'],
+						5,
+						6,
+						18,
+						12,
+					],
+					'line-opacity': 0.8,
+				},
+			});
 
-				map.addLayer({
-					id: 'route',
-					type: 'line',
-					source: 'route',
-					layout: {
-						'line-join': 'round',
-						'line-cap': 'round',
-					},
-					paint: {
-						'line-color': routeColor,
-						'line-width': [
-							'interpolate',
-							['exponential', 1.5],
-							['zoom'],
-							5,
-							3,
-							18,
-							8,
-						],
-						'line-opacity': 1,
-						'line-dasharray': routeStyleLine,
-					},
-				});
+			map.addLayer({
+				id: 'route',
+				type: 'line',
+				source: 'route',
+				layout: {
+					'line-join': 'round',
+					'line-cap': 'round',
+				},
+				paint: {
+					'line-color': routeColor,
+					'line-width': [
+						'interpolate',
+						['exponential', 1.5],
+						['zoom'],
+						5,
+						3,
+						18,
+						8,
+					],
+					'line-opacity': 1,
+					'line-dasharray': routeStyleLine,
+				},
+			});
 
-				const totalDistance = data.trips[0].summary?.length || 0;
-				const totalTime = data.trips[0].summary?.time || 0;
-				console.log(
-					`${type} маршрут: ${totalDistance} км, ~${Math.round(
-						totalTime / 60
-					)} мин`
-				);
-			}
+			const totalDistance = data.trips[0].summary?.length || 0;
+			const totalTime = data.trips[0].summary?.time || 0;
+			console.log(
+				`${type} маршрут: ${totalDistance} км, ~${Math.round(
+					totalTime / 60
+				)} мин`
+			);
 		} catch (error) {
-			console.error('Ошибка построения маршрута:', error);
+			console.error(error);
 		}
 	};
 
 	const getUserLocation = () => {
-		navigator.geolocation.getCurrentPosition(
+		navigator.geolocation.watchPosition(
 			(position) => {
 				const { latitude, longitude } = position.coords;
 
-				if (mapRef.current) {
-					if (userMarkerRef.current) {
-						userMarkerRef.current.remove();
-					}
-
-					const userMarkerElement = document.createElement('div');
-					userMarkerElement.innerHTML = `
-						<div style="
-							width: 20px;
-							height: 20px;
-							background-color: #13BBFA;
-							border: 3px solid white;
-							border-radius: 50%;
-							box-shadow: 0 0 0 2px #13BBFA;
-						"></div>
-					`;
-
-					userMarkerRef.current = new mmrgl.Marker({
-						element: userMarkerElement,
-					})
-						.setLngLat([longitude, latitude])
-						.addTo(mapRef.current);
-
-					mapRef.current.flyTo({
-						center: [longitude, latitude],
-						zoom: 15,
-						duration: 1000,
-					});
-				}
+				checkDistance(latitude, longitude);
 			},
-			(error) => {
-				console.error('Ошибка получения геопозиции:', error);
+			console.error,
+			{
+				enableHighAccuracy: true,
 			}
 		);
 	};
 
-	const addMarkers = (map: mmrgl.Map, checkpoints: any[]) => {
+	const addMarkers = (map: mmrgl.Map, checkpoints: Checkpoint[]) => {
 		markersRef.current.forEach((marker) => marker.remove());
 		markersRef.current = [];
 
 		checkpoints.forEach((point, index) => {
-			const isFirst = index === 0;
-			const isLast = index === checkpoints.length - 1;
+			const el = document.createElement('div');
 
-			let markerElement: HTMLElement | undefined;
+			const root = createRoot(el);
 
-			if (isLast) {
-				markerElement = document.createElement('div');
-				markerElement.innerHTML = `
-					<div style="
-						position: relative;
-						cursor: pointer;
-					">
-						<div style="
-							width: 40px;
-							height: 40px;
-							background-color: #f44336;
-							border-radius: 50%;
-							border: 3px solid white;
-							box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-							display: flex;
-							align-items: center;
-							justify-content: center;
-							font-size: 20px;
-						">
-							🏁
-						</div>
-						<div style="
-							position: absolute;
-							bottom: -15px;
-							left: 50%;
-							transform: translateX(-50%);
-							width: 0;
-							height: 0;
-							border-left: 8px solid transparent;
-							border-right: 8px solid transparent;
-							border-top: 10px solid #f44336;
-						"></div>
-					</div>
-				`;
-			} else if (isFirst) {
-				markerElement = document.createElement('div');
-				markerElement.innerHTML = `
-					<div style="
-						position: relative;
-						cursor: pointer;
-					">
-						<div style="
-							width: 40px;
-							height: 40px;
-							background-color: #4CAF50;
-							border-radius: 50%;
-							border: 3px solid white;
-							box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-							display: flex;
-							align-items: center;
-							justify-content: center;
-							font-size: 20px;
-						">
-							🏁
-						</div>
-						<div style="
-							position: absolute;
-							bottom: -15px;
-							left: 50%;
-							transform: translateX(-50%);
-							width: 0;
-							height: 0;
-							border-left: 8px solid transparent;
-							border-right: 8px solid transparent;
-							border-top: 10px solid #4CAF50;
-						"></div>
-					</div>
-				`;
-			}
+			root.render(
+				<Marker
+					type={
+						index === activeCheckpointIndex
+							? 'active'
+							: index === 0
+							? 'start'
+							: 'finish'
+					}
+				/>
+			);
+
+			const popupContainer = document.createElement('div');
+
+			const popupRoot = createRoot(popupContainer);
+
+			popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
+
+			const popup = new mmrgl.Popup({
+				offset: 1,
+			}).setDOMContent(popupContainer);
 
 			const marker = new mmrgl.Marker({
-				element: markerElement,
-				color: !markerElement
-					? isFirst
-						? '#4CAF50'
-						: isLast
-						? '#f44336'
-						: '#13BBFA'
-					: undefined,
+				element: el,
 			})
 				.setLngLat([point.longitude, point.latitude])
+				.setPopup(popup)
 				.addTo(map);
-
-			if (point.name) {
-				const popup = new mmrgl.Popup({ className: styles.popup })
-					.setMaxWidth('30vh')
-					.setHTML(
-						`<h3 style="margin: 0 0 8px 0;">${point.name}</h3>
-						 ${
-								point.description
-									? `<p style="margin: 0; color: #666;">${point.description}</p>`
-									: ''
-							}`
-					);
-				marker.setPopup(popup);
-			}
 
 			markersRef.current.push(marker);
 		});
@@ -364,7 +343,7 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		if (!controlsContainerRef.current) return;
 
 		const selector = controlsContainerRef.current.querySelectorAll(
-			`.${styles.routeButton}`
+			`.${styles.controlsButtons}`
 		);
 		selector.forEach((button) => {
 			const buttonElement = button as HTMLButtonElement;
@@ -378,14 +357,17 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const addControls = (map: mmrgl.Map) => {
+		controlsContainerRef.current?.remove();
+		controlsButtonRef.current?.remove();
+
 		const geolocateButton = document.createElement('button');
-		geolocateButton.className = `${styles.controlButton} ${styles.controleButtonUser}`;
+		geolocateButton.className = `${styles.controlsButtons} ${styles.controleButtonUser}`;
 		geolocateButton.innerHTML = '📍';
 		geolocateButton.title = 'Мое местоположение';
 		geolocateButton.onclick = getUserLocation;
 
 		const zoomToRouteButton = document.createElement('button');
-		zoomToRouteButton.className = `${styles.controlButton} ${styles.controleButtonRoute}`;
+		zoomToRouteButton.className = `${styles.controlsButtons} ${styles.controleButtonRoute}`;
 		zoomToRouteButton.innerHTML = '🗺️';
 		zoomToRouteButton.title = 'Показать весь маршрут';
 		zoomToRouteButton.onclick = fitBoundsToRoute;
@@ -401,9 +383,9 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 
 		routeTypes.forEach(({ type, label, icon }) => {
 			const button = document.createElement('button');
-			button.className = `${styles.routeButton} ${
-				routeType === type ? styles.active : ''
-			}`;
+			button.className = `${styles.controlsButtons} ${
+				styles.controlsButtonsMove
+			} ${routeType === type ? styles.active : ''}`;
 			button.innerHTML = `${icon} ${label}`;
 			button.setAttribute('data-type', type);
 			button.onclick = () => {
@@ -415,8 +397,6 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		const controlsContainer = document.createElement('div');
 		controlsContainer.className = styles.controlsContainer;
 		controlsContainer.appendChild(routeButtonsContainer);
-		controlsContainer.appendChild(geolocateButton);
-		controlsContainer.appendChild(zoomToRouteButton);
 
 		const controlsButton = document.createElement('div');
 		controlsButton.className = styles.controlsButtonContainer;
@@ -492,5 +472,14 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	}, [routeType]);
 
-	return <div id='map' className={styles.mapContainer} />;
+	return (
+		<>
+			<div id='map' className={styles.mapContainer} />
+			<RouteSessionPanel
+				current={activeCheckpointIndex}
+				total={routeData?.checkpoints?.length || 0}
+				progress={progress}
+			/>
+		</>
+	);
 };

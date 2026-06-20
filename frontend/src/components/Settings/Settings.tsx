@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Settings.module.scss';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button } from '@ui';
+import { Avatar, Button, Circle } from '@ui';
 import { useTheme } from '../../hooks/useTheme';
 
 import { ReactComponent as User } from '../../assets/icons/user-circle.svg';
@@ -13,10 +13,20 @@ import { ReactComponent as Moon } from '../../assets/icons/moon.svg';
 import { ReactComponent as ArrowRight } from '../../assets/icons/chevron-right.svg';
 
 interface SettingsProps {
+	username?: string;
+	name?: string;
+	level?: number;
+	avatar?: string;
 	onLogout?: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
+export const Settings: React.FC<SettingsProps> = ({
+	username,
+	name,
+	level,
+	avatar,
+	onLogout,
+}) => {
 	const navigate = useNavigate();
 	const { isLight, toggleTheme } = useTheme();
 
@@ -29,12 +39,15 @@ export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
 	return (
 		<div className={styles.container}>
 			<article className={styles.headerContent}>
-				<Avatar size={'big'} />
+				<Avatar src={avatar} size={'big'} />
 				<p className={styles.profileUsername}>
-					Eвгений
-					<span className={styles.level}>100</span>
+					{name}
+					<Circle
+						level={level}
+						size={'small'}
+					/>
 				</p>
-				<p className={styles.profileEmail}>evgeniinaumov04@gmail.com</p>
+				<p className={styles.profileEmail}>@{username}</p>
 			</article>
 			<div className={styles.sectionCards}>
 				<article className={styles.card}>
@@ -79,7 +92,7 @@ export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
 							iconRight={<ArrowRight />}
 							variant={'tertiary'}
 							className={styles.buttonMenu}
-							onClick={() => navigate('/achievement')}
+							onClick={() => navigate('/achievements')}
 						/>
 					</div>
 				</article>
@@ -90,6 +103,15 @@ export const Settings: React.FC<SettingsProps> = ({ onLogout }) => {
 						iconLeft={isLight ? <Moon /> : <Sun />}
 						children={isLight ? 'Тёмная тема' : 'Светлая тема'}
 						className={styles.buttons}
+					/>
+				</article>
+
+				<article className={styles.card}>
+					<Button
+						onClick={() => navigate('/Admin')}
+						variant={'tertiary'}
+						className={`${styles.buttons} ${styles.exit}`}
+						children='Панель администратора'
 					/>
 				</article>
 

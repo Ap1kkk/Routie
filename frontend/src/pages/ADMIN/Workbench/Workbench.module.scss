@@ -1,0 +1,58 @@
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  padding: 20px 0 40px;
+}
+
+.cardList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: center;
+  justify-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.editCard {
+  width: 100%;
+  height: 200px;
+  background-color: var(--color-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-blur);
+  color: var(--color-text);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover{
+    scale: 1.05;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  .iconWrapper {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .iconWrapper {
+    transform: scale(1.1) rotate(8deg);
+  }
+}
+
+.cardTitle {
+  text-align: center;
+  white-space: wrap;
+}

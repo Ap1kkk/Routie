@@ -1,26 +1,64 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { Layout, ProtectedRoute } from '@components';
+import {
+	createBrowserRouter,
+	Navigate,
+	RouterProvider,
+} from 'react-router-dom';
+import { Layout, ProfileRedirect, ProtectedRoute } from '@components';
 import {
 	AchievementPage,
+	AudioGuidesEdit,
 	AuthorizationPage,
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage,
+	FilterMobilePage, FriendsPage,
+	LandmarksEdit, LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage,
+	Privacy,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
+	RouteEdit,
 	RoutesMobilePage,
 	SettingsPage,
+	Statistic,
 	StatisticPage,
+	TagsEdit,
+	Terms,
+	Workbench,
 } from '@pages';
+import { useDispatch, useSelector } from '@store';
+import { useEffect } from 'react';
+import {
+	initAuth,
+	setInitialized,
+} from './services/slices/userSlice/userSlice';
+import { selectInitialized } from './services/selectors/userSelectors';
+import { getAccessToken, getRefreshToken } from './utils/auth';
 
-function checkAuth(): boolean {
-	const token = localStorage.getItem('accessToken');
-	return !!token;
+export function App() {
+	const dispatch = useDispatch();
+	const initialized = useSelector(selectInitialized);
+
+	useEffect(() => {
+		const accessToken = getAccessToken();
+		const refreshToken = getRefreshToken();
+
+		if (!accessToken && !refreshToken) {
+			dispatch(setInitialized());
+			return;
+		}
+
+		dispatch(initAuth());
+	}, [dispatch]);
+
+	if (!initialized) {
+		return <div>Loading...</div>;
+	}
+
+	return <RouterProvider router={router} />;
 }
 
 export const router = createBrowserRouter([
@@ -45,8 +83,24 @@ export const router = createBrowserRouter([
 				element: <RecoveryPasswordPage />,
 			},
 			{
-				element: <ProtectedRoute isAuthenticated={true} />,
+				path: '/privacy',
+				element: <Privacy />,
+			},
+			{
+				path: '/terms',
+				element: <Terms />,
+			},
+			{
+				element: <ProtectedRoute allowedRoles={['USER', 'ADMIN']} />,
 				children: [
+					{
+						path: '/friends',
+						element: <FriendsPage />,
+					},
+					{
+						path:'/leader-board',
+						element: <LeaderBoardPage />
+					},
 					{
 						path: '/routie',
 						element: <MainPage />,
@@ -65,20 +119,35 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/profile',
-						element: (
-							<Navigate
-								to={`/profile/${getCurrentUsername()}`}
-								replace
-							/>
-						),
+						element: <ProfileRedirect />,
 					},
 					{
-						path: '/filter',
-						element: <FilterDesktopPage />,
+						path: '/recommended-mobile',
+						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/favorites-mobile',
+						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/popular-mobile',
+						element: <RoutesMobilePage />,
 					},
 					{
 						path: '/filter-mobile',
 						element: <FilterMobilePage />,
+					},
+					{
+						path: '/recommended',
+						element: <FilterDesktopPage />,
+					},
+					{
+						path: '/popular',
+						element: <FilterDesktopPage />,
+					},
+					{
+						path: '/favorites',
+						element: <FilterDesktopPage />,
 					},
 					{
 						path: '/routes',
@@ -89,12 +158,41 @@ export const router = createBrowserRouter([
 						element: <StatisticPage />,
 					},
 					{
-						path: '/achievement',
-						element: <AchievementPage />,
-					},
-					{
 						path: '/profile/edit',
 						element: <EditProfilePage />,
+					},
+					{
+						path: '/achievements',
+						element: <AchievementPage />,
+					},
+				],
+			},
+			{
+				element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+				children: [
+					{
+						path: '/admin',
+						element: <Workbench />,
+					},
+					{
+						path: '/admin/landmarks-edit',
+						element: <LandmarksEdit />,
+					},
+					{
+						path: '/admin/routes-edit',
+						element: <RouteEdit />,
+					},
+					{
+						path: '/admin/tags-edit',
+						element: <TagsEdit />,
+					},
+					{
+						path: '/admin/audioguides-edit',
+						element: <AudioGuidesEdit />,
+					},
+					{
+						path: '/admin/statistic',
+						element: <Statistic />,
 					},
 				],
 			},
@@ -105,8 +203,3 @@ export const router = createBrowserRouter([
 		],
 	},
 ]);
-
-function getCurrentUsername() {
-	const username = localStorage.getItem('username');
-	if (username) return username;
-}

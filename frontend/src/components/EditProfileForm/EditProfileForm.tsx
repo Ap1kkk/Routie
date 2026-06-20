@@ -1,61 +1,106 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { Avatar, Button, Input, Tag } from '@ui';
-import { Tags } from '../../types/tags';
-
 import styles from './EditProfileForm.module.scss';
-
+import { DatePicker } from '../../ui/DataPicker';
 import {
 	formatName,
 	sanitizeName,
-	validateHeight,
 	validateImages,
 	validateName,
 	validateWeight,
+	validateHeight,
 	validatePreferencesCount,
+	validateAge,
+	validateEmail,
 } from '../../utils/validator';
+
+interface PreferenceTag {
+	id: string;
+	label: string;
+}
 
 interface EditProfileFormProps {
 	data: {
-		name: string;
-		weight: number | string;
-		height: number | string;
+		name?: string;
+		username?: string;
+		email?: string;
+		birthDate?: string | number | null;
+		weight?: number | string;
+		height?: number | string;
 		avatar?: File | null;
 		avatarUrl?: string | null;
 		preferences?: string[] | number[];
 	};
 	updateData?: (key: string, value: unknown) => void;
-	availablePreferences?: Tags[];
+	availablePreferences?: PreferenceTag[];
+	onSubmit?: () => void;
 }
 
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 	data,
 	updateData,
 	availablePreferences = [],
+	onSubmit,
 }) => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(
-		data.avatar ? URL.createObjectURL(data.avatar) : null
+		data.avatar ? URL.createObjectURL(data.avatar) : data.avatarUrl || null
 	);
 	const [avatarError, setAvatarError] = useState<string | undefined>();
+
 	const [name, setName] = useState(data.name || '');
-	const [weight, setWeight] = useState<string | number>(data.weight || '');
-	const [height, setHeight] = useState<string | number>(data.height || '');
+	const [email, setEmail] = useState(data.email || '');
+	const [username, setUsername] = useState(data.username || '');
+	const [birthDate, setBirthDate] = useState<string | number | null>(
+		data.birthDate || null
+	);
+	const [weight, setWeight] = useState<string>(
+		data.weight !== undefined && data.weight !== null
+			? String(data.weight)
+			: ''
+	);
+	const [height, setHeight] = useState<string>(
+		data.height !== undefined && data.height !== null
+			? String(data.height)
+			: ''
+	);
 
 	const [selectedPreferences, setSelectedPreferences] = useState<
 		(string | number)[]
-	>(() => {
-		if (data.preferences && data.preferences.length > 0) {
-			return data.preferences;
-		}
-		return [];
-	});
+	>(data.preferences && data.preferences.length > 0 ? data.preferences : []);
 
 	const [touched, setTouched] = useState({
 		name: false,
+		username: false,
+		email: false,
+		birthDate: false,
 		weight: false,
 		height: false,
 		preferences: false,
 	});
+
+	useEffect(() => {
+		setName(data.name || '');
+		setUsername(data.username || '');
+		setEmail(data.email || '');
+		setBirthDate(data.birthDate || null);
+		setWeight(
+			data.weight !== undefined && data.weight !== null
+				? String(data.weight)
+				: ''
+		);
+		setHeight(
+			data.height !== undefined && data.height !== null
+				? String(data.height)
+				: ''
+		);
+	}, [data]);
 
 	useEffect(() => {
 		if (data.preferences && data.preferences.length > 0) {
@@ -64,73 +109,113 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 	}, [data.preferences]);
 
 	useEffect(() => {
+		if (data.avatarUrl && !data.avatar) {
+			setAvatarPreview(data.avatarUrl);
+		}
+	}, [data.avatarUrl, data.avatar]);
+
+	useEffect(() => {
 		return () => {
-			if (avatarPreview) {
+			if (avatarPreview && data.avatar) {
 				URL.revokeObjectURL(avatarPreview);
 			}
 		};
-	}, [avatarPreview]);
+	}, [avatarPreview, data.avatar]);
 
-	const nameValidation = useMemo(() => {
-		if (!name) {
-			return { isValid: false, errorMessage: 'Имя обязательно' };
-		}
-		return validateName(name);
-	}, [name]);
+	// ================= VALIDATION =================
+	const nameValidation = useMemo(
+		() =>
+			!name
+				? { isValid: false, errorMessage: 'Имя обязательно' }
+				: validateName(name),
+		[name]
+	);
+
+	const usernameValidation = useMemo(() => {
+		if (!username.trim())
+			return { isValid: false, errorMessage: 'Username обязателен' };
+		if (username.length < 3)
+			return { isValid: false, errorMessage: 'Минимум 3 символа' };
+		return { isValid: true };
+	}, [username]);
+
+	const emailValidation = useMemo(
+		() =>
+			!email
+				? { isValid: false, errorMessage: 'Email обязателен' }
+				: validateEmail(email),
+		[email]
+	);
+
+	const birthDateValidation = useMemo(() => {
+		if (!birthDate)
+			return { isValid: false, errorMessage: 'Укажите дату рождения' };
+		const selectedDate = new Date(birthDate);
+		if (isNaN(selectedDate.getTime()))
+			return { isValid: false, errorMessage: 'Некорректная дата' };
+		return validateAge(selectedDate);
+	}, [birthDate]);
 
 	const weightValidation = useMemo(() => {
-		if (!weight && weight !== 0) {
-			return { isValid: false, errorMessage: 'Вес обязателен' };
-		}
-		return validateWeight(weight);
+		if (!weight) return { isValid: false, errorMessage: 'Вес обязателен' };
+		return validateWeight(Number(weight));
 	}, [weight]);
 
 	const heightValidation = useMemo(() => {
-		if (!height && height !== 0) {
-			return { isValid: false, errorMessage: 'Рост обязателен' };
-		}
-		return validateHeight(height);
+		if (!height) return { isValid: false, errorMessage: 'Рост обязателен' };
+		return validateHeight(Number(height));
 	}, [height]);
 
-	const preferencesValidation = useMemo(() => {
-		return validatePreferencesCount(selectedPreferences.length);
-	}, [selectedPreferences.length]);
+	const preferencesValidation = useMemo(
+		() => validatePreferencesCount(selectedPreferences.length),
+		[selectedPreferences.length]
+	);
 
 	const showNameError = touched.name && !nameValidation.isValid;
+	const showUsernameError = touched.username && !usernameValidation.isValid;
+	const showEmailError = touched.email && !emailValidation.isValid;
+	const showBirthDateError =
+		touched.birthDate && !birthDateValidation.isValid;
 	const showWeightError = touched.weight && !weightValidation.isValid;
 	const showHeightError = touched.height && !heightValidation.isValid;
 	const showPreferencesError =
 		touched.preferences && !preferencesValidation.isValid;
 
-	const isAllFieldsFilled = useMemo(() => {
-		return (
+	const isAllFieldsFilled = useMemo(
+		() =>
 			name.trim() !== '' &&
+			username.trim() !== '' &&
+			email.trim() !== '' &&
+			birthDate !== null &&
 			weight !== '' &&
-			weight !== null &&
-			height !== '' &&
-			height !== null
-		);
-	}, [name, weight, height]);
+			height !== '',
+		[name, username, email, birthDate, weight, height]
+	);
 
-	const isFormValid = useMemo(() => {
-		return (
+	const isFormValid = useMemo(
+		() =>
 			isAllFieldsFilled &&
 			nameValidation.isValid &&
+			usernameValidation.isValid &&
+			emailValidation.isValid &&
+			birthDateValidation.isValid &&
 			weightValidation.isValid &&
 			heightValidation.isValid &&
-			preferencesValidation.isValid
-		);
-	}, [
-		isAllFieldsFilled,
-		nameValidation.isValid,
-		weightValidation.isValid,
-		heightValidation.isValid,
-		preferencesValidation.isValid,
-	]);
+			preferencesValidation.isValid,
+		[
+			isAllFieldsFilled,
+			nameValidation.isValid,
+			usernameValidation.isValid,
+			emailValidation.isValid,
+			birthDateValidation.isValid,
+			weightValidation.isValid,
+			heightValidation.isValid,
+			preferencesValidation.isValid,
+		]
+	);
 
-	const handleAvatarClick = () => {
-		fileInputRef.current?.click();
-	};
+	// ================= HANDLERS =================
+	const handleAvatarClick = () => fileInputRef.current?.click();
 
 	const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -139,127 +224,109 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 			setAvatarError(error);
 			if (!error) {
 				updateData?.('avatar', file);
-				if (avatarPreview) {
-					URL.revokeObjectURL(avatarPreview);
-				}
-				const preview = URL.createObjectURL(file);
-				setAvatarPreview(preview);
+				if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+				setAvatarPreview(URL.createObjectURL(file));
 			}
 		}
 	};
 
-	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const rawName = e.target.value;
-		const cleanedName = sanitizeName(rawName);
-		const formattedName = formatName(cleanedName);
-		setName(formattedName);
-	};
-
+	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setName(formatName(sanitizeName(e.target.value)));
 	const handleNameBlur = () => {
 		setTouched((prev) => ({ ...prev, name: true }));
-		if (nameValidation.isValid && name) {
-			updateData?.('name', name);
-		}
+		if (nameValidation.isValid) updateData?.('name', name);
+	};
+
+	const handleEmailChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
+		[]
+	);
+	const handleEmailBlur = useCallback(() => {
+		setTouched((prev) => ({ ...prev, email: true }));
+		if (emailValidation.isValid) updateData?.('email', email);
+	}, [email, emailValidation.isValid, updateData]);
+
+	const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+		setUsername(e.target.value);
+	const handleUsernameBlur = () => {
+		setTouched((prev) => ({ ...prev, username: true }));
+		if (usernameValidation.isValid) updateData?.('username', username);
+	};
+
+	const handleBirthDateChange = (date: string | number | null) => {
+		setBirthDate(date);
+		setTouched((prev) => ({ ...prev, birthDate: true }));
+		updateData?.('birthDate', date);
 	};
 
 	const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setWeight(value);
+		setWeight(e.target.value);
+		updateData?.('weight', Number(e.target.value));
 	};
-
-	const handleWeightBlur = () => {
+	const handleWeightBlur = () =>
 		setTouched((prev) => ({ ...prev, weight: true }));
-		if (weightValidation.isValid && weight !== '') {
-			updateData?.('weight', weight);
-		}
-	};
 
 	const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setHeight(value);
+		setHeight(e.target.value);
+		updateData?.('height', Number(e.target.value));
 	};
-
-	const handleHeightBlur = () => {
+	const handleHeightBlur = () =>
 		setTouched((prev) => ({ ...prev, height: true }));
-		if (heightValidation.isValid && height !== '') {
-			updateData?.('height', height);
-		}
-	};
 
 	const handleTagClick = (id?: string | number) => {
 		if (!id) return;
-
 		setSelectedPreferences((prev) => {
 			const isSelected = prev.includes(id);
-			let newSelected;
-
-			if (isSelected) {
-				newSelected = prev.filter((item) => item !== id);
-			} else {
-				newSelected = [...prev, id];
-			}
-
+			const newSelected = isSelected
+				? prev.filter((item) => item !== id)
+				: [...prev, id];
 			updateData?.('preferences', newSelected);
-
-			if (!touched.preferences && newSelected.length > 0) {
+			if (!touched.preferences && newSelected.length > 0)
 				setTouched((prev) => ({ ...prev, preferences: true }));
-			}
-
 			return newSelected;
 		});
 	};
 
 	const handlePreferencesBlur = () => {
-		if (!touched.preferences) {
+		if (!touched.preferences)
 			setTouched((prev) => ({ ...prev, preferences: true }));
-		}
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-
 		setTouched({
 			name: true,
+			username: true,
+			email: true,
+			birthDate: true,
 			weight: true,
 			height: true,
 			preferences: true,
 		});
 
-		console.log('Form validation:', {
-			isFormValid,
-			name: { value: name, isValid: nameValidation.isValid },
-			weight: { value: weight, isValid: weightValidation.isValid },
-			height: { value: height, isValid: heightValidation.isValid },
-			preferences: {
-				count: selectedPreferences.length,
-				ids: selectedPreferences,
-				isValid: preferencesValidation.isValid,
-				error: preferencesValidation.errorMessage,
-			},
-		});
-
 		if (isFormValid) {
 			updateData?.('name', name);
-			updateData?.('weight', weight);
-			updateData?.('height', height);
+			updateData?.('username', username);
+			updateData?.('email', email);
+			updateData?.('birthDate', birthDate);
+			updateData?.('weight', Number(weight));
+			updateData?.('height', Number(height));
 			updateData?.('preferences', selectedPreferences);
-
-			console.log('Form is valid');
-		} else {
-			console.log('Form is invalid');
+			onSubmit?.();
 		}
 	};
 
+	// ================= UI =================
 	return (
 		<div className={styles.container}>
-			<form onSubmit={handleSubmit} className={styles.form}>
+			<form className={styles.form} onSubmit={handleSubmit}>
 				<div className={styles.avatarSection}>
 					<div
 						className={styles.userPhotoAdd}
 						onClick={handleAvatarClick}>
 						<Avatar
 							src={avatarPreview ?? ''}
-							size={'large'}
+							size='large'
 							alt='Аватар'
 						/>
 					</div>
@@ -285,14 +352,51 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 						onChange={handleNameChange}
 						onBlur={handleNameBlur}
 						placeholder='Введите имя (только буквы)'
-						required={true}
+						required
 						error={
 							showNameError
 								? nameValidation.errorMessage
 								: undefined
 						}
 					/>
-
+					<Input
+						id='username'
+						type='text'
+						label='Username'
+						name='username'
+						value={username}
+						onChange={handleUsernameChange}
+						onBlur={handleUsernameBlur}
+						placeholder='your_username'
+						required
+						error={
+							showUsernameError
+								? usernameValidation.errorMessage
+								: undefined
+						}
+					/>
+					<Input
+						id='email'
+						type='text'
+						label='Почта'
+						name='email'
+						value={email}
+						onChange={handleEmailChange}
+						onBlur={handleEmailBlur}
+						placeholder='Введите почту'
+						required
+						error={
+							showEmailError
+								? emailValidation.errorMessage
+								: undefined
+						}
+					/>
+					<DatePicker
+						label='Дата рождения'
+						date={birthDate}
+						onChange={handleBirthDateChange}
+						placeholder='дд.мм.гггг'
+					/>
 					<Input
 						type='number'
 						label='Вес (кг)'
@@ -309,7 +413,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 								: undefined
 						}
 					/>
-
 					<Input
 						type='number'
 						label='Рост (см)'
@@ -340,7 +443,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 							variant='selectable'
 							selectedIds={selectedPreferences}
 							onTagClick={handleTagClick}
-							wrap={true}
+							wrap
 						/>
 						{showPreferencesError && (
 							<p className={styles.errorText}>

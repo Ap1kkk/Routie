@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Tags } from '../../types/tags';
-import { Filters } from '../../types/filters';
+import { Tags } from '../../types/Tags';
 import { Button, Input, Tag } from '@ui';
 import Slider from 'rc-slider';
 
@@ -8,25 +7,24 @@ import { ReactComponent as Star } from '../../assets/icons/star.svg';
 
 import styles from './Filter.module.scss';
 import './index.css';
+import { Filters } from '../../types/Filters';
 
 interface FilterModalProps {
-	onApply: (filters: Filters) => void;
+	onApply?: (filters: Filters) => void;
 	onReset: () => void;
 	tags?: Tags[];
 }
 
 export const Filter: React.FC<FilterModalProps> = ({
-	onApply,
-	onReset,
-	tags = [],
-}) => {
+													   onApply,
+													   onReset,
+													   tags = [],
+												   }) => {
 	const [filters, setFilters] = useState<Filters>({
 		distance: { min: 0, max: 10000 },
 		checkpointsCount: { min: 0, max: 50 },
 		categoryIds: [],
 		duration: { min: 0, max: 24 },
-		difficulty: [],
-		rating: 0,
 	});
 
 	const [tempFilters, setTempFilters] = useState<Filters>(filters);
@@ -142,7 +140,7 @@ export const Filter: React.FC<FilterModalProps> = ({
 
 	const handleApply = () => {
 		setFilters(tempFilters);
-		onApply(tempFilters);
+		onApply?.(tempFilters);
 	};
 
 	const handleReset = () => {
@@ -151,8 +149,6 @@ export const Filter: React.FC<FilterModalProps> = ({
 			checkpointsCount: { min: 0, max: 50 },
 			categoryIds: [],
 			duration: { min: 0, max: 24 },
-			difficulty: [],
-			rating: 0,
 		};
 		setTempFilters(defaultFilters);
 		setFilters(defaultFilters);
@@ -181,10 +177,9 @@ export const Filter: React.FC<FilterModalProps> = ({
 		setDurationRange([filters.duration.min, filters.duration.max]);
 	};
 
-	// Преобразуем теги в формат, который ожидает компонент Tag
 	const tagItems = tags.map((tag) => ({
 		id: tag.id,
-		label: tag.label,
+		label: tag.title,
 	}));
 
 	return (
@@ -230,9 +225,9 @@ export const Filter: React.FC<FilterModalProps> = ({
 			</div>
 
 			<div className={styles.filterSection}>
-				<span className={styles.filterTitle}>
-					Количество точек маршрута
-				</span>
+ 				<span className={styles.filterTitle}>
+ 					Количество точек маршрута
+ 				</span>
 				<div className={styles.rangeInputs}>
 					<Input
 						type='number'
@@ -276,9 +271,9 @@ export const Filter: React.FC<FilterModalProps> = ({
 			</div>
 
 			<div className={styles.filterSection}>
-				<span className={styles.filterTitle}>
-					Время прохождения (часы)
-				</span>
+ 				<span className={styles.filterTitle}>
+ 					Время прохождения (часы)
+ 				</span>
 				<div className={styles.rangeInputs}>
 					<Input
 						type='number'
@@ -336,31 +331,6 @@ export const Filter: React.FC<FilterModalProps> = ({
 					</div>
 				</div>
 			)}
-
-			<div className={styles.filterSection}>
-				<span className={styles.filterTitle}>Рейтинг</span>
-				<div className={styles.ratingButtons}>
-					{[1, 2, 3, 4, 5].map((star) => (
-						<button
-							key={star}
-							className={`${styles.ratingStar} ${
-								tempFilters.rating >= star ? styles.active : ''
-							}`}
-							onClick={() => handleRatingChange(star)}>
-							{star}
-							<Star className={styles.star} />
-						</button>
-					))}
-					{tempFilters.rating > 0 && (
-						<Button
-							className={styles.ratingClear}
-							variant='secondary'
-							onClick={() => handleRatingChange(0)}
-							children='Сбросить'
-						/>
-					)}
-				</div>
-			</div>
 
 			<div className={styles.filterModalFooter}>
 				<Button

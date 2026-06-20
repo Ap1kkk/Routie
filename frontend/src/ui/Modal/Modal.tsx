@@ -61,8 +61,11 @@ export const Modal: React.FC<ModalProps> = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className={styles.overlay} onClick={handleOverlayClick}>
-			<div className={`${styles.modal} ${className || ''}`}>
+		<div className={styles.overlay} onMouseDown={handleOverlayClick}>
+			<div
+				className={`${styles.modal} ${className ?? ''}`}
+				onClick={(e) => e.stopPropagation()}
+			>
 				<button
 					className={styles.closeButton}
 					onClick={handleClose}

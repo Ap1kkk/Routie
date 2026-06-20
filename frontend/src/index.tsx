@@ -2,10 +2,8 @@ import { createRoot } from 'react-dom/client';
 import { StrictMode } from 'react';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { RouterProvider } from 'react-router-dom';
-
+import { App } from './App';
 import store from '@store';
-import { router } from './App';
 
 import './index.scss';
 
@@ -16,7 +14,7 @@ root.render(
 	<StrictMode>
 		<Provider store={store}>
 			<ThemeProvider>
-				<RouterProvider router={router}></RouterProvider>
+				<App />
 			</ThemeProvider>
 		</Provider>
 	</StrictMode>

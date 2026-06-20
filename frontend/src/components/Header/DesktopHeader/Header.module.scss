@@ -1,6 +1,7 @@
 .header {
 	width: 100%;
 	padding: 20px 20px 10px;
+	z-index: 10;
 }
 
 .navigation_auth {
@@ -68,6 +69,7 @@
 .themeButton {
 	width: 24px;
 	height: 24px;
+	cursor: pointer;
 }
 
 .userCard {
