@@ -1,11 +1,9 @@
 package ru.ngtu.v1.routie.service;
 
-import ru.ngtu.v1.routie.dto.auth.AuthResponse;
-import ru.ngtu.v1.routie.dto.auth.LoginRequest;
-import ru.ngtu.v1.routie.dto.auth.RefreshTokenRequest;
-import ru.ngtu.v1.routie.dto.auth.RolesResponse;
-import ru.ngtu.v1.routie.dto.auth.UserMeResponse;
-import ru.ngtu.v1.routie.dto.auth.UserRegisterRequest;
+import ru.ngtu.v1.routie.dto.auth.*;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface AuthService {
 
@@ -20,4 +18,17 @@ public interface AuthService {
     UserMeResponse getCurrentUser();
 
     RolesResponse getCurrentUserRoles();
+
+    // ── Управление сессиями ──────────────────────────────────────────────────
+
+    /** Список всех активных сессий текущего пользователя (одна на устройство). */
+    List<UserSessionResponse> getSessions();
+
+    /**
+     * Отзыв сессии по deviceId текущего пользователя.
+     */
+    void revokeSession(String deviceId);
+
+    /** Выход со всех устройств (удаление всех refresh-токенов пользователя). */
+    void revokeAllSessions();
 }

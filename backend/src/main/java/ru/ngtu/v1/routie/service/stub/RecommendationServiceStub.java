@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-recommendations")
 @Primary
 public class RecommendationServiceStub implements RecommendationService {
 

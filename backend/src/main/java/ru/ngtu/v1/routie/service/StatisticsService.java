@@ -1,12 +1,10 @@
 package ru.ngtu.v1.routie.service;
 
 import ru.ngtu.v1.routie.dto.common.PageResponse;
-import ru.ngtu.v1.routie.dto.statistics.GamificationStatisticsResponse;
-import ru.ngtu.v1.routie.dto.statistics.PopularRoutesResponse;
-import ru.ngtu.v1.routie.dto.statistics.StatisticsOverviewResponse;
-import ru.ngtu.v1.routie.dto.statistics.UserActivityResponse;
+import ru.ngtu.v1.routie.dto.statistics.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public interface StatisticsService {
 
@@ -30,4 +28,14 @@ public interface StatisticsService {
      * Статистика по геймификации за период.
      */
     GamificationStatisticsResponse getGamificationStatistics(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Список сессий с фильтрацией (только ADMIN).
+     */
+    PageResponse<SessionAdminResponse> getSessions(SessionAdminFilter filter);
+
+    /**
+     * Агрегированная сводка по сессиям за период (только ADMIN).
+     */
+    SessionSummaryResponse getSessionsSummary(LocalDate startDate, LocalDate endDate, UUID routeId);
 }

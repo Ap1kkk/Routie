@@ -24,8 +24,6 @@ public interface RouteService {
 
   PageResponse<RouteShortResponse> searchRoutes(RouteSearchFilter filter);
 
-  PageResponse<RouteShortResponse> getRecommendedRoutes(int page, int size);
-
   void publishRoute(UUID routeId);
 
   List<MediaFileResponse> uploadImages(UUID routeId, List<MultipartFile> files);

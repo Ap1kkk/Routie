@@ -99,3 +99,26 @@ logging:
   http-logging:
     enabled: true
     exclude: /actuator/prometheus,/actuator/health
+
+---
+# ============================================================
+# Профиль TEST — тестовые токены для разработки
+# Запуск: -Dspring.profiles.active=test
+# ============================================================
+spring:
+  config:
+    activate:
+      on-profile: test
+  liquibase:
+    # Активируем Liquibase-контекст test: вставятся тестовые пользователи
+    contexts: test
+
+routie:
+  test-tokens:
+    tokens:
+      # Токен для пользователя с ролью USER (userId = 00000000-0000-0000-0000-000000000001)
+      - token: test-token-user
+        user-id: 00000000-0000-0000-0000-000000000001
+      # Токен для пользователя с ролью ADMIN (userId = 00000000-0000-0000-0000-000000000002)
+      - token: test-token-admin
+        user-id: 00000000-0000-0000-0000-000000000002
