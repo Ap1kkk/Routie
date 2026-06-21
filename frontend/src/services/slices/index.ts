@@ -9,6 +9,7 @@ import friendsReducer from './friendsSlice/friendsSlice';
 import profileReducer from './profileSlice/profileSlice';
 import gamificationReducer from './gamificationSlice/gamificationSlice';
 import routeDraftReducer from './routeDraftSlice/routeDraftSlice';
+import filterReducer from './filterSlice/filterSlice';
 
 export const rootReducer = combineReducers({
 	auth: authReducer,
@@ -21,4 +22,5 @@ export const rootReducer = combineReducers({
 	profile: profileReducer,
 	gamification: gamificationReducer,
 	routeDraft: routeDraftReducer,
+	filters: filterReducer,
 });

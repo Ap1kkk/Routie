@@ -2,8 +2,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RouteType } from '../../../types/Route';
 
 export type TCheckpointDraft = {
-	latitude: number | null;
-	longitude: number | null;
+	latitude: number;
+	longitude: number;
 	landmarkId: string;
 	landmarkSearch: string;
 };

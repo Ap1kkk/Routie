@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
-
 import { fetchDailyRoute, fetchRecommendedRoutes, } from '../../services/slices/routeSlice/routeSlice';
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
-
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
-
-import { getRouteImage, mockRoutes } from '../../mocks/route';
 import { useDeviceType } from '../../hooks/useDeviceType';
-
 import lightImage from '../../assets/images/main-page.png';
 import blackImage from '../../assets/images/main-black.png';
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
+import { Route } from '../../types/Route';
 
 import styles from './MainPage.module.scss';
-import { Route } from '../../types/Route';
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -44,7 +39,7 @@ export const MainPage: React.FC = () => {
 	
 	useEffect(() => {
 		dispatch(fetchDailyRoute());
-		dispatch(fetchRecommendedRoutes({ page: 0, size: 8 }));
+		dispatch(fetchRecommendedRoutes({ page: 0, size: 20 }));
 	}, [dispatch]);
 	
 	useEffect(() => {
@@ -77,10 +72,6 @@ export const MainPage: React.FC = () => {
 			);
 		};
 	}, [recommendedList, dispatch]);
-
-	useEffect(() => {
-		setPopularRoutes(mockRoutes.slice(0, 6));
-	}, []);
 
 	const handleToggleLike = (routeId: string) => {
 		setLikedRoutes((prev) => ({
@@ -119,7 +110,6 @@ export const MainPage: React.FC = () => {
 			/>
 
 			<section className={styles.mainPageContainer}>
-				{/* Маршрут дня */}
 				<div className={styles.containerRouteOfTheDay}>
 					<div className={styles.routeContainer}>
 						{isLoading && <div>Загрузка маршрута дня...</div>}
@@ -158,7 +148,7 @@ export const MainPage: React.FC = () => {
 								<RouteCard
 									key={route.id}
 									route={route}
-									imageUrl={getRouteImage(route.id)}
+									imageUrl={'./'}
 									isLiked={likedRoutes[route.id] || false}
 									onToggleLike={handleToggleLike}
 									variant='compact'

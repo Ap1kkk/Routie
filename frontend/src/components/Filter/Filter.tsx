@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { Tags } from '../../types/Tags';
 import { Button, Input, Tag } from '@ui';
 import Slider from 'rc-slider';
-
-import { ReactComponent as Star } from '../../assets/icons/star.svg';
+import { defaultFilters, Filters } from '../../types/Filters';
 
 import styles from './Filter.module.scss';
 import './index.css';
-import { Filters } from '../../types/Filters';
 
 interface FilterModalProps {
 	onApply?: (filters: Filters) => void;
@@ -16,101 +14,77 @@ interface FilterModalProps {
 }
 
 export const Filter: React.FC<FilterModalProps> = ({
-													   onApply,
-													   onReset,
-													   tags = [],
-												   }) => {
+	onApply,
+	onReset,
+	tags = [],
+}) => {
 	const [filters, setFilters] = useState<Filters>({
-		distance: { min: 0, max: 10000 },
-		checkpointsCount: { min: 0, max: 50 },
-		categoryIds: [],
-		duration: { min: 0, max: 24 },
+		lengthMin: 0,
+		lengthMax: 10000,
+		estimatedTimeMin: 0,
+		estimatedTimeMax: 24,
+		tags: [],
 	});
-
 	const [tempFilters, setTempFilters] = useState<Filters>(filters);
 	const [distanceRange, setDistanceRange] = useState<[number, number]>([
-		filters.distance.min,
-		filters.distance.max,
+		filters.lengthMin ?? 0,
+		filters.lengthMax ?? 10000,
 	]);
-	const [checkpointsRange, setCheckpointsRange] = useState<[number, number]>([
-		filters.checkpointsCount.min,
-		filters.checkpointsCount.max,
-	]);
+
 	const [durationRange, setDurationRange] = useState<[number, number]>([
-		filters.duration.min,
-		filters.duration.max,
+		filters.estimatedTimeMin ?? 0,
+		filters.estimatedTimeMax ?? 24,
 	]);
 
 	const handleDistanceChange = (type: 'min' | 'max', value: number) => {
-		let newMin = tempFilters.distance.min;
-		let newMax = tempFilters.distance.max;
+		let newMin = tempFilters.lengthMin ?? 0;
+		let newMax = tempFilters.lengthMax ?? 10000;
 
 		if (type === 'min') {
-			newMin = Math.min(value, tempFilters.distance.max - 1);
+			newMin = Math.min(value, newMax - 1);
 		} else {
-			newMax = Math.max(value, tempFilters.distance.min + 1);
+			newMax = Math.max(value, newMin + 1);
 		}
 
 		setTempFilters((prev) => ({
 			...prev,
-			distance: { min: newMin, max: newMax },
+			lengthMin: newMin,
+			lengthMax: newMax,
 		}));
+
 		setDistanceRange([newMin, newMax]);
 	};
 
 	const handleDistanceRangeChange = (value: number | number[]) => {
 		if (Array.isArray(value)) {
 			const [min, max] = value;
+
 			setDistanceRange([min, max]);
+
 			setTempFilters((prev) => ({
 				...prev,
-				distance: { min, max },
-			}));
-		}
-	};
-
-	const handleCheckpointsChange = (type: 'min' | 'max', value: number) => {
-		let newMin = tempFilters.checkpointsCount.min;
-		let newMax = tempFilters.checkpointsCount.max;
-
-		if (type === 'min') {
-			newMin = Math.min(value, tempFilters.checkpointsCount.max - 1);
-		} else {
-			newMax = Math.max(value, tempFilters.checkpointsCount.min + 1);
-		}
-
-		setTempFilters((prev) => ({
-			...prev,
-			checkpointsCount: { min: newMin, max: newMax },
-		}));
-		setCheckpointsRange([newMin, newMax]);
-	};
-
-	const handleCheckpointsRangeChange = (value: number | number[]) => {
-		if (Array.isArray(value)) {
-			const [min, max] = value;
-			setCheckpointsRange([min, max]);
-			setTempFilters((prev) => ({
-				...prev,
-				checkpointsCount: { min, max },
+				lengthMin: min,
+				lengthMax: max,
 			}));
 		}
 	};
 
 	const handleDurationChange = (type: 'min' | 'max', value: number) => {
-		let newMin = tempFilters.duration.min;
-		let newMax = tempFilters.duration.max;
+		let newMin = tempFilters.estimatedTimeMin ?? 0;
+		let newMax = tempFilters.estimatedTimeMax ?? 24;
 
 		if (type === 'min') {
-			newMin = Math.min(value, tempFilters.duration.max - 0.5);
+			newMin = Math.min(value, newMax - 0.5);
 		} else {
-			newMax = Math.max(value, tempFilters.duration.min + 0.5);
+			newMax = Math.max(value, newMin + 0.5);
 		}
 
 		setTempFilters((prev) => ({
 			...prev,
-			duration: { min: newMin, max: newMax },
+			estimatedTimeMin: newMin,
+			estimatedTimeMax: newMax,
 		}));
+
 		setDurationRange([newMin, newMax]);
 	};
 
@@ -125,17 +99,13 @@ export const Filter: React.FC<FilterModalProps> = ({
 		}
 	};
 
-	const handleCategoryToggle = (categoryId: string) => {
+	const handleCategoryToggle = (tagId: string) => {
 		setTempFilters((prev) => ({
 			...prev,
-			categoryIds: prev.categoryIds.includes(categoryId)
-				? prev.categoryIds.filter((id) => id !== categoryId)
-				: [...prev.categoryIds, categoryId],
+			tags: prev.tags?.includes(tagId)
+				? prev.tags.filter((id) => id !== tagId)
+				: [...(prev.tags ?? []), tagId],
 		}));
-	};
-
-	const handleRatingChange = (rating: number) => {
-		setTempFilters((prev) => ({ ...prev, rating }));
 	};
 
 	const handleApply = () => {
@@ -144,37 +114,31 @@ export const Filter: React.FC<FilterModalProps> = ({
 	};
 
 	const handleReset = () => {
-		const defaultFilters: Filters = {
-			distance: { min: 0, max: 10000 },
-			checkpointsCount: { min: 0, max: 50 },
-			categoryIds: [],
-			duration: { min: 0, max: 24 },
-		};
 		setTempFilters(defaultFilters);
 		setFilters(defaultFilters);
+
 		setDistanceRange([
-			defaultFilters.distance.min,
-			defaultFilters.distance.max,
+			defaultFilters.lengthMin ?? 0,
+			defaultFilters.lengthMax ?? 10000,
 		]);
-		setCheckpointsRange([
-			defaultFilters.checkpointsCount.min,
-			defaultFilters.checkpointsCount.max,
-		]);
+
 		setDurationRange([
-			defaultFilters.duration.min,
-			defaultFilters.duration.max,
+			defaultFilters.estimatedTimeMin ?? 0,
+			defaultFilters.estimatedTimeMax ?? 24,
 		]);
+
 		onReset();
 	};
 
 	const handleCancel = () => {
 		setTempFilters(filters);
-		setDistanceRange([filters.distance.min, filters.distance.max]);
-		setCheckpointsRange([
-			filters.checkpointsCount.min,
-			filters.checkpointsCount.max,
+
+		setDistanceRange([filters.lengthMin ?? 0, filters.lengthMax ?? 10000]);
+
+		setDurationRange([
+			filters.estimatedTimeMin ?? 0,
+			filters.estimatedTimeMax ?? 24,
 		]);
-		setDurationRange([filters.duration.min, filters.duration.max]);
 	};
 
 	const tagItems = tags.map((tag) => ({
@@ -191,23 +155,23 @@ export const Filter: React.FC<FilterModalProps> = ({
 				<div className={styles.rangeInputs}>
 					<Input
 						type='number'
-						value={tempFilters.distance.min}
+						value={tempFilters.lengthMin ?? 0}
 						onChange={(e) =>
 							handleDistanceChange('min', Number(e.target.value))
 						}
 						min={0}
-						max={tempFilters.distance.max}
+						max={tempFilters.lengthMax ?? 10000}
 						showNumberArrows={false}
 						inputPadding='3px 10px'
 						className={styles.inputFilter}
 					/>
 					<Input
 						type='number'
-						value={tempFilters.distance.max}
+						value={tempFilters.lengthMax ?? 10000}
 						onChange={(e) =>
 							handleDistanceChange('max', Number(e.target.value))
 						}
-						min={tempFilters.distance.min}
+						min={tempFilters.lengthMin ?? 0}
 						max={10000}
 						showNumberArrows={false}
 						inputPadding='3px 10px'
@@ -225,65 +189,19 @@ export const Filter: React.FC<FilterModalProps> = ({
 			</div>
 
 			<div className={styles.filterSection}>
- 				<span className={styles.filterTitle}>
- 					Количество точек маршрута
- 				</span>
-				<div className={styles.rangeInputs}>
-					<Input
-						type='number'
-						value={tempFilters.checkpointsCount.min}
-						onChange={(e) =>
-							handleCheckpointsChange(
-								'min',
-								Number(e.target.value)
-							)
-						}
-						min={0}
-						max={tempFilters.checkpointsCount.max}
-						showNumberArrows={false}
-						inputPadding='3px 10px'
-						className={styles.inputFilter}
-					/>
-					<Input
-						type='number'
-						value={tempFilters.checkpointsCount.max}
-						onChange={(e) =>
-							handleCheckpointsChange(
-								'max',
-								Number(e.target.value)
-							)
-						}
-						min={tempFilters.checkpointsCount.min}
-						max={50}
-						showNumberArrows={false}
-						inputPadding='3px 10px'
-						className={styles.inputFilter}
-					/>
-				</div>
-				<Slider
-					range
-					min={0}
-					max={50}
-					value={checkpointsRange}
-					onChange={handleCheckpointsRangeChange}
-					className={styles.rangeSlider}
-				/>
-			</div>
-
-			<div className={styles.filterSection}>
- 				<span className={styles.filterTitle}>
- 					Время прохождения (часы)
- 				</span>
+				<span className={styles.filterTitle}>
+					Время прохождения (часы)
+				</span>
 				<div className={styles.rangeInputs}>
 					<Input
 						type='number'
 						step={0.5}
-						value={tempFilters.duration.min}
+						value={tempFilters.estimatedTimeMin ?? 0}
 						onChange={(e) =>
 							handleDurationChange('min', Number(e.target.value))
 						}
 						min={0}
-						max={tempFilters.duration.max}
+						max={tempFilters.estimatedTimeMax ?? 24}
 						showNumberArrows={false}
 						inputPadding='3px 10px'
 						className={styles.inputFilter}
@@ -291,11 +209,11 @@ export const Filter: React.FC<FilterModalProps> = ({
 					<Input
 						type='number'
 						step={0.5}
-						value={tempFilters.duration.max}
+						value={tempFilters.estimatedTimeMax ?? 24}
 						onChange={(e) =>
 							handleDurationChange('max', Number(e.target.value))
 						}
-						min={tempFilters.duration.min}
+						min={tempFilters.estimatedTimeMin ?? 0}
 						max={24}
 						showNumberArrows={false}
 						inputPadding='3px 10px'
@@ -320,7 +238,7 @@ export const Filter: React.FC<FilterModalProps> = ({
 						<Tag
 							variant='selectable'
 							items={tagItems}
-							selectedIds={tempFilters.categoryIds}
+							selectedIds={tempFilters.tags ?? []}
 							onTagClick={(id) => {
 								if (id && typeof id === 'string') {
 									handleCategoryToggle(id);
