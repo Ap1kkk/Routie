@@ -41,7 +41,7 @@ export const register = createAsyncThunk<
 	{ rejectValue: string }
 >('user/register', async (data, { rejectWithValue }) => {
 	const response: ApiResponse<RegisterResponse> = await registerUserApi({
-		...data
+		...data,
 	});
 
 	if (!response.success || response.error)
@@ -55,7 +55,7 @@ export const register = createAsyncThunk<
 	if (!userResponse.success || userResponse.error || !userResponse.data)
 		return rejectWithValue(
 			userResponse.error?.message ||
-			'Ошибка получения данных пользователя'
+				'Ошибка получения данных пользователя'
 		);
 
 	return userResponse.data as User;
@@ -68,20 +68,28 @@ export const login = createAsyncThunk<
 >('user/login', async (data, { rejectWithValue }) => {
 	const response = await loginUserApi(data);
 
-	if (!response.success || !response.data)
-		return rejectWithValue('Login error');
+	if (!response.success || response.error || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Неверный email или пароль'
+		);
+	}
 
 	const userResponse = await getUserApi();
 	const rolesResponse = await getUserRolesApi();
 
 	if (!userResponse.success || !userResponse.data) {
-		return rejectWithValue('No user');
+		return rejectWithValue(
+			userResponse.error?.message ||
+				'Не удалось получить данные пользователя'
+		);
 	}
 
 	const roles = rolesResponse.data?.roles;
 
 	if (!rolesResponse.success || !roles) {
-		return rejectWithValue('No roles');
+		return rejectWithValue(
+			rolesResponse.error?.message || 'Не удалось получить роли'
+		);
 	}
 
 	return {

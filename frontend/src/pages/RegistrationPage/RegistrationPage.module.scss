@@ -3,10 +3,27 @@
 	height: 75vh;
 	display: flex;
 	flex-direction: column;
+	position: relative;
 }
 
 .registrationWrapper {
 	display: flex;
 	flex-direction: column;
+}
+
+.error {
+	position: absolute;
+	top: 48px;
+	left: 50%;
+	transform: translate(-50%, 0);
+
+	text-align: center;
+	color: var(--color-alarm);
+	font-size: var(--text-body-size);
+	animation: fadeIn 0.3s ease;
+
+	@media (max-width: 925px) {
+		font-size: var(--text-body-size-mobile);
+	}
 }
 

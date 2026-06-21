@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from '@ui';
 import {
@@ -42,13 +42,30 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
 		password: false,
 	});
 
-	const emailValidation = useMemo((): ValidationResult => {
-		return validateEmail(formData.email);
-	}, [formData.email]);
+	const [visibleError, setVisibleError] = useState<string | null>(null);
 
-	const passwordValidation = useMemo((): ValidationResult => {
-		return validatePassword(formData.password);
-	}, [formData.password]);
+	useEffect(() => {
+		if (error) {
+			setVisibleError(error);
+
+			const timer = setTimeout(() => {
+				setVisibleError(null);
+			}, 3000);
+
+			return () => clearTimeout(timer);
+		} else {
+			setVisibleError(null);
+		}
+	}, [error]);
+
+	const emailValidation = useMemo(
+		(): ValidationResult => validateEmail(formData.email),
+		[formData.email]
+	);
+	const passwordValidation = useMemo(
+		(): ValidationResult => validatePassword(formData.password),
+		[formData.password]
+	);
 
 	const isClientFormValid = useMemo(() => {
 		return emailValidation.isValid && passwordValidation.isValid;
@@ -56,7 +73,7 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const { name } = e.target;
+			const { name, value } = e.target;
 			onChange(e);
 
 			if (touched[name as keyof typeof touched]) {
@@ -68,29 +85,22 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
 
 	const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
-
 		setTouched((prev) => ({ ...prev, [name]: true }));
 
 		if (name === 'email') {
 			const validation = validateEmail(value);
-			if (!validation.isValid) {
-				setDisplayErrors((prev) => ({
-					...prev,
-					email: validation.errorMessage,
-				}));
-			} else {
-				setDisplayErrors((prev) => ({ ...prev, email: undefined }));
-			}
+			setDisplayErrors((prev) => ({
+				...prev,
+				email: validation.isValid ? undefined : validation.errorMessage,
+			}));
 		} else if (name === 'password') {
 			const validation = validatePassword(value);
-			if (!validation.isValid) {
-				setDisplayErrors((prev) => ({
-					...prev,
-					password: validation.errorMessage,
-				}));
-			} else {
-				setDisplayErrors((prev) => ({ ...prev, password: undefined }));
-			}
+			setDisplayErrors((prev) => ({
+				...prev,
+				password: validation.isValid
+					? undefined
+					: validation.errorMessage,
+			}));
 		}
 	}, []);
 
@@ -125,10 +135,11 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
 
 	return (
 		<div className={styles.container}>
-			<div className={styles.errorContainer}>
-				<h2 className={styles.title}>Вход в профиль</h2>
-				{error && <p className={styles.error}>{error}</p>}
-			</div>
+			<h2 className={styles.title}>Вход в профиль</h2>
+
+			{visibleError && (
+				<div className={styles.error}>{visibleError}</div>
+			)}
 
 			<form className={styles.authForm} onSubmit={handleSubmit}>
 				<Input

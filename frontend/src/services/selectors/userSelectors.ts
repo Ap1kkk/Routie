@@ -14,3 +14,5 @@ export const selectInitialized = (state: RootState) => state.auth.initialized;
 
 export const selectIsAuthInitialized = (state: RootState) =>
 	state.auth.initialized;
+
+export const selectAuthError = (state: RootState) => state.auth.loginError;

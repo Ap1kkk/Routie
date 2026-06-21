@@ -17,11 +17,6 @@ export const EditProfilePage = () => {
 	const profileLoading = useSelector((state) => state.profile.loading);
 	const tags = useSelector((state) => state.tags.allTags || []);
 
-	const availablePreferences = tags?.map((tag) => ({
-		id: tag.id,
-		label: tag.title
-	})) ?? [];
-
 	const [formData, setFormData] = useState({
 		name: '',
 		username: '',
@@ -34,14 +29,29 @@ export const EditProfilePage = () => {
 	});
 
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [visibleError, setVisibleError] = useState<string | null>(null);
 
-	// Загрузка данных
+	const availablePreferences = tags?.map((tag) => ({
+		id: tag.id,
+		label: tag.title
+	})) ?? [];
+
+	useEffect(() => {
+		if (error) {
+			setVisibleError(error);
+			const timer = setTimeout(() => setVisibleError(null), 50000);
+			return () => clearTimeout(timer);
+		} else {
+			setVisibleError(null);
+		}
+	}, [error]);
+
 	useEffect(() => {
 		dispatch(getMyProfile());
 		dispatch(fetchAllTags());
 	}, [dispatch]);
 
-	// Заполнение формы существующими данными
 	useEffect(() => {
 		if (!profile) return;
 
@@ -61,7 +71,6 @@ export const EditProfilePage = () => {
 		});
 	}, [profile]);
 
-	// Загрузка аватара
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!profile?.avatar?.id) return;
@@ -81,33 +90,52 @@ export const EditProfilePage = () => {
 
 	const handleSave = async () => {
 		try {
-			// Загрузка нового аватара
+			setError(null);
+
 			if (formData.avatar) {
 				await dispatch(uploadAvatar(formData.avatar)).unwrap();
 			}
 
-			// Обновление профиля
 			await dispatch(
 				updateProfile({
 					name: formData.name || undefined,
 					username: formData.username || undefined,
 					email: formData.email || undefined,
 					dateOfBirth: formData.birthDate || undefined,
-					weight: formData.weight ? Number(formData.weight) : undefined,
-					height: formData.height ? Number(formData.height) : undefined,
-					preferredTags: formData.preferences.length > 0
-						? formData.preferences
+					weight: formData.weight
+						? Number(formData.weight)
 						: undefined,
+					height: formData.height
+						? Number(formData.height)
+						: undefined,
+					preferredTags:
+						formData.preferences.length > 0
+							? formData.preferences
+							: undefined,
 				})
 			).unwrap();
 
-			// Обновляем данные профиля после сохранения
 			await dispatch(getMyProfile()).unwrap();
 
-			alert('Профиль успешно обновлён!');
-		} catch (error: any) {
-			console.error('Ошибка сохранения:', error);
-			alert(error.message || 'Ошибка при сохранении профиля');
+			// Успешное сохранение (опционально)
+			// alert('Профиль успешно обновлён');
+		} catch (err: any) {
+			console.error('Ошибка сохранения профиля:', err);
+
+			// ← Улучшенная обработка ошибки
+			let errorMessage = 'Ошибка обновления профиля';
+
+			if (typeof err === 'string') {
+				errorMessage = err;
+			} else if (err?.message) {
+				errorMessage = err.message;
+			} else if (err?.error?.message) {
+				errorMessage = err.error.message;
+			} else if (err?.payload) {
+				errorMessage = err.payload;
+			}
+
+			setError(errorMessage);
 		}
 	};
 
@@ -117,6 +145,12 @@ export const EditProfilePage = () => {
 
 	return (
 		<section className={styles.container}>
+			{visibleError && (
+				<div className={styles.error}>
+					{visibleError}
+				</div>
+			)}
+
 			<EditProfileForm
 				data={{
 					...formData,
