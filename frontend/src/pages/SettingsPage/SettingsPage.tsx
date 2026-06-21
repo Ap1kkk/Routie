@@ -6,8 +6,11 @@ import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
 import {
 	logout,
 	fetchActiveSessions,
+	terminateSession,
+	resetAuthState,
 } from '../../services/slices/authSlice/authSlice';
 import { downloadFileApi } from '../../utils/api/FileApi';
+import { clearTokens } from '../../utils/auth';
 
 import { Settings } from '@components';
 
@@ -22,19 +25,15 @@ export const SettingsPage = () => {
 		loading: profileLoading,
 		error: profileError,
 	} = useSelector((state) => state.profile);
-	const { activeSessions, sessionsLoading, sessionsError } = useSelector(
-		(state) => state.auth
-	);
+	const { activeSessions } = useSelector((state) => state.auth);
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
 
-	// Загрузка профиля и сессий
 	useEffect(() => {
 		dispatch(getMyProfile());
 		dispatch(fetchActiveSessions());
 	}, [dispatch]);
 
-	// Загрузка аватара
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!myProfile?.avatar?.id) return;
@@ -48,15 +47,25 @@ export const SettingsPage = () => {
 		loadAvatar();
 	}, [myProfile]);
 
+	// Улучшенный выход из аккаунта
 	const handleLogout = async () => {
-		await dispatch(logout()).unwrap();
-		navigate('/login', { replace: true });
+		try {
+			await dispatch(logout()).unwrap();
+		} catch (err) {
+			console.error('Ошибка logout на сервере:', err);
+		} finally {
+			clearTokens();
+			localStorage.clear();
+			sessionStorage.clear();
+
+			dispatch(resetAuthState());
+			window.location.href = '/login';
+		}
 	};
 
-	const handleTerminateSession = (sessionId: string) => {
-		// Пока просто заглушка. Позже можно добавить thunk terminateSession
-		console.log('Завершить сессию:', sessionId);
-		// dispatch(terminateSession(sessionId));
+	const handleTerminateSession = (deviceId: string) => {
+		console.log('Завершить сессию:', deviceId);
+		dispatch(terminateSession(deviceId));
 	};
 
 	if (profileLoading) {

@@ -187,6 +187,7 @@ const authSlice = createSlice({
 		setInitialized: (state) => {
 			state.initialized = true;
 		},
+		resetAuthState: () => initialState,
 		clearSessionsError: (state) => {
 			state.sessionsError = null;
 		},
@@ -229,7 +230,10 @@ const authSlice = createSlice({
 				state.isAuthenticated = false;
 				state.data = null;
 				state.roles = [];
+				state.activeSessions = [];
 				state.initialized = false;
+				state.loginError = null;
+				state.registerError = null;
 			})
 
 			.addCase(initAuth.fulfilled, (state, action) => {
@@ -273,5 +277,5 @@ const authSlice = createSlice({
 	},
 });
 
-export const { clearErrors, setInitialized } = authSlice.actions;
+export const { clearErrors, setInitialized, resetAuthState } = authSlice.actions;
 export default authSlice.reducer;

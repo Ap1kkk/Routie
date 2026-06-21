@@ -45,8 +45,6 @@ export const Settings: React.FC<SettingsProps> = ({
 	const navigate = useNavigate();
 	const { isLight, toggleTheme } = useTheme();
 
-	const currentSession = activeSessions[0]; // обычно первая — текущая
-
 	return (
 		<div className={styles.container}>
 			<article className={styles.headerContent}>
