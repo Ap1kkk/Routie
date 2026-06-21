@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from '@store';
-
 import {
 	fetchActiveSessions,
 	terminateSession,
 } from '../../services/slices/authSlice/authSlice';
-import { Sessions } from '../../components/Sessions/Sessions';
+import { getDeviceId } from '../../utils/UserAgent';
+import styles from './SessionsPage.module.scss'
 
-import styles from './SessionsPage.module.scss';
+import { Sessions } from '../../components/Sessions/Sessions';
 
 export const SessionsPage: React.FC = () => {
 	const dispatch = useDispatch();
@@ -16,12 +16,14 @@ export const SessionsPage: React.FC = () => {
 		(state) => state.auth
 	);
 
+	const currentDeviceId = getDeviceId(); // ← получаем текущий deviceId
+
 	useEffect(() => {
 		dispatch(fetchActiveSessions());
 	}, [dispatch]);
 
 	const handleTerminateSession = (deviceId: string) => {
-		if (window.confirm(`Завершить сессию для устройства ${deviceId}?`)) {
+		if (window.confirm('Завершить эту сессию?')) {
 			dispatch(terminateSession(deviceId));
 		}
 	};
@@ -35,6 +37,7 @@ export const SessionsPage: React.FC = () => {
 
 			<Sessions
 				sessionsData={activeSessions}
+				currentDeviceId={currentDeviceId}
 				onTerminateSession={handleTerminateSession}
 			/>
 		</div>
