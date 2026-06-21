@@ -2,11 +2,12 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import { AuthorizationForm } from '@components';
-import { login } from '../../services/slices/authSlice/authSlice';
+import { login, clearErrors } from '../../services/slices/authSlice/authSlice';
 import { getDeviceId, getDeviceName } from '../../utils/UserAgent';
 import {
 	selectIsAuthenticated,
 	selectIsLoading,
+	selectAuthError,
 } from '../../services/selectors/userSelectors';
 
 import styles from './AuthorizationPage.module.scss';
@@ -22,6 +23,7 @@ export const AuthorizationPage = () => {
 
 	const isLoading = useSelector(selectIsLoading);
 	const isAuthenticated = useSelector(selectIsAuthenticated);
+	const error = useSelector(selectAuthError);
 
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -35,16 +37,18 @@ export const AuthorizationPage = () => {
 			...prev,
 			[name]: value,
 		}));
+
+		// Очищаем ошибку только если она была (при начале ввода после ошибки)
+		if (error) {
+			dispatch(clearErrors());
+		}
 	};
 
 	const isFormValid = Boolean(formData.email && formData.password);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-
-		if (!isFormValid) {
-			return;
-		}
+		if (!isFormValid) return;
 
 		dispatch(
 			login({
@@ -64,6 +68,7 @@ export const AuthorizationPage = () => {
 				onSubmit={handleSubmit}
 				isFormValid={isFormValid}
 				isLoading={isLoading}
+				error={error}
 			/>
 		</section>
 	);
