@@ -1,0 +1,88 @@
+.section {
+  display: grid;
+  grid-template-columns: 1fr 450px;
+  height: 100%;
+  gap: 20px;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.containerCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coordinates {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(50% + 35px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background-color: var(--color-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.option {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--background-secondary);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 14px;
+  color: var(--text-secondary);
+}

@@ -9,7 +9,7 @@ import {
 import { searchAudioGuides } from '../../../services/slices/audioGuideSlice/audioGuideSlice';
 import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
 import { Landmark } from '../../../types/Landmark';
-import { Button, Input, Modal, Select, Textarea } from '@ui';
+import { Button, Input, Modal, Textarea } from '@ui';
 import { useDispatch, useSelector } from '@store';
 
 import styles from './LandmarksEdit.module.scss';
@@ -31,6 +31,8 @@ export const LandmarksEdit = () => {
 	const [title, setTitle] = useState('');
 	const [description, setDescription] = useState('');
 	const [audioGuideId, setAudioGuideId] = useState('');
+	const [audioGuideSearch, setAudioGuideSearch] = useState('');
+	const [isGuideDropdownOpen, setIsGuideDropdownOpen] = useState(false);
 	const [imageUrls, setImageUrls] = useState<Record<string, string[]>>({});
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
@@ -50,6 +52,7 @@ export const LandmarksEdit = () => {
 		setTitle('');
 		setDescription('');
 		setAudioGuideId('');
+		setAudioGuideSearch('');
 		setImages([]);
 	};
 
@@ -109,22 +112,21 @@ export const LandmarksEdit = () => {
 		loadData();
 	};
 
+	const filteredGuides =
+		audioGuideSearch.trim().length > 0
+			? audioGuideResults?.content.filter((guide) =>
+					guide.title
+						.toLowerCase()
+						.includes(audioGuideSearch.toLowerCase())
+			  ) ?? []
+			: [];
+
 	const startEdit = async (landmark: Landmark) => {
 		setEditingLandmark(landmark);
 		setTitle(landmark.title);
 		setDescription(landmark.description);
 		setAudioGuideId(landmark.audioGuide?.id ?? '');
-
-		if (landmark.images && landmark.images.length > 0) {
-			const imagesWithUrls = [];
-			for (const image of landmark.images) {
-				const result = await dispatch(downloadFile(image.id));
-				if (downloadFile.fulfilled.match(result)) {
-					imagesWithUrls.push({ id: image.id, url: result.payload });
-				}
-			}
-		}
-
+		setAudioGuideSearch(landmark.audioGuide?.title ?? '');
 		setImages([]);
 		setIsModalOpen(true);
 	};
@@ -304,22 +306,45 @@ export const LandmarksEdit = () => {
 						/>
 					</div>
 
-					<Select
-						label={'Аудиогид'}
-						className={styles.select}
-						value={audioGuideId}
-						onChange={setAudioGuideId}
-						options={[
-							{
-								value: '',
-								label: 'Без аудиогида',
-							},
-							...(audioGuideResults?.content.map((guide) => ({
-								value: guide.id,
-								label: guide.title,
-							})) ?? []),
-						]}
-					/>
+					<div className={styles.autocomplete}>
+						<Input
+							label={'Аудиогид'}
+							value={audioGuideSearch}
+							placeholder='Начните вводить название...'
+							onChange={(e) => {
+								setAudioGuideSearch(e.target.value);
+								setIsGuideDropdownOpen(true);
+							}}
+							onFocus={() => setIsGuideDropdownOpen(true)}
+						/>
+
+						{isGuideDropdownOpen && (
+							<div className={styles.dropdown}>
+								<div
+									className={styles.option}
+									onClick={() => {
+										setAudioGuideId('');
+										setAudioGuideSearch('');
+										setIsGuideDropdownOpen(false);
+									}}>
+									Без аудиогида
+								</div>
+
+								{filteredGuides.map((guide) => (
+									<div
+										key={guide.id}
+										className={styles.option}
+										onClick={() => {
+											setAudioGuideId(guide.id);
+											setAudioGuideSearch(guide.title);
+											setIsGuideDropdownOpen(false);
+										}}>
+										{guide.title}
+									</div>
+								))}
+							</div>
+						)}
+					</div>
 
 					{!!editingLandmark?.audioGuide &&
 						audioUrls[editingLandmark.id] && (
@@ -342,7 +367,7 @@ export const LandmarksEdit = () => {
 							const files = Array.from(e.dataTransfer.files);
 							setImages((prev) => [...prev, ...files]);
 						}}>
-						Перетащите изображения сюда или нажмите для выбора
+						Перетащите изображения сюда
 					</div>
 
 					{images.length > 0 && (

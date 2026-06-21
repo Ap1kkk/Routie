@@ -5,6 +5,7 @@ export * from './ADMIN/RouteEdit';
 export * from './ADMIN/TagsEdit';
 export * from './ADMIN/AudioGuidesEdit'
 export * from './ADMIN/Statistic'
+export * from './ADMIN/RouteEdit/RouteEditCheckpoints'
 
 // User
 export * from './AchievementPage';

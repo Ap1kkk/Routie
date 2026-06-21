@@ -14,7 +14,7 @@
   width: 14px;
   height: 14px;
   margin: 8px 0 0 8px;
-  background: #e6e6e6;
+  background: var(--color-card);
   position: absolute;
   border-radius: 50%;
 }
@@ -26,7 +26,7 @@
 }
 
 .pulse {
-  background: #d6d4d4;
+  background: var(--color-text);
   border-radius: 50%;
   height: 14px;
   width: 14px;

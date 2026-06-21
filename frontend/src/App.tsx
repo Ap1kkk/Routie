@@ -11,8 +11,10 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage, FriendsPage,
-	LandmarksEdit, LeaderBoardPage,
+	FilterMobilePage,
+	FriendsPage,
+	LandmarksEdit,
+	LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage,
@@ -21,6 +23,7 @@ import {
 	RecoveryPasswordPage,
 	RegistrationPage,
 	RouteEdit,
+	RouteEditCheckpoints,
 	RoutesMobilePage,
 	SettingsPage,
 	Statistic,
@@ -181,6 +184,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/admin/routes-edit',
 						element: <RouteEdit />,
+					},
+					{
+						path: '/admin/routes-edit/checkpoints',
+						element: <RouteEditCheckpoints />,
 					},
 					{
 						path: '/admin/tags-edit',

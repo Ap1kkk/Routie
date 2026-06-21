@@ -99,17 +99,14 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				/>
 
 				<div className={styles.standartContent}>
-					{/* Название маршрута */}
 					<h3 className={styles.standartCardTitle}>{route.title}</h3>
 
-					{/* Длительность + дистанция */}
 					<div className={styles.routeInfo}>
 						<span className={styles.standartDistance}>
 							{formatDistance(route.lengthMeters)}
 						</span>
 					</div>
 
-					{/* Теги */}
 					{route.tags && route.tags.length > 0 && (
 						<div className={styles.compactTags}>
 							<Tag
@@ -120,7 +117,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 						</div>
 					)}
 
-					{/* Кнопка лайка */}
 					{onToggleLike && (
 						<button
 							className={`${styles.standartLike} ${

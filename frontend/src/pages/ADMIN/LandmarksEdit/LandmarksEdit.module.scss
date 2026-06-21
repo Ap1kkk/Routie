@@ -136,20 +136,37 @@
   gap: 12px;
 }
 
-.textarea,
-.select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--color-disabled);
-  border-radius: var(--border-radius);
-  background: var(--color-card);
-  color: var(--color-text);
-  font-size: var(--text-body-size);
+.textarea {
+  min-height: 80px;
+  resize: vertical;
 }
 
-.textarea {
-  min-height: 140px;
-  resize: vertical;
+.autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 13;
+}
+
+.option {
+  padding: 10px 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f5f5f5;
+  }
 }
 
 .modalAudio {
@@ -208,15 +225,11 @@
   position: absolute;
   top: 6px;
   right: 6px;
-
   width: 28px;
   height: 28px;
-
   border: none;
   border-radius: 50%;
-
   background: rgba(0,0,0,.6);
   color: white;
-
   cursor: pointer;
 }

@@ -2,16 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 
-import {
-	fetchDailyRoute,
-	fetchRecommendedRoutes,
-} from '../../services/slices/routeSlice/routeSlice';
+import { fetchDailyRoute, fetchRecommendedRoutes, } from '../../services/slices/routeSlice/routeSlice';
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
 
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 
-import { mockRoutes, getRouteImage } from '../../mocks/route';
+import { getRouteImage, mockRoutes } from '../../mocks/route';
 import { useDeviceType } from '../../hooks/useDeviceType';
 
 import lightImage from '../../assets/images/main-page.png';
@@ -26,8 +23,7 @@ export const MainPage: React.FC = () => {
 	const dispatch = useDispatch();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
-
-	// Redux
+	
 	const {
 		dailyRoute,
 		recommendedRoutes: paginatedRecommended,
@@ -45,14 +41,12 @@ export const MainPage: React.FC = () => {
 		const saved = localStorage.getItem('theme');
 		return saved === 'light';
 	});
-
-	// Загрузка данных
+	
 	useEffect(() => {
 		dispatch(fetchDailyRoute());
 		dispatch(fetchRecommendedRoutes({ page: 0, size: 8 }));
 	}, [dispatch]);
-
-	// Загрузка изображений для рекомендованных
+	
 	useEffect(() => {
 		const loadImages = async () => {
 			const imageMap: Record<string, string> = { ...routeImages };
@@ -61,10 +55,9 @@ export const MainPage: React.FC = () => {
 				if (route.images?.length > 0 && !imageMap[route.id]) {
 					const fileId = route.images[0].id;
 					try {
-						const imageUrl = await dispatch(
+						imageMap[route.id] = await dispatch(
 							downloadFile(fileId)
 						).unwrap();
-						imageMap[route.id] = imageUrl;
 					} catch (err) {
 						console.error(
 							`Не удалось загрузить фото для маршрута ${route.id}`,
@@ -85,7 +78,6 @@ export const MainPage: React.FC = () => {
 		};
 	}, [recommendedList, dispatch]);
 
-	// Моки для популярного
 	useEffect(() => {
 		setPopularRoutes(mockRoutes.slice(0, 6));
 	}, []);
@@ -144,7 +136,6 @@ export const MainPage: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Популярное */}
 				{popularRoutes.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
@@ -182,7 +173,6 @@ export const MainPage: React.FC = () => {
 					</article>
 				)}
 
-				{/* Рекомендованное */}
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
 							<Blur className={styles.containerBlur}>
@@ -205,8 +195,7 @@ export const MainPage: React.FC = () => {
 									key={route.id}
 									route={route}
 									imageUrl={
-										routeImages[route.id] ||
-										'/placeholder-route.jpg'
+										routeImages[route.id]
 									}
 									isLiked={likedRoutes[route.id] || false}
 									onToggleLike={handleToggleLike}
