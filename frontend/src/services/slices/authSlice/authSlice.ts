@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { User } from '../../../types/User';
 import { clearTokens } from '../../../utils/auth';
 import {
@@ -40,7 +40,10 @@ export const register = createAsyncThunk<
 	RegisterRequest,
 	{ rejectValue: string }
 >('user/register', async (data, { rejectWithValue }) => {
-	const response: ApiResponse<RegisterResponse> = await registerUserApi(data);
+	const response: ApiResponse<RegisterResponse> = await registerUserApi({
+		...data
+	});
+
 	if (!response.success || response.error)
 		return rejectWithValue(response.error?.message || 'Ошибка регистрации');
 
@@ -48,13 +51,14 @@ export const register = createAsyncThunk<
 		return rejectWithValue('Ошибка регистрации: данные не получены');
 
 	const userResponse = await getUserApi();
+
 	if (!userResponse.success || userResponse.error || !userResponse.data)
 		return rejectWithValue(
 			userResponse.error?.message ||
-				'Ошибка получения данных пользователя'
+			'Ошибка получения данных пользователя'
 		);
 
-	return userResponse.data as unknown as User;
+	return userResponse.data as User;
 });
 
 export const login = createAsyncThunk<
@@ -121,8 +125,8 @@ export const initAuth = createAsyncThunk<
 	}
 });
 
-const userSlice = createSlice({
-	name: 'user',
+const authSlice = createSlice({
+	name: 'auth',
 	initialState,
 	reducers: {
 		clearErrors: (state) => {
@@ -189,5 +193,5 @@ const userSlice = createSlice({
 	},
 });
 
-export const { clearErrors, setInitialized } = userSlice.actions;
-export default userSlice.reducer;
+export const { clearErrors, setInitialized } = authSlice.actions;
+export default authSlice.reducer;

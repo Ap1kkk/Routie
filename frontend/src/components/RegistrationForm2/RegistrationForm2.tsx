@@ -306,8 +306,8 @@ export const RegistrationForm2 = ({
 					}
 				/>
 
-				{/* Пол */}
 				<Select
+					data-testid='add-sex'
 					label='Выберите пол'
 					options={[
 						{ value: 'MALE', label: 'Мужской' },

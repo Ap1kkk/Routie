@@ -17,7 +17,7 @@ export const MobileFooter = () => {
 	const dispatch = useDispatch();
 
 	const { myProfile } = useSelector((state) => state.profile);
-	const { isAuthenticated } = useSelector((state) => state.user);
+	const { isAuthenticated } = useSelector((state) => state.auth);
 
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 

@@ -34,7 +34,7 @@ import { useEffect } from 'react';
 import {
 	initAuth,
 	setInitialized,
-} from './services/slices/userSlice/userSlice';
+} from './services/slices/authSlice/authSlice';
 import { selectInitialized } from './services/selectors/userSelectors';
 import { getAccessToken, getRefreshToken } from './utils/auth';
 
