@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import styles from './RegistrationPage.module.scss';
-
 import { RegistrationForm1 } from '../../components/RegistrationForm1';
 import { RegistrationForm2 } from '../../components/RegistrationForm2';
-
-import { registerUserApi } from '../../utils/api/AuthApi';
-import { updateProfileApi, uploadAvatarApi } from '../../utils/api/ProfileApi';
 import { RegistrationForm3 } from '../../components/RegistrationForm3';
+import { updateProfileApi, uploadAvatarApi } from '../../utils/api/ProfileApi';
+import { getDeviceId, getDeviceName } from '../../utils/UserAgent';
+import { useDispatch } from '@store';
+
+import styles from './RegistrationPage.module.scss';
+import { register } from '../../services/slices/authSlice/authSlice';
 
 interface RegistrationData {
 	email: string;
@@ -38,6 +38,7 @@ const defaultData: RegistrationData = {
 
 export const RegistrationPage: React.FC = () => {
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
 
 	const [step, setStep] = useState<number>(1);
 	const [formData, setFormData] = useState<RegistrationData>(defaultData);
@@ -49,25 +50,31 @@ export const RegistrationPage: React.FC = () => {
 		password: string;
 		username: string;
 	}) => {
-		setIsLoading(true);
-		setError(null);
+		try {
+			setIsLoading(true);
+			setError(null);
 
-		const result = await registerUserApi({
-			email: data.email,
-			password: data.password,
-			username: data.username,
-			name: 'temp_name',
-		});
+			await dispatch(
+				register({
+					email: data.email,
+					password: data.password,
+					username: data.username,
+					deviceId: getDeviceId(),
+					deviceName: getDeviceName(),
+				})
+			).unwrap();
 
-		setIsLoading(false);
+			setFormData((prev) => ({
+				...prev,
+				...data,
+			}));
 
-		if (!result.success) {
-			setError(result.error?.message || 'Ошибка регистрации');
-			return;
+			setStep(2);
+		} catch (err) {
+			setError(err as string);
+		} finally {
+			setIsLoading(false);
 		}
-
-		setFormData((prev) => ({ ...prev, ...data }));
-		setStep(2);
 	};
 
 	const handleUpdateData = (key: string, value: unknown) => {

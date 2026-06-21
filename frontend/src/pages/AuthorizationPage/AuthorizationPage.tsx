@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import { AuthorizationForm } from '@components';
-import { login } from '../../services/slices/userSlice/userSlice';
+import { login } from '../../services/slices/authSlice/authSlice';
 import { getDeviceId, getDeviceName } from '../../utils/UserAgent';
 import {
 	selectIsAuthenticated,

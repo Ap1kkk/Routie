@@ -105,7 +105,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
 				<article className={styles.card}>
 					<Button
-						onClick={() => navigate('/Admin')}
+						onClick={() => navigate('/admin')}
 						variant={'tertiary'}
 						className={`${styles.buttons} ${styles.exit}`}
 						children='Панель администратора'

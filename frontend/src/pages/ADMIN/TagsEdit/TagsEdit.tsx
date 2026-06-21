@@ -74,7 +74,7 @@ export const TagsEdit = () => {
 				<Button
 					variant='primary'
 					onClick={openCreateModal}
-					children={'Создать тег'}
+					children={'Создание тега'}
 				/>
 			</div>
 

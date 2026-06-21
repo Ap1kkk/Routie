@@ -1,5 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import userReducer from './userSlice/userSlice';
+import authReducer from './authSlice/authSlice';
 import routesReducer from './routeSlice/routeSlice';
 import tagReducer from './tagsSlice/tagsSlice'
 import landmarkReducer from './landmarkSlice/landmarkSlice';
@@ -10,7 +10,7 @@ import profileReducer from './profileSlice/profileSlice';
 import gamificationReducer from "./gamificationSlice/gamificationSlice";
 
 export const rootReducer = combineReducers({
-	user: userReducer,
+	auth: authReducer,
 	routes: routesReducer,
 	tags: tagReducer,
 	landmarks: landmarkReducer,

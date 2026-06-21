@@ -19,7 +19,8 @@ export interface RegisterRequest {
 	email: string;
 	password: string;
 	username: string;
-	name: string;
+	deviceId: string;
+	deviceName: string;
 }
 
 export interface AuthTokensResponse {

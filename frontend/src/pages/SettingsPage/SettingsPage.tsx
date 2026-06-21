@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from '@store';
 import { useNavigate } from 'react-router-dom';
 
 import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
-import { logout } from '../../services/slices/userSlice/userSlice'; // ← добавь импорт
+import { logout } from '../../services/slices/authSlice/authSlice'; // ← добавь импорт
 import { downloadFileApi } from '../../utils/api/FileApi';
 
 import { Settings } from '@components';
