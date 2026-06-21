@@ -50,3 +50,12 @@ export interface LogoutRequest {
 	accessToken?: string;
 }
 
+export interface ActiveSession {
+	id: string;
+	deviceId: string;
+	deviceName: string;
+	createdAt: string;
+	lastUsedAt: string;
+	expiresAt: string;
+}
+

@@ -25,6 +25,7 @@ import {
 	RouteEdit,
 	RouteEditCheckpoints,
 	RoutesMobilePage,
+	SessionsPage,
 	SettingsPage,
 	Statistic,
 	StatisticPage,
@@ -101,8 +102,8 @@ export const router = createBrowserRouter([
 						element: <FriendsPage />,
 					},
 					{
-						path:'/leader-board',
-						element: <LeaderBoardPage />
+						path: '/leader-board',
+						element: <LeaderBoardPage />,
 					},
 					{
 						path: '/routie',
@@ -155,6 +156,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/routes',
 						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/settings/sessions',
+						element: <SessionsPage />,
 					},
 					{
 						path: '/statistic',
