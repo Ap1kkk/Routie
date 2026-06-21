@@ -5,11 +5,13 @@ import { ActiveSession } from '../../types/Auth';
 
 interface SessionsProps {
 	sessionsData?: ActiveSession[];
-	onTerminateSession?: (sessionId: string) => void;
+	currentDeviceId?: string; // ← новое проп
+	onTerminateSession?: (deviceId: string) => void;
 }
 
 export const Sessions: React.FC<SessionsProps> = ({
 	sessionsData = [],
+	currentDeviceId,
 	onTerminateSession,
 }) => {
 	return (
@@ -20,20 +22,24 @@ export const Sessions: React.FC<SessionsProps> = ({
 				<p className={styles.emptyText}>Активных сессий не найдено</p>
 			) : (
 				<div className={styles.sessionsContent}>
-					{sessionsData.map((session, index) => (
-						<SessionCard
-							key={session.id}
-							number={index + 1}
-							deviceName={session.deviceName}
-							deviceId={session.deviceId}
-							lastUsedAt={session.lastUsedAt}
-							isCurrent={index === 0}
-							disableTerminate={index === 0}
-							onTerminate={() =>
-								onTerminateSession?.(session.deviceId)
-							}
-						/>
-					))}
+					{sessionsData.map((session, index) => {
+						const isCurrent = session.deviceId === currentDeviceId;
+
+						return (
+							<SessionCard
+								key={session.id}
+								number={index + 1}
+								deviceName={session.deviceName}
+								deviceId={session.deviceId}
+								lastUsedAt={session.lastUsedAt}
+								isCurrent={isCurrent}
+								disableTerminate={isCurrent} // нельзя завершать текущую
+								onTerminate={() =>
+									onTerminateSession?.(session.deviceId)
+								}
+							/>
+						);
+					})}
 				</div>
 			)}
 		</div>
