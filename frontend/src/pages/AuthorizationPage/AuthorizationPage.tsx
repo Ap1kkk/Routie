@@ -38,7 +38,6 @@ export const AuthorizationPage = () => {
 			[name]: value,
 		}));
 
-		// Очищаем ошибку только если она была (при начале ввода после ошибки)
 		if (error) {
 			dispatch(clearErrors());
 		}

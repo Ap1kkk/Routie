@@ -16,16 +16,14 @@ export const SessionsPage: React.FC = () => {
 		(state) => state.auth
 	);
 
-	const currentDeviceId = getDeviceId(); // ← получаем текущий deviceId
+	const currentDeviceId = getDeviceId();
 
 	useEffect(() => {
 		dispatch(fetchActiveSessions());
 	}, [dispatch]);
 
 	const handleTerminateSession = (deviceId: string) => {
-		if (window.confirm('Завершить эту сессию?')) {
-			dispatch(terminateSession(deviceId));
-		}
+		dispatch(terminateSession(deviceId));
 	};
 
 	return (
