@@ -11,8 +11,10 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage, FriendsPage,
-	LandmarksEdit, LeaderBoardPage,
+	FilterMobilePage,
+	FriendsPage,
+	LandmarksEdit,
+	LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage,
@@ -22,6 +24,7 @@ import {
 	RegistrationPage,
 	RouteEdit,
 	RoutesMobilePage,
+	SessionsPage,
 	SettingsPage,
 	Statistic,
 	StatisticPage,
@@ -98,8 +101,8 @@ export const router = createBrowserRouter([
 						element: <FriendsPage />,
 					},
 					{
-						path:'/leader-board',
-						element: <LeaderBoardPage />
+						path: '/leader-board',
+						element: <LeaderBoardPage />,
 					},
 					{
 						path: '/routie',
@@ -152,6 +155,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/routes',
 						element: <RoutesMobilePage />,
+					},
+					{
+						path: '/settings/sessions',
+						element: <SessionsPage />,
 					},
 					{
 						path: '/statistic',

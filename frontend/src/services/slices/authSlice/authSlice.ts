@@ -2,27 +2,35 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { User } from '../../../types/User';
 import { clearTokens } from '../../../utils/auth';
 import {
+	getActiveSessionsApi,
 	getUserApi,
 	getUserRolesApi,
 	loginUserApi,
 	logoutApi,
 	registerUserApi,
+	terminateSessionApi,
 } from '../../../utils/api/AuthApi';
 import {
+	ActiveSession,
 	LoginRequest,
 	RegisterRequest,
 	RegisterResponse,
 } from '../../../types/Auth';
-import { ApiResponse } from '../../../utils/api/Api';
+import {
+	ApiResponse,
+} from '../../../utils/api/Api';
 
 type TUserState = {
 	initialized: boolean;
 	isAuthenticated: boolean;
 	data: User | null;
 	roles: string[];
+	activeSessions: ActiveSession[];
 	isLoading: boolean;
 	loginError: string | null;
 	registerError: string | null;
+	sessionsLoading: boolean;
+	sessionsError: string | null;
 };
 
 const initialState: TUserState = {
@@ -30,9 +38,12 @@ const initialState: TUserState = {
 	isAuthenticated: false,
 	data: null,
 	roles: [],
+	activeSessions: [],
 	isLoading: false,
 	loginError: null,
 	registerError: null,
+	sessionsLoading: false,
+	sessionsError: null,
 };
 
 export const register = createAsyncThunk<
@@ -108,6 +119,38 @@ export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
 	}
 );
 
+export const fetchActiveSessions = createAsyncThunk<
+	ActiveSession[],
+	void,
+	{ rejectValue: string }
+>('auth/fetchActiveSessions', async (_, { rejectWithValue }) => {
+	const response = await getActiveSessionsApi();
+
+	if (!response.success || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Не удалось загрузить активные сессии'
+		);
+	}
+
+	return response.data;
+});
+
+export const terminateSession = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>('auth/terminateSession', async (deviceId, { rejectWithValue }) => {
+	const response = await terminateSessionApi(deviceId);
+
+	if (!response.success) {
+		return rejectWithValue(
+			response.error?.message || 'Не удалось завершить сессию'
+		);
+	}
+
+	return deviceId;
+});
+
 export const initAuth = createAsyncThunk<
 	{ user: User; roles: string[] },
 	void,
@@ -143,6 +186,9 @@ const authSlice = createSlice({
 		},
 		setInitialized: (state) => {
 			state.initialized = true;
+		},
+		clearSessionsError: (state) => {
+			state.sessionsError = null;
 		},
 	},
 	extraReducers: (builder) => {
@@ -197,6 +243,32 @@ const authSlice = createSlice({
 				state.isAuthenticated = false;
 				state.data = null;
 				state.roles = [];
+			})
+
+			.addCase(fetchActiveSessions.pending, (state) => {
+				state.sessionsLoading = true;
+				state.sessionsError = null;
+			})
+			.addCase(fetchActiveSessions.fulfilled, (state, action) => {
+				state.sessionsLoading = false;
+				state.activeSessions = action.payload;
+			})
+			.addCase(fetchActiveSessions.rejected, (state, action) => {
+				state.sessionsLoading = false;
+				state.sessionsError = action.payload as string;
+			})
+			.addCase(terminateSession.pending, (state) => {
+				state.sessionsLoading = true;
+			})
+			.addCase(terminateSession.fulfilled, (state, action) => {
+				state.sessionsLoading = false;
+				state.activeSessions = state.activeSessions.filter(
+					(session) => session.deviceId !== action.payload
+				);
+			})
+			.addCase(terminateSession.rejected, (state, action) => {
+				state.sessionsLoading = false;
+				state.sessionsError = action.payload as string;
 			});
 	},
 });

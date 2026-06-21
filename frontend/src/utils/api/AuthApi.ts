@@ -152,6 +152,54 @@ export const getUserRolesApi = async (): Promise<
 	return handleResponse(response);
 };
 
+export const getActiveSessionsApi = async (): Promise<ApiResponse<any[]>> => {
+	try {
+		const response = await fetch(`${API_URL}/${API_AUTH_URL}/sessions`, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_SESSIONS_ERROR',
+				message: error.message || 'Ошибка получения активных сессий',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Завершение сессии по deviceId */
+export const terminateSessionApi = async (
+	deviceId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/sessions/${deviceId}`,
+			{
+				method: 'DELETE',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'TERMINATE_SESSION_ERROR',
+				message: error.message || 'Ошибка завершения сессии',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
 /** Обновление access токена с использованием refresh токена */
 export const refreshTokenApi = async (): Promise<boolean> => {
 	try {

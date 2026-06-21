@@ -21,6 +21,7 @@ export * from './MapPage';
 export * from './ProfilePage';
 export * from './RegistrationPage';
 export * from './RoutesMobilePage';
+export * from './SessionsPage';
 export * from './SettingsPage';
 export * from './StatisticPage';
 export * from './RecoveryPasswordPage';

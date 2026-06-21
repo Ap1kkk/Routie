@@ -15,6 +15,7 @@ export * from '../utils/redirect/ProfileRedirect';
 export * from './RegistrationForm';
 export * from './RouteCard';
 export * from './RouteOfDay';
+export * from './SessionCard'
 export * from './MapComponent';
 export * from './Settings';
 export * from './Statistic';
