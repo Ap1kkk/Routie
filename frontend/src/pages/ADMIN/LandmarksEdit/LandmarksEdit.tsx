@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
 	createLandmark,
 	deleteLandmark,
@@ -13,7 +14,6 @@ import { Button, Input, Modal, Textarea } from '@ui';
 import { useDispatch, useSelector } from '@store';
 
 import styles from './LandmarksEdit.module.scss';
-import { useNavigate } from 'react-router-dom';
 
 export const LandmarksEdit = () => {
 	const dispatch = useDispatch();

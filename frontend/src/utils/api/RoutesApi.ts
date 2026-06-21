@@ -149,7 +149,6 @@ export const getRecommendedRoutesApi = async (
 		if (params?.size !== undefined)
 			queryParams.append('size', params.size.toString());
 
-		// ИСПРАВЛЕНИЕ
 		const url = `${API_URL}/${API_RECOMMENDATIONS_URL}/personal${
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
@@ -225,11 +224,11 @@ export const publishRouteApi = async (
 
 export const uploadRouteImagesApi = async (
 	routeId: string,
-	file: File
+	files: File
 ): Promise<ApiResponse<RouteImageUpload[]>> => {
 	try {
 		const formData = new FormData();
-		formData.append('file', file);
+		formData.append('files', files);
 
 		const token = localStorage.getItem('accessToken');
 		const headers: HeadersInit = {
@@ -264,8 +263,6 @@ export const createRouteApi = async (
 	data: RouteCreateRequest
 ): Promise<ApiResponse<Route>> => {
 	try {
-		console.log('REQUEST BODY', data);
-
 		const response = await fetch(`${API_URL}/${API_ROUTES_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
@@ -273,9 +270,6 @@ export const createRouteApi = async (
 		});
 
 		const text = await response.text();
-
-		console.log('STATUS', response.status);
-		console.log('RESPONSE', text);
 
 		return JSON.parse(text);
 	} catch (error: any) {

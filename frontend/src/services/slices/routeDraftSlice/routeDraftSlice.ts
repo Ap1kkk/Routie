@@ -2,8 +2,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RouteType } from '../../../types/Route';
 
 export type TCheckpointDraft = {
-	latitude: number;
-	longitude: number;
+	latitude: number | null;
+	longitude: number | null;
 	landmarkId: string;
 	landmarkSearch: string;
 };
@@ -19,6 +19,7 @@ export interface RouteDraftState {
 	selectedTags: string[];
 	checkpoints: TCheckpointDraft[];
 	isModalOpen: boolean;
+	editingRouteId: string | null;
 }
 
 const initialState: RouteDraftState = {
@@ -32,6 +33,7 @@ const initialState: RouteDraftState = {
 	selectedTags: [],
 	checkpoints: [],
 	isModalOpen: false,
+	editingRouteId: null,
 };
 
 const routeDraftSlice = createSlice({

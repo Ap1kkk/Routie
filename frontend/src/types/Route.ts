@@ -7,15 +7,15 @@ export type RouteType = 'TOURIST' | 'SPORT' | 'MIXED';
 
 export interface Checkpoint {
 	id: UUID;
-	latitude: number;
-	longitude: number;
+	latitude: number | null;
+	longitude: number | null;
 	sortOrder: number;
 	landmark: Landmark;
 }
 
 export interface CheckpointCreate {
-	latitude: number;
-	longitude: number;
+	latitude: number | null;
+	longitude: number | null;
 	sortOrder: number;
 	landmarkId: UUID;
 }

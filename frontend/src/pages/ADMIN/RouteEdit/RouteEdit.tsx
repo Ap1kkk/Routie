@@ -11,11 +11,7 @@ import {
 	routeUpdate,
 	searchRoutes,
 } from '../../../services/slices/routeSlice/routeSlice';
-import {
-	clearDraft,
-	setDraft,
-	setModalOpen,
-} from '../../../services/slices/routeDraftSlice/routeDraftSlice';
+import { clearDraft, setDraft, setModalOpen, } from '../../../services/slices/routeDraftSlice/routeDraftSlice';
 import { fetchAllTags } from '../../../services/slices/tagsSlice/tagsSlice';
 import { searchLandmarks } from '../../../services/slices/landmarkSlice/landmarkSlice';
 import { Button, Input, Modal, Select, Tag, Textarea } from '@ui';
@@ -57,12 +53,18 @@ export const RouteEdit = () => {
 
 	const openCreateModal = () => {
 		dispatch(clearDraft());
+		dispatch(
+			setDraft({
+				editingRouteId: null
+			})
+		);
 		dispatch(setModalOpen(true));
 	};
 
 	const closeModal = () => {
 		dispatch(clearDraft());
 		dispatch(setModalOpen(false));
+		setEditingRoute(null);
 	};
 
 	const filteredRoutes = routeSearch.trim()
@@ -107,17 +109,18 @@ export const RouteEdit = () => {
 			}
 		}
 
+		setEditingRoute(null);
 		dispatch(clearDraft());
 		dispatch(setModalOpen(false));
 		loadRoutes();
 	};
 
 	const handleUpdate = async () => {
-		if (!editingRoute) return;
+		if (!draft.editingRouteId) return;
 
 		await dispatch(
 			routeUpdate({
-				routeId: editingRoute.id,
+				routeId: draft.editingRouteId,
 				data: {
 					title: draft.title,
 					description: draft.description,
@@ -136,13 +139,12 @@ export const RouteEdit = () => {
 			for (const file of Array.from(images)) {
 				await dispatch(
 					routeImagesUpload({
-						routeId: editingRoute.id,
+						routeId: draft.editingRouteId,
 						file,
 					})
 				);
 			}
 		}
-
 		dispatch(clearDraft());
 		dispatch(setModalOpen(false));
 		loadRoutes();
@@ -167,6 +169,7 @@ export const RouteEdit = () => {
 
 		dispatch(
 			setDraft({
+				editingRouteId: route.id,
 				title: fullRoute.title,
 				description: fullRoute.description,
 				type: fullRoute.type as RouteType,
@@ -363,13 +366,8 @@ export const RouteEdit = () => {
 							type='number'
 							value={draft.lengthMeters}
 							inputPadding={'5px 10px'}
-							onChange={(e) =>
-								dispatch(
-									setDraft({
-										lengthMeters: Number(e.target.value),
-									})
-								)
-							}
+							showNumberArrows={false}
+							readOnly
 						/>
 
 						<Input
@@ -377,15 +375,8 @@ export const RouteEdit = () => {
 							type='number'
 							value={draft.estimatedTimeMinutes}
 							inputPadding={'5px 10px'}
-							onChange={(e) =>
-								dispatch(
-									setDraft({
-										estimatedTimeMinutes: Number(
-											e.target.value
-										),
-									})
-								)
-							}
+							showNumberArrows={false}
+							readOnly
 						/>
 					</div>
 
@@ -470,10 +461,11 @@ export const RouteEdit = () => {
 						<Button
 							variant='primary'
 							onClick={
-								editingRoute ? handleUpdate : handleCreate
-							}>
-							{editingRoute ? 'Сохранить' : 'Создать'}
-						</Button>
+								draft.editingRouteId
+									? handleUpdate
+									: handleCreate
+							} children={draft.editingRouteId ? 'Сохранить' : 'Создать'}
+						/>
 					</div>
 				</div>
 			</Modal>

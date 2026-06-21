@@ -69,11 +69,13 @@ export const RouteEditCheckpoints = () => {
 		checkpoints
 			.filter((cp) => cp.latitude !== 0 && cp.longitude !== 0)
 			.forEach((cp) => {
-				const marker = new mmrgl.Marker()
-					.setLngLat([cp.longitude, cp.latitude])
-					.addTo(mapRef.current!);
+				if (cp.longitude !== null && cp.latitude !== null) {
+					const marker = new mmrgl.Marker()
+						.setLngLat([cp.longitude, cp.latitude])
+						.addTo(mapRef.current!);
 
-				markersRef.current.push(marker);
+					markersRef.current.push(marker);
+				}
 			});
 	};
 
@@ -83,7 +85,9 @@ export const RouteEditCheckpoints = () => {
 		const bounds = new mmrgl.LngLatBounds();
 
 		checkpoints.forEach((cp) => {
-			bounds.extend([cp.longitude, cp.latitude]);
+			if (cp.longitude !== null && cp.latitude !== null) {
+				bounds.extend([cp.longitude, cp.latitude]);
+			}
 		});
 
 		mapRef.current.fitBounds(bounds, {
@@ -142,6 +146,19 @@ export const RouteEditCheckpoints = () => {
 			}
 
 			const data = await response.json();
+
+			const lengthMeters = Math.round(data.trips[0].trip.summary.length * 1000);
+
+			const estimatedTimeMinutes = Math.round(
+				(lengthMeters / 1000 / 5) * 60
+			);
+
+			dispatch(
+				setDraft({
+					lengthMeters,
+					estimatedTimeMinutes,
+				})
+			);
 
 			let allPoints: [number, number][] = [];
 
@@ -218,8 +235,8 @@ export const RouteEditCheckpoints = () => {
 				checkpoints: [
 					...draft.checkpoints,
 					{
-						latitude: 0,
-						longitude: 0,
+						latitude: null,
+						longitude: null,
 						landmarkId: '',
 						landmarkSearch: '',
 					},
@@ -283,7 +300,7 @@ export const RouteEditCheckpoints = () => {
 										type='number'
 										placeholder='Широта'
 										inputPadding={'4px 12px'}
-										value={checkpoint.latitude}
+										value={checkpoint.latitude ?? ''}
 										onChange={(e) =>
 											updateCheckpoint(
 												index,
@@ -297,7 +314,7 @@ export const RouteEditCheckpoints = () => {
 										type='number'
 										placeholder='Долгота'
 										inputPadding={'4px 12px'}
-										value={checkpoint.longitude}
+										value={checkpoint.longitude ?? ''}
 										onChange={(e) =>
 											updateCheckpoint(
 												index,
