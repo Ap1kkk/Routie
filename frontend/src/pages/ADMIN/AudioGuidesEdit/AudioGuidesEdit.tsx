@@ -12,13 +12,16 @@ import { useDispatch, useSelector } from '@store';
 
 import styles from './AudioGuidesEdit.module.scss';
 import { Button, Input, Modal } from '@ui';
+import { useNavigate } from 'react-router-dom';
 
 export const AudioGuidesEdit = () => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const { searchResults, isLoading, error } = useSelector(
 		(state) => state.audioGuides
 	);
 
+	const [guideSearch, setGuideSearch] = useState('');
 	const [title, setTitle] = useState('');
 	const [durationSeconds, setDurationSeconds] = useState(0);
 	const [editingGuide, setEditingGuide] = useState<AudioGuide | null>(null);
@@ -42,6 +45,11 @@ export const AudioGuidesEdit = () => {
 			});
 		};
 	}, []);
+
+	const filteredGuides =
+		searchResults?.content.filter((guide) =>
+			guide.title.toLowerCase().includes(guideSearch.toLowerCase())
+		) ?? [];
 
 	const loadAudioGuides = () => {
 		dispatch(
@@ -145,7 +153,22 @@ export const AudioGuidesEdit = () => {
 			<h2 className={styles.title}>Управление аудиогидами</h2>
 
 			<div className={styles.headerActions}>
-				<Button variant='primary' onClick={openCreateModal}>
+				<Button
+					variant='secondary'
+					onClick={() => navigate('/admin')}>
+					Назад
+				</Button>
+
+				<Input
+					className={styles.searchInput}
+					placeholder='Поиск аудиогида...'
+					value={guideSearch}
+					onChange={(e) => setGuideSearch(e.target.value)}
+				/>
+
+				<Button
+					variant='primary'
+					onClick={openCreateModal}>
 					Создать аудиогид
 				</Button>
 			</div>
@@ -166,7 +189,7 @@ export const AudioGuidesEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{searchResults?.content.map((guide) => (
+					{filteredGuides.map((guide) => (
 						<tr key={guide.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>{guide.title}</td>
 

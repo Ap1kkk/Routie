@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import {
 	createTag,
@@ -13,11 +14,13 @@ import styles from './TagsEdit.module.scss';
 
 export const TagsEdit = () => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const { allTags, isLoading, error } = useSelector((state) => state.tags);
 
 	const [editingTag, setEditingTag] = useState<Tags | null>(null);
 	const [tagTitle, setTagTitle] = useState('');
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [tagSearch, setTagSearch] = useState('');
 
 	useEffect(() => {
 		dispatch(fetchAllTags());
@@ -26,6 +29,10 @@ export const TagsEdit = () => {
 	const handleDeleteTag = async (tagId: string) => {
 		await dispatch(deleteTag(tagId));
 	};
+
+	const filteredTags = allTags?.filter((tag) =>
+		tag.title.toLowerCase().includes(tagSearch.toLowerCase())
+	);
 
 	const openCreateModal = () => {
 		setEditingTag(null);
@@ -72,10 +79,23 @@ export const TagsEdit = () => {
 
 			<div className={styles.headerActions}>
 				<Button
-					variant='primary'
-					onClick={openCreateModal}
-					children={'Создание тега'}
+					variant='secondary'
+					onClick={() => navigate('/admin')}>
+					Назад
+				</Button>
+
+				<Input
+					className={styles.searchInput}
+					placeholder='Поиск тега...'
+					value={tagSearch}
+					onChange={(e) => setTagSearch(e.target.value)}
 				/>
+
+				<Button
+					variant='primary'
+					onClick={openCreateModal}>
+					Создать тег
+				</Button>
 			</div>
 
 			{isLoading && <p className={styles.loading}>Загрузка...</p>}
@@ -91,7 +111,7 @@ export const TagsEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{allTags?.map((tag) => (
+					{filteredTags?.map((tag) => (
 						<tr key={tag.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>{tag.title}</td>
 

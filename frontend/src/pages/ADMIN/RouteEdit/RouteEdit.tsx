@@ -194,13 +194,24 @@ export const RouteEdit = () => {
 			<h3 className={styles.title}>Управление маршрутами</h3>
 
 			<div className={styles.headerActions}>
+				<Button
+					variant='secondary'
+					onClick={() => navigate('/admin')}
+				>
+					Назад
+				</Button>
+
 				<Input
+					className={styles.searchInput}
 					placeholder='Поиск маршрута...'
 					value={routeSearch}
 					onChange={(e) => setRouteSearch(e.target.value)}
 				/>
 
-				<Button variant='primary' onClick={openCreateModal}>
+				<Button
+					variant='primary'
+					onClick={openCreateModal}
+				>
 					Создать маршрут
 				</Button>
 			</div>

@@ -13,9 +13,11 @@ import { Button, Input, Modal, Textarea } from '@ui';
 import { useDispatch, useSelector } from '@store';
 
 import styles from './LandmarksEdit.module.scss';
+import { useNavigate } from 'react-router-dom';
 
 export const LandmarksEdit = () => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const {
 		searchResults: landmarkResults,
 		isLoading,
@@ -37,6 +39,7 @@ export const LandmarksEdit = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
 	const [images, setImages] = useState<File[]>([]);
+	const [search, setSearch] = useState('');
 
 	useEffect(() => {
 		loadData();
@@ -111,6 +114,11 @@ export const LandmarksEdit = () => {
 		await dispatch(deleteLandmark(id));
 		loadData();
 	};
+
+	const filteredLandmarks =
+		landmarkResults?.content.filter((landmark) =>
+			landmark.title.toLowerCase().includes(search.toLowerCase())
+		) ?? [];
 
 	const filteredGuides =
 		audioGuideSearch.trim().length > 0
@@ -197,10 +205,25 @@ export const LandmarksEdit = () => {
 
 			<div className={styles.headerActions}>
 				<Button
+					variant='secondary'
+					onClick={() => navigate('/admin')}
+				>
+					Назад
+				</Button>
+
+				<Input
+					placeholder='Поиск достопримечательностей...'
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className={styles.searchInput}
+				/>
+
+				<Button
 					variant='primary'
 					onClick={openCreateModal}
-					children={'Создать достопримечательность'}
-				/>
+				>
+					Создать достопримечательность
+				</Button>
 			</div>
 
 			{isLoading && <p className={styles.loading}>Загрузка...</p>}
@@ -219,7 +242,7 @@ export const LandmarksEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{landmarkResults?.content.map((landmark) => (
+					{filteredLandmarks.map((landmark) => (
 						<tr key={landmark.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>
 								{landmark.title}
