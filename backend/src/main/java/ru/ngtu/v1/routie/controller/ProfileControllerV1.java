@@ -9,12 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
-import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
 
 import java.time.LocalDate;
@@ -67,15 +65,5 @@ public class ProfileControllerV1 {
   @Operation(summary = "Загрузка или обновление аватарки")
   public ApiResponse<MediaFileResponse> uploadAvatar(@RequestPart("file") MultipartFile file) {
     return ApiResponse.of(profileService.uploadAvatar(file));
-  }
-
-  // ==================== Избранное ====================
-
-  @GetMapping("/favorites")
-  @Operation(summary = "Получение списка избранных маршрутов")
-  public ApiResponse<PageResponse<RouteShortResponse>> getFavorites(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
-    return ApiResponse.of(profileService.getFavorites(page, size));
   }
 }

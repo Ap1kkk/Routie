@@ -11,7 +11,6 @@ import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
 
 import java.time.LocalDate;
@@ -108,13 +107,5 @@ public class ProfileServiceStub implements ProfileService {
     @Override
     public void removeFriend(UUID friendId) {
         log.debug("[STUB] removeFriend: {}", friendId);
-    }
-
-    @Override
-    public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
-        log.debug("[STUB] getFavorites page={}, size={}", page, size);
-        long total = 15L;
-        List<RouteShortResponse> content = FakeDataFactory.fakeRouteShortList(Math.min(size, (int) total));
-        return FakeDataFactory.fakePage(content, page, size, total);
     }
 }

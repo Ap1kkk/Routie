@@ -30,10 +30,17 @@ import ru.ngtu.v1.routie.exception.BadRequestException;
 import ru.ngtu.v1.routie.exception.EntityNotFoundException;
 import ru.ngtu.v1.routie.model.*;
 import ru.ngtu.v1.routie.repository.*;
+import ru.ngtu.v1.routie.repository.projection.RoutePopularityCount;
+import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.FileService;
 import ru.ngtu.v1.routie.service.RouteService;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -49,6 +56,8 @@ public class RouteServiceImpl implements RouteService {
   private final TagRepository tagRepository;
   private final AudioGuideRepository audioGuideRepository;
   private final MediaFileRepository mediaFileRepository;
+  private final RouteSessionRepository routeSessionRepository;
+  private final UserFavoriteRouteRepository userFavoriteRouteRepository;
   private final FileService fileService;
 
   // ==================== Чтение ====================
@@ -194,6 +203,105 @@ public class RouteServiceImpl implements RouteService {
     return uploaded;
   }
 
+  // ==================== Популярные маршруты ====================
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<RouteShortResponse> getPopularRoutes(LocalDate startDate, LocalDate endDate, int limit) {
+    boolean allTime = startDate == null && endDate == null;
+
+    if (!allTime) {
+      if (startDate == null || endDate == null) {
+        throw new BadRequestException("startDate и endDate должны быть переданы вместе");
+      }
+      if (startDate.isAfter(endDate)) {
+        throw new BadRequestException("startDate не может быть позже endDate");
+      }
+    }
+
+    boolean isAdmin = isCurrentUserAdmin();
+    List<Route> routes;
+
+    if (allTime) {
+      Specification<Route> spec = (root, query, cb) ->
+          isAdmin ? cb.conjunction() : cb.isTrue(root.get("isActive"));
+      PageRequest pageable = PageRequest.of(0, limit, Sort.by("completionsCount").descending());
+      routes = routeRepository.findAll(spec, pageable).getContent();
+    } else {
+      Instant since = startDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+      Instant until = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+      PageRequest pageable = PageRequest.of(0, limit);
+
+      List<UUID> orderedIds = routeSessionRepository.findPopularRouteIds(since, until, pageable)
+          .stream()
+          .map(RoutePopularityCount::getRouteId)
+          .toList();
+
+      Map<UUID, Route> routesById = routeRepository.findAllById(orderedIds).stream()
+          .collect(Collectors.toMap(Route::getId, Function.identity()));
+
+      routes = orderedIds.stream()
+          .map(routesById::get)
+          .filter(Objects::nonNull)
+          .filter(r -> isAdmin || Boolean.TRUE.equals(r.getIsActive()))
+          .toList();
+    }
+
+    return routes.stream().map(this::toShortResponse).toList();
+  }
+
+  // ==================== Избранное ====================
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
+    UUID userId = getCurrentUserId();
+    PageRequest pageable = PageRequest.of(page, size);
+
+    Page<UserFavoriteRoute> favoritesPage = userFavoriteRouteRepository.findAllByUserId(userId, pageable);
+
+    List<UUID> routeIds = favoritesPage.getContent().stream()
+        .map(f -> f.getId().getRouteId())
+        .toList();
+
+    Map<UUID, Route> routesById = routeRepository.findAllById(routeIds).stream()
+        .collect(Collectors.toMap(Route::getId, Function.identity()));
+
+    // Сохраняем порядок (по дате добавления в избранное), пропускаем удалённые маршруты
+    List<RouteShortResponse> content = routeIds.stream()
+        .map(routesById::get)
+        .filter(Objects::nonNull)
+        .map(this::toShortResponse)
+        .toList();
+
+    return new PageResponse<>(content, favoritesPage.getTotalElements(), favoritesPage.getTotalPages(), page);
+  }
+
+  @Override
+  @Transactional
+  public void addFavorite(UUID routeId) {
+    findById(routeId); // 404, если маршрута не существует
+    UUID userId = getCurrentUserId();
+
+    if (userFavoriteRouteRepository.existsById_UserIdAndId_RouteId(userId, routeId)) {
+      return; // уже в избранном — идемпотентно
+    }
+
+    UserFavoriteRoute favorite = UserFavoriteRoute.builder()
+        .id(new UserFavoriteRouteId(userId, routeId))
+        .build();
+    userFavoriteRouteRepository.save(favorite);
+    log.info("Маршрут {} добавлен в избранное пользователем {}", routeId, userId);
+  }
+
+  @Override
+  @Transactional
+  public void removeFavorite(UUID routeId) {
+    UUID userId = getCurrentUserId();
+    userFavoriteRouteRepository.deleteById_UserIdAndId_RouteId(userId, routeId);
+    log.info("Маршрут {} удалён из избранного пользователем {}", routeId, userId);
+  }
+
   // ==================== Вспомогательные методы ====================
 
   private Route findById(UUID id) {
@@ -238,6 +346,13 @@ public class RouteServiceImpl implements RouteService {
     return SecurityContextHolder.getContext().getAuthentication()
         .getAuthorities().stream()
         .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+  }
+
+  private UUID getCurrentUserId() {
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+        .getAuthentication()
+        .getPrincipal();
+    return userDetails.getId();
   }
 
   private Specification<Route> buildSpecification(RouteSearchFilter filter) {
@@ -328,7 +443,18 @@ public class RouteServiceImpl implements RouteService {
         predicates.add(cb.exists(sub));
       }
 
-      // favoriteOnly пока не реализован (нет таблицы избранного)
+      // Фильтр favoriteOnly: EXISTS запись в user_favorite_routes для текущего пользователя
+      if (Boolean.TRUE.equals(filter.getFavoriteOnly())) {
+        UUID currentUserId = getCurrentUserId();
+        Subquery<Integer> sub = query.subquery(Integer.class);
+        var favRoot = sub.from(UserFavoriteRoute.class);
+        sub.select(cb.literal(1))
+            .where(
+                cb.equal(favRoot.get("id").get("routeId"), root.get("id")),
+                cb.equal(favRoot.get("id").get("userId"), currentUserId)
+            );
+        predicates.add(cb.exists(sub));
+      }
 
       return cb.and(predicates.toArray(new Predicate[0]));
     };

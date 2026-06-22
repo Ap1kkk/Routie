@@ -9,7 +9,6 @@ import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 
 import java.time.LocalDate;
 
@@ -37,7 +36,4 @@ public interface ProfileService {
   void acceptFriendRequest(UUID friendshipId);
   void rejectFriendRequest(UUID friendshipId);
   void removeFriend(UUID friendId);
-
-  // Избранное
-  PageResponse<RouteShortResponse> getFavorites(int page, int size);
 }
