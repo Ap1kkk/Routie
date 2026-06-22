@@ -9,6 +9,7 @@ import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardSortField;
 import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
 import ru.ngtu.v1.routie.service.GamificationService;
 
@@ -21,14 +22,14 @@ import java.util.List;
 public class GamificationServiceStub implements GamificationService {
 
     @Override
-    public LeaderboardResponse getLeaderboard(LeaderboardPeriod period, int limit) {
-        log.debug("[STUB] getLeaderboard period={}, limit={}", period, limit);
+    public LeaderboardResponse getLeaderboard(LeaderboardPeriod period, int limit, LeaderboardSortField sort) {
+        log.debug("[STUB] getLeaderboard period={}, limit={}, sort={}", period, limit, sort);
         return FakeDataFactory.fakeLeaderboard(period, limit);
     }
 
     @Override
-    public LeaderboardResponse getFriendsLeaderboard(LeaderboardPeriod period, int limit) {
-        log.debug("[STUB] getFriendsLeaderboard period={}, limit={}", period, limit);
+    public LeaderboardResponse getFriendsLeaderboard(LeaderboardPeriod period, int limit, LeaderboardSortField sort) {
+        log.debug("[STUB] getFriendsLeaderboard period={}, limit={}, sort={}", period, limit, sort);
         return FakeDataFactory.fakeLeaderboard(period, limit);
     }
 

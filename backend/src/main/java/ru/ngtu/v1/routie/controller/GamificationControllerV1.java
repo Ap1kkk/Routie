@@ -17,6 +17,7 @@ import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardSortField;
 import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
 import ru.ngtu.v1.routie.service.GamificationService;
 
@@ -38,18 +39,20 @@ public class GamificationControllerV1 {
     @Operation(summary = "Глобальный лидерборд")
     public ApiResponse<LeaderboardResponse> getLeaderboard(
             @RequestParam LeaderboardPeriod period,
-            @RequestParam(defaultValue = "100") @Max(100) int limit
+            @RequestParam(defaultValue = "100") @Max(100) int limit,
+            @RequestParam(defaultValue = "TOTAL_XP") LeaderboardSortField sort
     ) {
-        return ApiResponse.of(gamificationService.getLeaderboard(period, limit));
+        return ApiResponse.of(gamificationService.getLeaderboard(period, limit, sort));
     }
 
     @GetMapping("/leaderboard/friends")
-    @Operation(summary = "Лидерборд среди друзей")
+    @Operation(summary = "Лидерборд среди друзей (включая самого пользователя)")
     public ApiResponse<LeaderboardResponse> getFriendsLeaderboard(
             @RequestParam LeaderboardPeriod period,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(defaultValue = "TOTAL_XP") LeaderboardSortField sort
     ) {
-        return ApiResponse.of(gamificationService.getFriendsLeaderboard(period, limit));
+        return ApiResponse.of(gamificationService.getFriendsLeaderboard(period, limit, sort));
     }
 
     // -------------------------------------------------------------------------

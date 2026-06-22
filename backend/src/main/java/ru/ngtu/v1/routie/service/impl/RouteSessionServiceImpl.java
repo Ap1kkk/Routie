@@ -19,6 +19,7 @@ import ru.ngtu.v1.routie.model.*;
 import ru.ngtu.v1.routie.repository.*;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.RouteSessionService;
+import ru.ngtu.v1.routie.service.XpService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -30,11 +31,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RouteSessionServiceImpl implements RouteSessionService {
 
+    /** Базовое начисление XP за завершённый маршрут. */
+    private static final int XP_BASE_PER_ROUTE = 100;
+    /** Доп. XP за каждый пункт сложности маршрута (1..5). */
+    private static final int XP_PER_DIFFICULTY = 20;
+    private static final String XP_REASON_ROUTE_COMPLETED = "ROUTE_COMPLETED";
+
     private final RouteSessionRepository routeSessionRepository;
     private final CheckpointProgressRepository checkpointProgressRepository;
     private final CheckpointRepository checkpointRepository;
     private final RouteRepository routeRepository;
     private final UserProfileRepository userProfileRepository;
+    private final XpService xpService;
 
     // ==================== Начало сессии ====================
 
@@ -172,10 +180,11 @@ public class RouteSessionServiceImpl implements RouteSessionService {
 
         if (newStatus == RouteSessionStatus.FINISHED) {
             // Счётчик завершений маршрута
-            routeRepository.findById(session.getRouteId()).ifPresent(route -> {
+            Route route = routeRepository.findById(session.getRouteId()).orElse(null);
+            if (route != null) {
                 route.setCompletionsCount(route.getCompletionsCount() + 1);
                 routeRepository.save(route);
-            });
+            }
 
             profile.setTotalRoutesCompleted(profile.getTotalRoutesCompleted() + 1);
 
@@ -183,8 +192,13 @@ public class RouteSessionServiceImpl implements RouteSessionService {
             int newLandmarks = countNewLandmarks(session, userId);
             profile.setTotalLandmarksVisited(profile.getTotalLandmarksVisited() + newLandmarks);
 
-            log.info("Маршрут завершён: sessionId={}, userId={}, distance={}m, duration={}s, newLandmarks={}",
-                    session.getId(), userId, request.getTotalDistanceMeters(), durationSeconds, newLandmarks);
+            // Начисление XP: базовое + бонус за сложность маршрута
+            int difficulty = (route != null && route.getDifficulty() != null) ? route.getDifficulty() : 1;
+            int xpAmount = XP_BASE_PER_ROUTE + difficulty * XP_PER_DIFFICULTY;
+            xpService.awardXp(userId, xpAmount, XP_REASON_ROUTE_COMPLETED, session.getId());
+
+            log.info("Маршрут завершён: sessionId={}, userId={}, distance={}m, duration={}s, newLandmarks={}, xp={}",
+                    session.getId(), userId, request.getTotalDistanceMeters(), durationSeconds, newLandmarks, xpAmount);
         } else {
             log.info("Сессия прервана: sessionId={}, userId={}, distance={}m",
                     session.getId(), userId, request.getTotalDistanceMeters());

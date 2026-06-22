@@ -5,6 +5,7 @@ import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardSortField;
 import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
 
 public interface GamificationService {
@@ -14,16 +15,18 @@ public interface GamificationService {
      *
      * @param period временной период (WEEK, MONTH, SEASON)
      * @param limit  максимальное число записей (не более 100)
+     * @param sort   поле сортировки (по умолчанию TOTAL_XP)
      */
-    LeaderboardResponse getLeaderboard(LeaderboardPeriod period, int limit);
+    LeaderboardResponse getLeaderboard(LeaderboardPeriod period, int limit, LeaderboardSortField sort);
 
     /**
-     * Лидерборд среди друзей текущего пользователя за указанный период.
+     * Лидерборд среди друзей текущего пользователя (включая самого пользователя) за указанный период.
      *
      * @param period временной период (WEEK, MONTH, SEASON)
      * @param limit  максимальное число записей
+     * @param sort   поле сортировки (по умолчанию TOTAL_XP)
      */
-    LeaderboardResponse getFriendsLeaderboard(LeaderboardPeriod period, int limit);
+    LeaderboardResponse getFriendsLeaderboard(LeaderboardPeriod period, int limit, LeaderboardSortField sort);
 
     /**
      * Достижения текущего пользователя с прогрессом выполнения.
