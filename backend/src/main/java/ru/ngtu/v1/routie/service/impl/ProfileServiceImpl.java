@@ -18,7 +18,9 @@ import ru.ngtu.v1.routie.dto.profile.Gender;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
+import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.dto.tag.TagResponse;
 import ru.ngtu.v1.routie.exception.BadRequestException;
 import ru.ngtu.v1.routie.exception.ConflictException;
@@ -26,11 +28,14 @@ import ru.ngtu.v1.routie.exception.EntityNotFoundException;
 import ru.ngtu.v1.routie.exception.ForbiddenException;
 import ru.ngtu.v1.routie.model.Friendship;
 import ru.ngtu.v1.routie.model.FriendshipStatus;
+import ru.ngtu.v1.routie.model.RouteSession;
 import ru.ngtu.v1.routie.model.Tag;
 import ru.ngtu.v1.routie.model.User;
 import ru.ngtu.v1.routie.model.UserProfile;
+import ru.ngtu.v1.routie.repository.CheckpointProgressRepository;
 import ru.ngtu.v1.routie.repository.FriendshipRepository;
 import ru.ngtu.v1.routie.repository.MediaFileRepository;
+import ru.ngtu.v1.routie.repository.RouteSessionRepository;
 import ru.ngtu.v1.routie.repository.TagRepository;
 import ru.ngtu.v1.routie.repository.UserProfileRepository;
 import ru.ngtu.v1.routie.repository.UserRepository;
@@ -38,7 +43,10 @@ import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.FileService;
 import ru.ngtu.v1.routie.service.ProfileService;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.OptionalDouble;
 
 @Slf4j
 @Service
@@ -51,6 +59,11 @@ public class ProfileServiceImpl implements ProfileService {
     private final MediaFileRepository mediaFileRepository;
     private final TagRepository tagRepository;
     private final FileService fileService;
+    private final RouteSessionRepository routeSessionRepository;
+    private final CheckpointProgressRepository checkpointProgressRepository;
+
+    /** Средняя длина шага человека, используется для приблизительной оценки кол-ва шагов. */
+    private static final double AVG_STEP_LENGTH_METERS = 0.75;
 
     // ==================== Профиль ====================
 
@@ -146,6 +159,100 @@ public class ProfileServiceImpl implements ProfileService {
 
         log.info("Аватар обновлён для пользователя: {}", currentUser.getId());
         return response;
+    }
+
+    // ==================== Статистика ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserStatisticsResponse getCurrentUserStatistics(LocalDate startDate, LocalDate endDate) {
+        User currentUser = getCurrentUser();
+        UUID userId = currentUser.getId();
+
+        boolean isAllTime = startDate == null && endDate == null;
+
+        if (!isAllTime) {
+            if (startDate == null || endDate == null) {
+                throw new BadRequestException("startDate и endDate должны быть переданы вместе");
+            }
+            if (startDate.isAfter(endDate)) {
+                throw new BadRequestException("startDate не может быть позже endDate");
+            }
+        }
+
+        List<RouteSession> finishedSessions;
+        int abortedCount;
+        long totalCheckpointsReached;
+
+        if (isAllTime) {
+            finishedSessions = routeSessionRepository
+                    .findAllByUserIdAndStatus(userId, RouteSessionStatus.FINISHED);
+            abortedCount = routeSessionRepository
+                    .findAllByUserIdAndStatus(userId, RouteSessionStatus.ABORTED)
+                    .size();
+            totalCheckpointsReached = checkpointProgressRepository.countByUserId(userId);
+        } else {
+            Instant since = startDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+            Instant until = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
+            finishedSessions = routeSessionRepository.findAllByUserIdAndStatusAndStartedAtBetween(
+                    userId, RouteSessionStatus.FINISHED, since, until);
+            abortedCount = routeSessionRepository
+                    .findAllByUserIdAndStatusAndStartedAtBetween(
+                            userId, RouteSessionStatus.ABORTED, since, until)
+                    .size();
+            totalCheckpointsReached = checkpointProgressRepository
+                    .countByUserIdAndSessionStartedAtBetween(userId, since, until);
+        }
+
+        long totalDurationSeconds = finishedSessions.stream()
+                .map(RouteSession::getTotalDurationSeconds)
+                .filter(java.util.Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        int totalDistanceMeters = finishedSessions.stream()
+                .map(RouteSession::getTotalDistanceMeters)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        OptionalDouble avgDuration = finishedSessions.stream()
+                .map(RouteSession::getTotalDurationSeconds)
+                .filter(java.util.Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .average();
+
+        OptionalDouble avgLength = finishedSessions.stream()
+                .map(RouteSession::getTotalDistanceMeters)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .average();
+
+        OptionalDouble avgSpeed = finishedSessions.stream()
+                .map(RouteSession::getAvgSpeedKmh)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .average();
+
+        return UserStatisticsResponse.builder()
+                .periodStart(startDate)
+                .periodEnd(endDate)
+                .totalRoutesCompleted(finishedSessions.size())
+                .totalSessionsAborted(abortedCount)
+                .totalDurationSeconds(totalDurationSeconds)
+                .totalDistanceMeters(totalDistanceMeters)
+                .estimatedTotalSteps(estimateSteps(totalDistanceMeters))
+                .totalCheckpointsReached(totalCheckpointsReached)
+                .avgSessionDurationSeconds(avgDuration.isPresent() ? avgDuration.getAsDouble() : null)
+                .avgRouteLengthMeters(avgLength.isPresent() ? avgLength.getAsDouble() : null)
+                .avgSpeedKmh(avgSpeed.isPresent() ? avgSpeed.getAsDouble() : null)
+                .build();
+    }
+
+    /** Приблизительная оценка кол-ва шагов по дистанции (точных данных о шагах система не собирает). */
+    private long estimateSteps(int distanceMeters) {
+        return Math.round(distanceMeters / AVG_STEP_LENGTH_METERS);
     }
 
     // ==================== Друзья ====================
