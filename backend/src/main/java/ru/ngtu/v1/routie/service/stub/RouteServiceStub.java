@@ -13,6 +13,7 @@ import ru.ngtu.v1.routie.dto.route.response.RouteFullResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.RouteService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,5 +78,29 @@ public class RouteServiceStub implements RouteService {
     public List<MediaFileResponse> uploadImages(UUID routeId, List<MultipartFile> files) {
         log.debug("[STUB] uploadImages routeId={}, count={}", routeId, files.size());
         return FakeDataFactory.fakeMediaFiles(files.size());
+    }
+
+    @Override
+    public List<RouteShortResponse> getPopularRoutes(LocalDate startDate, LocalDate endDate, int limit) {
+        log.debug("[STUB] getPopularRoutes startDate={}, endDate={}, limit={}", startDate, endDate, limit);
+        return FakeDataFactory.fakeRouteShortList(limit);
+    }
+
+    @Override
+    public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
+        log.debug("[STUB] getFavorites page={}, size={}", page, size);
+        long total = 15L;
+        List<RouteShortResponse> content = FakeDataFactory.fakeRouteShortList(Math.min(size, (int) total));
+        return FakeDataFactory.fakePage(content, page, size, total);
+    }
+
+    @Override
+    public void addFavorite(UUID routeId) {
+        log.debug("[STUB] addFavorite: {}", routeId);
+    }
+
+    @Override
+    public void removeFavorite(UUID routeId) {
+        log.debug("[STUB] removeFavorite: {}", routeId);
     }
 }

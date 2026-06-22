@@ -19,7 +19,6 @@ import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.dto.tag.TagResponse;
 import ru.ngtu.v1.routie.exception.BadRequestException;
@@ -361,14 +360,6 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Пользователь {} удалён из друзей {}", friendId, currentUser.getId());
     }
 
-    // ==================== Избранное ====================
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
-        // Route-сущность ещё не реализована — возвращаем пустую страницу
-        return new PageResponse<>(Collections.emptyList(), 0L, 0, page);
-    }
 
     // ==================== Вспомогательные методы ====================
 

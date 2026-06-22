@@ -1,5 +1,6 @@
 package ru.ngtu.v1.routie.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.model.RouteSession;
+import ru.ngtu.v1.routie.repository.projection.RoutePopularityCount;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,6 +31,17 @@ public interface RouteSessionRepository extends JpaRepository<RouteSession, UUID
 
     @Query("SELECT DISTINCT s.routeId FROM RouteSession s WHERE s.userId = :userId AND s.status = 'FINISHED'")
     List<UUID> findFinishedRouteIdsByUserId(@Param("userId") UUID userId);
+
+    /** Топ маршрутов по кол-ву завершений в диапазоне [since, until), для ручки популярных маршрутов. */
+    @Query("""
+        SELECT s.routeId AS routeId, COUNT(s) AS cnt
+        FROM RouteSession s
+        WHERE s.status = 'FINISHED' AND s.startedAt BETWEEN :since AND :until
+        GROUP BY s.routeId
+        ORDER BY COUNT(s) DESC
+        """)
+    List<RoutePopularityCount> findPopularRouteIds(
+            @Param("since") Instant since, @Param("until") Instant until, Pageable pageable);
 
     /**
      * Возвращает все FINISHED-сессии пользователя, исключая указанную.
