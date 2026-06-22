@@ -79,4 +79,12 @@ public class LandmarkControllerV1 {
     ) {
         return ApiResponse.of(landmarkService.uploadImages(landmarkId, files));
     }
+
+    @DeleteMapping("/{landmarkId}/images")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Удаление всех изображений достопримечательности (только ADMIN). Сама сущность не удаляется")
+    public ApiResponseVoid deleteAllImages(@PathVariable UUID landmarkId) {
+        landmarkService.deleteAllImages(landmarkId);
+        return ApiResponse.empty();
+    }
 }
