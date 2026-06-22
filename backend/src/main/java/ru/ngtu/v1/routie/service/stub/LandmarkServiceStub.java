@@ -66,4 +66,9 @@ public class LandmarkServiceStub implements LandmarkService {
         log.debug("[STUB] uploadImages landmarkId={}, count={}", landmarkId, files.size());
         return FakeDataFactory.fakeMediaFiles(files.size());
     }
+
+    @Override
+    public void deleteAllImages(UUID landmarkId) {
+        log.debug("[STUB] deleteAllImages landmarkId={}", landmarkId);
+    }
 }

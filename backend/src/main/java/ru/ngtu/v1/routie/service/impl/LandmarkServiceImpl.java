@@ -149,6 +149,26 @@ public class LandmarkServiceImpl implements LandmarkService {
         return uploaded;
     }
 
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void deleteAllImages(UUID landmarkId) {
+        Landmark landmark = findById(landmarkId);
+
+        List<UUID> imageFileIds = new ArrayList<>(landmark.getImageFileIds());
+        for (UUID fileId : imageFileIds) {
+            try {
+                fileService.delete(fileId);
+            } catch (Exception e) {
+                log.warn("Не удалось удалить файл {} у landmark {}: {}", fileId, landmarkId, e.getMessage());
+            }
+        }
+
+        landmark.getImageFileIds().clear();
+        landmarkRepository.save(landmark);
+        log.info("Удалены все изображения ({}) у достопримечательности {}", imageFileIds.size(), landmarkId);
+    }
+
     // ==================== Вспомогательные методы ====================
 
     private Landmark findById(UUID id) {
