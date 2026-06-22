@@ -1,12 +1,16 @@
 package ru.ngtu.v1.routie.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.gamification.AchievementResponse;
 import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardSortField;
 import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
+
+import java.util.UUID;
 
 public interface GamificationService {
 
@@ -37,6 +41,11 @@ public interface GamificationService {
      * Полный список достижений системы, включая неразблокированные.
      */
     AllAchievementsResponse getAllAchievements();
+
+    /**
+     * Заменяет иконку достижения (только ADMIN). Старый файл удаляется, если был.
+     */
+    AchievementResponse updateAchievementIcon(UUID achievementId, MultipartFile file);
 
     /**
      * История начислений XP текущего пользователя с пагинацией.

@@ -52,7 +52,9 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/actuator/health",
-            "/actuator/prometheus"
+            "/actuator/prometheus",
+            // STOMP-аутентификация выполняется отдельно через JWT в CONNECT-фрейме (см. StompAuthChannelInterceptor)
+            "/ws/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;

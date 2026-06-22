@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import org.springframework.web.multipart.MultipartFile;
+import ru.ngtu.v1.routie.dto.gamification.AchievementResponse;
 import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
@@ -43,6 +45,18 @@ public class GamificationServiceStub implements GamificationService {
     public AllAchievementsResponse getAllAchievements() {
         log.debug("[STUB] getAllAchievements");
         return FakeDataFactory.fakeAllAchievements();
+    }
+
+    @Override
+    public AchievementResponse updateAchievementIcon(java.util.UUID achievementId, MultipartFile file) {
+        log.debug("[STUB] updateAchievementIcon: {}", achievementId);
+        return AchievementResponse.builder()
+                .id(achievementId)
+                .title("Stub achievement")
+                .description("Stub description")
+                .xpReward(100)
+                .targetValue(1)
+                .build();
     }
 
     @Override

@@ -18,6 +18,7 @@ import ru.ngtu.v1.routie.exception.ForbiddenException;
 import ru.ngtu.v1.routie.model.*;
 import ru.ngtu.v1.routie.repository.*;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
+import ru.ngtu.v1.routie.service.AchievementService;
 import ru.ngtu.v1.routie.service.RouteSessionService;
 import ru.ngtu.v1.routie.service.XpService;
 
@@ -43,6 +44,7 @@ public class RouteSessionServiceImpl implements RouteSessionService {
     private final RouteRepository routeRepository;
     private final UserProfileRepository userProfileRepository;
     private final XpService xpService;
+    private final AchievementService achievementService;
 
     // ==================== Начало сессии ====================
 
@@ -196,6 +198,9 @@ public class RouteSessionServiceImpl implements RouteSessionService {
             int difficulty = (route != null && route.getDifficulty() != null) ? route.getDifficulty() : 1;
             int xpAmount = XP_BASE_PER_ROUTE + difficulty * XP_PER_DIFFICULTY;
             xpService.awardXp(userId, xpAmount, XP_REASON_ROUTE_COMPLETED, session.getId());
+
+            // Профиль обновлён (маршруты/дистанция/ландмарки/XP/уровень) — проверяем разблокировку достижений
+            achievementService.evaluateForUser(userId);
 
             log.info("Маршрут завершён: sessionId={}, userId={}, distance={}m, duration={}s, newLandmarks={}, xp={}",
                     session.getId(), userId, request.getTotalDistanceMeters(), durationSeconds, newLandmarks, xpAmount);
