@@ -8,7 +8,10 @@ import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
+
+import java.time.LocalDate;
 
 public interface ProfileService {
 
@@ -16,6 +19,15 @@ public interface ProfileService {
   UserProfileFullResponse updateCurrentUserProfile(ProfileUpdateRequest request);
   UserProfileFullResponse getUserProfile(UUID userId);
   UserProfileShortResponse getShortUserProfile(UUID userId);
+
+  /**
+   * Статистика текущего пользователя за выбранный диапазон дат (для экрана профиля).
+   * Если оба параметра не переданы — статистика рассчитывается за всё время.
+   *
+   * @param startDate начало диапазона (включительно); либо оба параметра заданы, либо оба null
+   * @param endDate   конец диапазона (включительно); либо оба параметра заданы, либо оба null
+   */
+  UserStatisticsResponse getCurrentUserStatistics(LocalDate startDate, LocalDate endDate);
 
   MediaFileResponse uploadAvatar(MultipartFile file);
 

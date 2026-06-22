@@ -3,6 +3,7 @@ package ru.ngtu.v1.routie.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,9 +13,11 @@ import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -29,6 +32,16 @@ public class ProfileControllerV1 {
   @Operation(summary = "Получение полного профиля текущего пользователя")
   public ApiResponse<UserProfileFullResponse> getCurrentUserProfile() {
     return ApiResponse.of(profileService.getCurrentUserProfile());
+  }
+
+  @GetMapping("/me/statistics")
+  @Operation(summary = "Статистика текущего пользователя за диапазон дат (для экрана профиля). " +
+      "Если startDate и endDate не переданы — статистика за всё время")
+  public ApiResponse<UserStatisticsResponse> getCurrentUserStatistics(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+  ) {
+    return ApiResponse.of(profileService.getCurrentUserStatistics(startDate, endDate));
   }
 
   @PutMapping("/me")

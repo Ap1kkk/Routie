@@ -10,9 +10,11 @@ import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
 import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +54,25 @@ public class ProfileServiceStub implements ProfileService {
         UserProfileShortResponse profile = FakeDataFactory.fakeUserProfileShort();
         profile.setId(userId);
         return profile;
+    }
+
+    @Override
+    public UserStatisticsResponse getCurrentUserStatistics(LocalDate startDate, LocalDate endDate) {
+        log.debug("[STUB] getCurrentUserStatistics startDate={}, endDate={}", startDate, endDate);
+
+        return UserStatisticsResponse.builder()
+                .periodStart(startDate)
+                .periodEnd(endDate)
+                .totalRoutesCompleted(27)
+                .totalSessionsAborted(4)
+                .totalDurationSeconds(184_320L)
+                .totalDistanceMeters(142_500)
+                .estimatedTotalSteps(190_000L)
+                .totalCheckpointsReached(118L)
+                .avgSessionDurationSeconds(6_826.0)
+                .avgRouteLengthMeters(5_278.0)
+                .avgSpeedKmh(4.9)
+                .build();
     }
 
     @Override
