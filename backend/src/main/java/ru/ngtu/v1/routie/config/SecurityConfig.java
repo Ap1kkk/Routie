@@ -54,7 +54,9 @@ public class SecurityConfig {
             "/actuator/health",
             "/actuator/prometheus",
             // STOMP-аутентификация выполняется отдельно через JWT в CONNECT-фрейме (см. StompAuthChannelInterceptor)
-            "/ws/**"
+            "/ws/**",
+            // Статический AsyncAPI-вьюер для документации WebSocket-уведомлений
+            "/asyncapi/**"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
