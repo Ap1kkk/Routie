@@ -55,6 +55,11 @@ public class OpenApiConfig {
         .description("API сервер");
 
     return new OpenAPI()
+        .info(new io.swagger.v3.oas.models.info.Info()
+            .title("Routie API")
+            .description("REST API сервиса Routie. "
+                + "Документация WebSocket-уведомлений (AsyncAPI): "
+                + "[/asyncapi/index.html](/asyncapi/index.html)"))
         .addServersItem(server)
         .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
         .components(new Components()

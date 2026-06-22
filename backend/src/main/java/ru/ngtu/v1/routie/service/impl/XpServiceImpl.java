@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ngtu.v1.routie.exception.EntityNotFoundException;
+import ru.ngtu.v1.routie.model.NotificationType;
 import ru.ngtu.v1.routie.model.UserProfile;
 import ru.ngtu.v1.routie.model.XpTransaction;
 import ru.ngtu.v1.routie.repository.UserProfileRepository;
 import ru.ngtu.v1.routie.repository.XpTransactionRepository;
 import ru.ngtu.v1.routie.repository.projection.UserXpSum;
+import ru.ngtu.v1.routie.service.NotificationService;
 import ru.ngtu.v1.routie.service.XpService;
 
 import java.time.Instant;
@@ -28,6 +30,7 @@ public class XpServiceImpl implements XpService {
 
     private final XpTransactionRepository xpTransactionRepository;
     private final UserProfileRepository userProfileRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -54,6 +57,22 @@ public class XpServiceImpl implements XpService {
 
         log.info("Начислено {} XP пользователю {} (причина={}, totalXp={}, level={})",
                 amount, userId, reason, newTotalXp, profile.getCurrentLevel());
+
+        notificationService.notify(
+                userId,
+                NotificationType.XP_AWARDED,
+                "Начислено " + amount + " XP",
+                describeReason(reason),
+                "{\"amount\":" + amount + ",\"reason\":\"" + reason + "\",\"totalXp\":" + newTotalXp + "}"
+        );
+    }
+
+    private String describeReason(String reason) {
+        return switch (reason) {
+            case "ROUTE_COMPLETED" -> "За завершённый маршрут";
+            case "ACHIEVEMENT_UNLOCKED" -> "За разблокированное достижение";
+            default -> null;
+        };
     }
 
     @Override

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Routie — AsyncAPI (WebSocket)</title>
+    <link rel="stylesheet" href="https://unpkg.com/@asyncapi/react-component@1.4.4/styles/default.min.css" />
+    <style>
+        html, body, #asyncapi { height: 100%; margin: 0; }
+    </style>
+</head>
+<body>
+    <div id="asyncapi"></div>
+
+    <script src="https://unpkg.com/@asyncapi/react-component@1.4.4/browser/standalone/index.js"></script>
+    <script>
+        fetch('/asyncapi/asyncapi.yaml')
+            .then(function (res) { return res.text(); })
+            .then(function (schema) {
+                AsyncApiStandalone.render(
+                    {
+                        schema: schema,
+                        config: {
+                            show: { sidebar: true },
+                            sidebar: { showServers: 'byDefault', showOperations: 'byDefault' }
+                        }
+                    },
+                    document.getElementById('asyncapi')
+                );
+            });
+    </script>
+</body>
+</html>

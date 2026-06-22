@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.gamification.*;
@@ -20,6 +21,7 @@ import ru.ngtu.v1.routie.repository.UserRepository;
 import ru.ngtu.v1.routie.repository.XpTransactionRepository;
 import ru.ngtu.v1.routie.repository.projection.UserXpSum;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
+import ru.ngtu.v1.routie.service.AchievementService;
 import ru.ngtu.v1.routie.service.GamificationService;
 import ru.ngtu.v1.routie.service.XpService;
 
@@ -39,6 +41,7 @@ public class GamificationServiceImpl implements GamificationService {
     private final MediaFileRepository mediaFileRepository;
     private final XpTransactionRepository xpTransactionRepository;
     private final XpService xpService;
+    private final AchievementService achievementService;
 
     // ==================== Leaderboard ====================
 
@@ -103,16 +106,21 @@ public class GamificationServiceImpl implements GamificationService {
         return buildLeaderboardResponse(period, orderedUserIds, periodXpByUser);
     }
 
-    // ==================== Achievements (пока не реализовано) ====================
+    // ==================== Achievements ====================
 
     @Override
     public AchievementsListResponse getUserAchievements() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return achievementService.getUserAchievements();
     }
 
     @Override
     public AllAchievementsResponse getAllAchievements() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return achievementService.getAllAchievements();
+    }
+
+    @Override
+    public AchievementResponse updateAchievementIcon(UUID achievementId, MultipartFile file) {
+        return achievementService.updateIcon(achievementId, file);
     }
 
     // ==================== XP History ====================
