@@ -18,21 +18,18 @@ export const ProfilePage = () => {
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
 
-	// Загрузка профиля
 	useEffect(() => {
 		dispatch(getMyProfile());
 	}, [dispatch]);
 
-	// Загрузка списка друзей
 	useEffect(() => {
 		dispatch(fetchFriends({
 			page: 0,
 			size: 20,
-			//status: 'FRIENDS'   // только подтверждённые друзья
+			//status: 'FRIENDS'
 		}));
 	}, [dispatch]);
 
-	// Загрузка аватара
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!myProfile?.avatar?.id) return;
@@ -79,8 +76,6 @@ export const ProfilePage = () => {
 				routesCounter={myProfile.totalRoutesCompleted}
 				birthday={myProfile.dateOfBirth}
 				avatar={avatarSrc}
-
-				// Передаём друзей и обработчики
 				friends={friendsList?.content || []}
 				onRemoveFriend={handleRemoveFriend}
 				onFriendClick={handleFriendClick}

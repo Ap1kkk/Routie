@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RouteCard } from '@components';
 import { Button, Input } from '@ui';
-import { ReactComponent as Filter } from '../../assets/icons/filter-square.svg';
-import { ReactComponent as Search } from '../../assets/icons/search.svg';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import { searchRoutes } from '../../services/slices/routeSlice/routeSlice';
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
+import { Filters } from '../../types/Filters';
+
+import { ReactComponent as Filter } from '../../assets/icons/filter-square.svg';
+import { ReactComponent as Search } from '../../assets/icons/search.svg';
 
 import styles from './RoutesMobilePage.module.scss';
-import { Filters } from '../../types/Filters';
 
 export const RoutesMobilePage = () => {
 	const navigate = useNavigate();
