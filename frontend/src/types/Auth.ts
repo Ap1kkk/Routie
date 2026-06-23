@@ -1,5 +1,3 @@
-import { UUID } from './User';
-
 export interface LoginRequest {
 	email: string;
 	password: string;
@@ -8,7 +6,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-	id: UUID;
+	id: string;
 	email: string;
 	name: string;
 	username: string;

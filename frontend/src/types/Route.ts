@@ -1,11 +1,10 @@
-import { UUID } from './User';
 import { Tags } from './Tags';
 import { Landmark } from './Landmark';
 
 export type RouteType = 'TOURIST' | 'SPORT' | 'MIXED';
 
 export interface Checkpoint {
-	id: UUID;
+	id: string;
 	latitude: number;
 	longitude: number;
 	sortOrder: number;
@@ -16,11 +15,11 @@ export interface CheckpointCreate {
 	latitude: number;
 	longitude: number;
 	sortOrder: number;
-	landmarkId: UUID;
+	landmarkId: string;
 }
 
 export interface Route {
-	id: UUID;
+	id: string;
 	title: string;
 	description: string;
 	type: string;
@@ -35,7 +34,7 @@ export interface Route {
 }
 
 export interface RouteImage {
-	id: UUID;
+	id: string;
 	filename: string;
 	contentType: string;
 	createTs: string;
@@ -43,7 +42,7 @@ export interface RouteImage {
 }
 
 export interface RouteImageUpload {
-	id: UUID;
+	id: string;
 	filename: string;
 	contentType: string;
 	createTs: string;

@@ -1,10 +1,8 @@
 import { Route } from './Route';
 import { Tags } from './Tags';
 
-export type UUID = string;
-
 export interface User {
-	id: UUID;
+	id: string;
 	username: string;
 	name: string;
 	email: string;
@@ -20,34 +18,34 @@ export interface User {
 
 export interface AvatarUser {
 	id: string;
-	user_id: UUID;
+	user_id: string;
 	avatar: string;
 }
 
 export interface UserTags {
-	user_id: UUID;
+	user_id: string;
 	tags: Tags[];
 }
 
 export interface RoleUser {
-	user_id: UUID;
+	user_id: string;
 	role: 'USER' | 'ADMIN';
 }
 
 export interface Friend {
-	id: UUID;
+	id: string;
 	username: string;
 	name: string;
 	avatar?: string;
 }
 
 export interface FriendsUser {
-	user_id: UUID;
+	user_id: string;
 	friends: Friend[];
 }
 
 export interface RoutesHistoryUser {
-	user_id: UUID;
+	user_id: string;
 	historyRoutes: Route[];
 }
 
@@ -83,7 +81,7 @@ export interface TUpdateUserData {
 }
 
 export interface UserSession {
-	userId: UUID;
+	userId: string;
 	accessToken: string;
 	refreshToken: string;
 	expiresAt: string;
