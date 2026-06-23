@@ -146,7 +146,7 @@ export const getPopularRoutesApi = async (params?: {
 	startDate?: string;
 	endDate?: string;
 	limit?: number;
-}): Promise<ApiResponse<PaginatedRoutes>> => {
+}): Promise<ApiResponse<Route[]>> => {
 	try {
 		const queryParams = new URLSearchParams();
 
@@ -165,7 +165,7 @@ export const getPopularRoutesApi = async (params?: {
 			headers: getHeaders(true),
 		});
 
-		return await handleResponse<PaginatedRoutes>(response);
+		return await handleResponse<Route[]>(response);
 	} catch (error: any) {
 		return {
 			success: false,

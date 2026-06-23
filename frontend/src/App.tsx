@@ -41,6 +41,12 @@ import {
 } from './services/slices/authSlice/authSlice';
 import { selectInitialized } from './services/selectors/userSelectors';
 import { getAccessToken, getRefreshToken } from './utils/auth';
+import {
+	getDailyRouteApi,
+	getPopularRoutesApi,
+	getRecommendedRoutesApi,
+} from './utils/api/RoutesApi';
+import { downloadFileApi } from './utils/api/FileApi';
 
 export function App() {
 	const dispatch = useDispatch();
@@ -107,6 +113,7 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/routie',
+						loader: mainPageLoader,
 						element: <MainPage />,
 					},
 					{
@@ -215,3 +222,47 @@ export const router = createBrowserRouter([
 		],
 	},
 ]);
+
+export async function mainPageLoader() {
+	const [dailyRes, recommendedRes, popularRes] = await Promise.all([
+		getDailyRouteApi(),
+		getRecommendedRoutesApi({ page: 0, size: 8 }),
+		getPopularRoutesApi({ limit: 6 }),
+	]);
+
+	if (
+		!dailyRes.success ||
+		!recommendedRes.success ||
+		!popularRes.success ||
+		!dailyRes.data ||
+		!recommendedRes.data ||
+		!popularRes.data
+	) {
+		throw new Error('Ошибка загрузки данных');
+	}
+
+	const dailyRoute = dailyRes.data;
+	const recommendedRoutes = recommendedRes.data;
+	const popularRoutes = popularRes.data;
+
+	const allRoutes = [...recommendedRoutes.content, ...popularRoutes];
+
+	const images = await Promise.all(
+		allRoutes.map(async (route) => {
+			if (!route.images?.length) {
+				return [route.id, null];
+			}
+
+			const imageUrl = await downloadFileApi(route.images[0].id);
+
+			return [route.id, imageUrl];
+		})
+	);
+
+	return {
+		dailyRoute,
+		recommendedRoutes,
+		popularRoutes,
+		routeImages: Object.fromEntries(images),
+	};
+}

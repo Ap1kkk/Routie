@@ -1,86 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '@store';
-
-import {
-	fetchDailyRoute,
-	fetchRecommendedRoutes,
-	fetchPopularRoutes,
-} from '../../services/slices/routeSlice/routeSlice';
-
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
-
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { PaginatedRoutes, Route } from '../../types/Route';
+
 import lightImage from '../../assets/images/main-page.png';
 import blackImage from '../../assets/images/main-black.png';
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
-import { Route } from '../../types/Route';
 
 import styles from './MainPage.module.scss';
 
+
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
-
-	const {
-		dailyRoute,
-		recommendedRoutes: paginatedRecommended,
-		popularRoutes, // ← массив
-		isLoading,
-		error,
-	} = useSelector((state) => state.routes);
-
-	const recommendedList = paginatedRecommended?.content || [];
-	const popularList = popularRoutes || []; // ← массив напрямую
-
 	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
-	const [routeImages, setRouteImages] = useState<Record<string, string>>({});
+
+	const { dailyRoute, recommendedRoutes, popularRoutes, routeImages } =
+		useLoaderData() as {
+			dailyRoute: Route;
+			recommendedRoutes: PaginatedRoutes;
+			popularRoutes: Route[];
+			routeImages: Record<string, string>;
+		};
+
+	const recommendedList = recommendedRoutes?.content ?? [];
+	const popularList = popularRoutes;
 
 	const [theme] = useState<boolean>(
 		() => localStorage.getItem('theme') === 'light'
 	);
-
-	useEffect(() => {
-		dispatch(fetchDailyRoute());
-		dispatch(fetchRecommendedRoutes({ page: 0, size: 8 }));
-		dispatch(fetchPopularRoutes({ limit: 6 }));
-	}, [dispatch]);
-
-	useEffect(() => {
-		const loadImages = async () => {
-			const imageMap: Record<string, string> = { ...routeImages };
-
-			for (const route of recommendedList) {
-				if (route.images?.length > 0 && !imageMap[route.id]) {
-					const fileId = route.images[0].id;
-					try {
-						const imageUrl = await dispatch(
-							downloadFile(fileId)
-						).unwrap();
-						imageMap[route.id] = imageUrl;
-					} catch (err) {
-						console.error(
-							`Не удалось загрузить фото для ${route.id}`,
-							err
-						);
-					}
-				}
-			}
-			setRouteImages(imageMap);
-		};
-
-		if (recommendedList.length > 0) loadImages();
-
-		return () => {
-			Object.values(routeImages).forEach((url) =>
-				URL.revokeObjectURL(url)
-			);
-		};
-	}, [recommendedList, dispatch]);
 
 	const handleToggleLike = (routeId: string) => {
 		setLikedRoutes((prev) => ({ ...prev, [routeId]: !prev[routeId] }));
@@ -101,17 +53,10 @@ export const MainPage: React.FC = () => {
 			<section className={styles.mainPageContainer}>
 				<div className={styles.containerRouteOfTheDay}>
 					<div className={styles.routeContainer}>
-						{isLoading && <div>Загрузка маршрута дня...</div>}
-						{error && <div>Ошибка: {error}</div>}
-
-						{dailyRoute && !isLoading && (
-							<RouteOfTheDay
-								route={dailyRoute}
-								onNavigate={() =>
-									navigate(`/map/${dailyRoute.id}`)
-								}
-							/>
-						)}
+						<RouteOfTheDay
+							route={dailyRoute}
+							onNavigate={() => navigate(`/map/${dailyRoute.id}`)}
+						/>
 					</div>
 				</div>
 
