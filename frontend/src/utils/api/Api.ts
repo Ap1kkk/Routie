@@ -11,6 +11,8 @@ export const API_LANDMARKS_URL = 'api/v1/landmarks';
 export const API_FRIENDS_URL = 'api/v1/profile/friends';
 export const API_TAGS_URL = 'api/v1/tags';
 export const API_GAMIFICATION_URL = 'api/v1/gamification';
+export const API_STATISTICS_URL = 'api/v1/statistics';
+export const API_SESSIONS_URL = 'api/v1/sessions';
 
 export interface ApiError {
 	code: string;

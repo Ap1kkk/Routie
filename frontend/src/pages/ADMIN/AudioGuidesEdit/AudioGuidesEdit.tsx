@@ -6,13 +6,13 @@ import {
 	deleteAudioGuide,
 	uploadAudioGuideFile,
 } from '../../../services/slices/audioGuideSlice/audioGuideSlice';
+import { Button, Input, Modal } from '@ui';
+import { useNavigate } from 'react-router-dom';
 import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
 import { AudioGuide } from '../../../types/AudioGuide';
 import { useDispatch, useSelector } from '@store';
 
 import styles from './AudioGuidesEdit.module.scss';
-import { Button, Input, Modal } from '@ui';
-import { useNavigate } from 'react-router-dom';
 
 export const AudioGuidesEdit = () => {
 	const dispatch = useDispatch();
