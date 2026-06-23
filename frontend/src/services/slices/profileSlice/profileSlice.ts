@@ -7,6 +7,7 @@ import {
 	getFavoritesApi,
 	updateProfileApi,
 	uploadAvatarApi,
+	getUserStatisticsApi,
 } from '../../../utils/api/ProfileApi';
 
 import {
@@ -23,6 +24,7 @@ interface ProfileState {
 	userProfile: FullProfile | null;
 	shortProfile: ShortProfile | null;
 	favorites: PaginatedRoutes | null;
+	statistics: any | null;
 	avatar: ProfileImage | null;
 	loading: boolean;
 	error: string | null;
@@ -33,6 +35,7 @@ const initialState: ProfileState = {
 	userProfile: null,
 	shortProfile: null,
 	favorites: null,
+	statistics: null,
 	avatar: null,
 	loading: false,
 	error: null,
@@ -82,8 +85,26 @@ export const getShortProfile = createAsyncThunk<
 
 	if (!response.success || !response.data) {
 		return rejectWithValue(
-			response.error?.message ||
-			'Ошибка получения краткого профиля'
+			response.error?.message || 'Ошибка получения краткого профиля'
+		);
+	}
+
+	return response.data;
+});
+
+export const getUserStatistics = createAsyncThunk<
+	any, // Можно создать отдельный интерфейс позже
+	{ startDate?: string; endDate?: string } | undefined,
+	{ rejectValue: string }
+>('profile/getUserStatistics', async (params, { rejectWithValue }) => {
+	const response = await getUserStatisticsApi(
+		params?.startDate,
+		params?.endDate
+	);
+
+	if (!response.success || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения статистики'
 		);
 	}
 
@@ -236,6 +257,19 @@ const profileSlice = createSlice({
 				state.error =
 					action.payload ||
 					'Ошибка обновления профиля';
+			})
+
+			.addCase(getUserStatistics.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(getUserStatistics.fulfilled, (state, action) => {
+				state.loading = false;
+				state.statistics = action.payload;
+			})
+			.addCase(getUserStatistics.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload || 'Ошибка получения статистики';
 			})
 
 			.addCase(uploadAvatar.pending, state => {

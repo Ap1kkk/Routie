@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './Statistic.module.scss';
 import { StatisticCard } from '../StatisticCard';
 import { Button } from '@ui';
@@ -7,19 +7,21 @@ import { PeriodKey, PERIODS, StatisticCardData } from '../../types/statistic';
 interface StatisticProps {
 	title?: string;
 	statisticData?: StatisticCardData[];
+	activePeriod: PeriodKey;
+	onPeriodChange: (period: PeriodKey) => void;
 }
 
-export const Statistic: React.FC<StatisticProps> = ({ statisticData = [] }) => {
-	const [activePeriod, setActivePeriod] = useState<PeriodKey>('day')
-
-	const handlePeriodChange = (period: PeriodKey) => {
-		setActivePeriod(period);
-		console.log(`Выбран период: ${period}`);
-	};
-
+export const Statistic: React.FC<StatisticProps> = ({
+	title = 'Статистика',
+	statisticData = [],
+	activePeriod,
+	onPeriodChange,
+}) => {
 	return (
 		<div className={styles.statisticContainer}>
-			<h2 className={styles.statisticTitle}>Статистика</h2>
+			<h2 className={styles.statisticTitle}>{title}</h2>
+
+			{/* Фильтры по периоду */}
 			<div className={styles.statisticFilterContainer}>
 				{PERIODS.map((period) => (
 					<Button
@@ -28,17 +30,25 @@ export const Statistic: React.FC<StatisticProps> = ({ statisticData = [] }) => {
 						className={`${styles.statisticButton} ${
 							activePeriod === period.key ? styles.active : ''
 						}`}
-						onClick={() => handlePeriodChange(period.key)}
+						onClick={() => onPeriodChange(period.key)}
 						children={period.label}
 					/>
 				))}
 			</div>
+
+			{/* Карточки статистики */}
 			<div className={styles.statisticContent}>
-				{statisticData.map((item, index) => (
-					<StatisticCard key={index} title={item.title}>
-						{item.value}
-					</StatisticCard>
-				))}
+				{statisticData.length > 0 ? (
+					statisticData.map((item, index) => (
+						<StatisticCard key={index} title={item.title}>
+							{item.value}
+						</StatisticCard>
+					))
+				) : (
+					<p className={styles.emptyText}>
+						Нет данных за выбранный период
+					</p>
+				)}
 			</div>
 		</div>
 	);
