@@ -77,11 +77,11 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					// alt={route.name}
+					alt={route.title}
 					className={styles.imageContainerCompact}
 					loading='lazy'
 				/>
-				{/*<span className={styles.compactRouteName}>{route.name}</span>*/}
+				<span className={styles.compactRouteName}>{route.title}</span>
 			</Blur>
 		);
 	}
