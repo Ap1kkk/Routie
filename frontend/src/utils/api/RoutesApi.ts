@@ -131,7 +131,48 @@ export const getFullRouteApi = async (
 			success: false,
 			error: {
 				code: 'GET_FULL_ROUTE_ERROR',
-				message: error.message || 'Ошибка получения полной информации о маршруте',
+				message:
+					error.message ||
+					'Ошибка получения полной информации о маршруте',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Получение популярных маршрутов */
+export const getPopularRoutesApi = async (params?: {
+	startDate?: string;
+	endDate?: string;
+	limit?: number;
+}): Promise<ApiResponse<PaginatedRoutes>> => {
+	try {
+		const queryParams = new URLSearchParams();
+
+		if (params?.startDate)
+			queryParams.append('startDate', params.startDate);
+		if (params?.endDate) queryParams.append('endDate', params.endDate);
+		if (params?.limit !== undefined)
+			queryParams.append('limit', params.limit.toString());
+
+		const url = `${API_URL}/${API_ROUTES_URL}/popular${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedRoutes>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_POPULAR_ROUTES_ERROR',
+				message:
+					error.message || 'Ошибка получения популярных маршрутов',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),
