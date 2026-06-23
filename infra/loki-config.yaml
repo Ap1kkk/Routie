@@ -2,6 +2,8 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
+  grpc_server_max_recv_msg_size: 16777216  # 16 MiB
+  grpc_server_max_send_msg_size: 16777216
 
 ingester:
   lifecycler:
