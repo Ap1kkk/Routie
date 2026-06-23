@@ -49,8 +49,13 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Transactional
     public void requestReset(PasswordResetRequestDto request) {
         // Ищем пользователя по email; если не найден — возвращаем успех (не раскрываем наличие аккаунта)
-        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+        userRepository.findByEmail(request.getEmail()).ifPresent(this::requestResetForUser);
+    }
+
+    private void requestResetForUser(User user) {
+        try {
             // Удаляем предыдущие коды этого пользователя
+            log.info("Инициирован сброс пароля для пользователя: {}", user.getEmail());
             resetCodeRepository.deleteAllByUser(user);
 
             String rawCode = generateOtpCode();
@@ -65,7 +70,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
             emailService.sendPasswordResetCode(user.getEmail(), rawCode);
             log.info("OTP-код сброса пароля отправлен пользователю: {}", user.getEmail());
-        });
+        } catch (Exception e) {
+            log.error("Ошибка при сбросе пароля: {}", e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
