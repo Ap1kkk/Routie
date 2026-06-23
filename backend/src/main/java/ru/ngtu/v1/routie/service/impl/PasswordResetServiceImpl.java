@@ -68,8 +68,9 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
             resetCodeRepository.save(code);
 
+            // Отправка письма асинхронна (см. @Async на EmailServiceImpl) — запрос не ждёт ответа от SMTP
             emailService.sendPasswordResetCode(user.getEmail(), rawCode);
-            log.info("OTP-код сброса пароля отправлен пользователю: {}", user.getEmail());
+            log.info("OTP-код сброса пароля поставлен в очередь на отправку: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Ошибка при сбросе пароля: {}", e.getMessage(), e);
             throw new RuntimeException(e);

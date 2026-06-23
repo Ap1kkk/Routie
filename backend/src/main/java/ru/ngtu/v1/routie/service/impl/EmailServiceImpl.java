@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.ngtu.v1.routie.service.EmailService;
 
@@ -19,6 +20,7 @@ public class EmailServiceImpl implements EmailService {
     private String from;
 
     @Override
+    @Async("emailExecutor")
     public void sendPasswordResetCode(String to, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
@@ -33,7 +35,13 @@ public class EmailServiceImpl implements EmailService {
                 Если вы не запрашивали сброс пароля — проигнорируйте это письмо.
                 """.formatted(code));
 
-        mailSender.send(message);
-        log.info("Письмо со сбросом пароля отправлено на {}", to);
+        try {
+            mailSender.send(message);
+            log.info("Письмо со сбросом пароля отправлено на {}", to);
+        } catch (Exception e) {
+            // Запрос на сброс пароля уже завершён к этому моменту — пользователю нечем ответить.
+            // Логируем, чтобы проблема с SMTP была видна в логах, а не терялась молча.
+            log.error("Не удалось отправить письмо со сбросом пароля на {}: {}", to, e.getMessage(), e);
+        }
     }
 }
