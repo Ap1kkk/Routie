@@ -87,6 +87,39 @@ export const getShortProfileApi = async (
 	}
 };
 
+export const getUserStatisticsApi = async (
+	startDate?: string,
+	endDate?: string
+): Promise<ApiResponse<any>> => {
+	try {
+		const queryParams = new URLSearchParams();
+
+		if (startDate) queryParams.append('startDate', startDate);
+		if (endDate) queryParams.append('endDate', endDate);
+
+		const url = `${API_URL}/${API_PROFILE_URL}/me/statistics${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_STATISTICS_ERROR',
+				message: error.message || 'Ошибка получения статистики',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
 export const getFavoritesApi = async (
 	params?: GetFavoritesParams
 ): Promise<ApiResponse<PaginatedRoutes>> => {
