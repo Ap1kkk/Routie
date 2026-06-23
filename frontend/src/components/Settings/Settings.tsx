@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './Settings.module.scss';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Circle } from '@ui';
 import { useTheme } from '../../hooks/useTheme';
+import { getUserRolesApi } from '../../utils/api/AuthApi';
 
 import { ReactComponent as User } from '../../assets/icons/user-circle.svg';
 import { ReactComponent as Edit } from '../../assets/icons/edit.svg';
@@ -12,7 +13,6 @@ import { ReactComponent as Sun } from '../../assets/icons/sun.svg';
 import { ReactComponent as Moon } from '../../assets/icons/moon.svg';
 import { ReactComponent as ArrowRight } from '../../assets/icons/chevron-right.svg';
 import { ReactComponent as Monitor } from '../../assets/icons/book.svg';
-import {SessionCard} from "../SessionCard"; // или book.svg
 
 interface ActiveSession {
 	id: string;
@@ -44,6 +44,23 @@ export const Settings: React.FC<SettingsProps> = ({
 }) => {
 	const navigate = useNavigate();
 	const { isLight, toggleTheme } = useTheme();
+	const [isAdmin, setIsAdmin] = useState(false);
+
+	useEffect(() => {
+		const loadRoles = async () => {
+			try {
+				const result = await getUserRolesApi();
+
+				if (result.success && result.data) {
+					setIsAdmin(result.data.roles.includes('ADMIN'));
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		};
+
+		loadRoles();
+	}, []);
 
 	return (
 		<div className={styles.container}>
@@ -57,7 +74,6 @@ export const Settings: React.FC<SettingsProps> = ({
 			</article>
 
 			<div className={styles.sectionCards}>
-				{/* Профиль */}
 				<article className={styles.card}>
 					<div className={styles.buttonCard}>
 						<User />
@@ -82,7 +98,6 @@ export const Settings: React.FC<SettingsProps> = ({
 					</div>
 				</article>
 
-				{/* Статистика и Достижения */}
 				<article className={styles.card}>
 					<div className={styles.buttonCard}>
 						<Stats />
@@ -107,7 +122,6 @@ export const Settings: React.FC<SettingsProps> = ({
 					</div>
 				</article>
 
-				{/* Тема */}
 				<article className={styles.card}>
 					<Button
 						onClick={toggleTheme}
@@ -131,15 +145,16 @@ export const Settings: React.FC<SettingsProps> = ({
 					</div>
 				</article>
 
-				{/* Админ и Выход */}
-				<article className={styles.card}>
-					<Button
-						onClick={() => navigate('/admin')}
-						variant='tertiary'
-						className={`${styles.buttons} ${styles.exit}`}
-						children='Панель администратора'
-					/>
-				</article>
+				{isAdmin && (
+					<article className={styles.card}>
+						<Button
+							onClick={() => navigate('/admin')}
+							variant='tertiary'
+							className={`${styles.buttons} ${styles.exit}`}>
+							Панель администратора
+						</Button>
+					</article>
+				)}
 
 				<article className={styles.card}>
 					<Button

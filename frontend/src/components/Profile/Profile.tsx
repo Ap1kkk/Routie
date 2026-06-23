@@ -16,17 +16,13 @@ interface ProfileProps {
 	email?: string;
 	phone?: string;
 	avatar?: string;
-
 	city?: string;
 	gender?: string;
-
 	level?: number;
 	totalXp?: number;
-
 	routesCounter?: number;
 	totalDistanceMeters?: number;
 	totalLandmarksVisited?: number;
-
 	birthday?: string;
 	friends?: Friend[];
 	recentRoutes?: Route[];
@@ -42,19 +38,15 @@ export const Profile: React.FC<ProfileProps> = ({
 	email,
 	phone,
 	avatar,
-
 	city,
 	gender,
-
 	level,
 	totalXp,
-
 	routesCounter,
 	totalDistanceMeters,
 	totalLandmarksVisited,
-
 	birthday,
-	friends = [], // по умолчанию пустой массив
+	friends = [],
 	recentRoutes = [],
 
 	onFriendClick,
@@ -75,7 +67,6 @@ export const Profile: React.FC<ProfileProps> = ({
 		setShowMenu(!showMenu);
 	};
 
-	// Закрытие меню при клике вне
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
 			if (
@@ -119,7 +110,6 @@ export const Profile: React.FC<ProfileProps> = ({
 					</div>
 
 					<div className={styles.containerMenu}>
-						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -131,7 +121,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
-						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<div className={styles.containerContextHeader}>
 								<h5 className={styles.containerContextTitle}>
@@ -158,7 +147,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							</div>
 						</div>
 
-						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
 							<span className={styles.containerContextTittle}>
 								Последние маршруты
@@ -186,7 +174,6 @@ export const Profile: React.FC<ProfileProps> = ({
 					</div>
 				</div>
 			) : (
-				/* ===================== ДЕСКТОП ===================== */
 				<div className={styles.containerMobile}>
 					<div className={styles.headerMobile}>
 						<Avatar src={avatar} size='large' />
@@ -212,12 +199,11 @@ export const Profile: React.FC<ProfileProps> = ({
 
 					<Button
 						variant='primary'
-						onClick={() => navigate('/Admin')}>
+						onClick={() => navigate('/admin')}>
 						Панель администратора
 					</Button>
 
 					<div className={styles.containerMenu}>
-						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -229,7 +215,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
-						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Друзья ({friends.length})
@@ -253,7 +238,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							</div>
 						</div>
 
-						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
 							<span className={styles.containerContextTittle}>
 								Последние маршруты

@@ -2,15 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 
-import { searchRoutes, fetchRecommendedRoutes } from '../../services/slices/routeSlice/routeSlice';
+import {
+	searchRoutes,
+	fetchRecommendedRoutes,
+} from '../../services/slices/routeSlice/routeSlice';
 import { getFavorites } from '../../services/slices/profileSlice/profileSlice'; // ← добавили
 import { fetchAllTags } from '../../services/slices/tagsSlice/tagsSlice';
 
 import { Filter, RouteCard } from '@components';
-import { Route } from '../../types/Route';
+import { Filters } from '../../types/Filters';
 
 import styles from './FilterDesktopPage.module.scss';
-import { Filters } from '../../types/Filters';
 
 type ListType = 'recommended' | 'popular' | 'favorites';
 
@@ -27,18 +29,18 @@ export const FilterDesktopPage: React.FC = () => {
 
 	const listType = getListType();
 
-	// Redux
-	const { searchResults, recommendedRoutes: paginatedRecommended, isLoading: routeLoading, error } = useSelector(
-		(state) => state.routes
-	);
+	const {
+		searchResults,
+		recommendedRoutes: paginatedRecommended,
+		isLoading: routeLoading,
+		error,
+	} = useSelector((state) => state.routes);
 
-	const { favorites: paginatedFavorites, loading: favoritesLoading } = useSelector(
-		(state) => state.profile
-	);
+	const { favorites: paginatedFavorites, loading: favoritesLoading } =
+		useSelector((state) => state.profile);
 
 	const { allTags } = useSelector((state) => state.tags);
 
-	// Выбираем нужный список в зависимости от типа страницы
 	const getCurrentRoutes = () => {
 		if (listType === 'favorites') {
 			return paginatedFavorites?.content || [];
@@ -58,7 +60,6 @@ export const FilterDesktopPage: React.FC = () => {
 
 	const currentTitle = pageTitles[listType];
 
-	// Загрузка данных
 	useEffect(() => {
 		dispatch(fetchAllTags());
 
@@ -67,32 +68,53 @@ export const FilterDesktopPage: React.FC = () => {
 		} else if (listType === 'favorites') {
 			dispatch(getFavorites({ page: 0, size: 20 }));
 		}
-		// popular — позже
 	}, [dispatch, listType]);
 
-	// Применение фильтров (пока только для recommended и общего поиска)
-	const handleApplyFilters = useCallback((filters: Filters) => {
-		setActiveFilters(filters);
+	const handleApplyFilters = useCallback(
+		(filters: Filters) => {
+			setActiveFilters(filters);
 
-		const params: any = {
-			search: filters.search?.trim() || undefined,
-			type: filters.type,
-			difficultyMin: filters.difficultyMin,
-			difficultyMax: filters.difficultyMax,
-			lengthMin: filters.distance.min > 0 ? Math.floor(filters.distance.min) : undefined,
-			lengthMax: filters.distance.max < 100000 ? Math.ceil(filters.distance.max) : undefined,
-			estimatedTimeMin: filters.duration?.min !== undefined ? Math.floor(filters.duration.min) : undefined,
-			estimatedTimeMax: filters.duration?.max !== undefined ? Math.ceil(filters.duration.max) : undefined,
-			city: filters.city,
-			tags: filters.categoryIds.length > 0 ? filters.categoryIds.join(',') : undefined,
-			favoriteOnly: listType === 'favorites' ? true : filters.favoriteOnly,
-			hasAudioGuide: filters.hasAudioGuide,
-			page: 0,
-			size: 20,
-		};
+			const params: any = {
+				search: filters.search?.trim() || undefined,
+				type: filters.type,
+				difficultyMin: filters.difficultyMin,
+				difficultyMax: filters.difficultyMax,
+				lengthMin:
+					filters.lengthMin !== undefined && filters.lengthMin > 0
+						? Math.floor(filters.lengthMin)
+						: undefined,
 
-		dispatch(searchRoutes(params));
-	}, [dispatch, listType]);
+				lengthMax:
+					filters.lengthMax !== undefined && filters.lengthMax < 10000
+						? Math.ceil(filters.lengthMax)
+						: undefined,
+
+				estimatedTimeMin:
+					filters.estimatedTimeMin !== undefined
+						? Math.floor(filters.estimatedTimeMin)
+						: undefined,
+
+				estimatedTimeMax:
+					filters.estimatedTimeMax !== undefined
+						? Math.ceil(filters.estimatedTimeMax)
+						: undefined,
+
+				tags:
+					filters.tags && filters.tags.length > 0
+						? filters.tags.join(',')
+						: undefined,
+				city: filters.city,
+				favoriteOnly:
+					listType === 'favorites' ? true : filters.favoriteOnly,
+				hasAudioGuide: filters.hasAudioGuide,
+				page: 0,
+				size: 20,
+			};
+
+			dispatch(searchRoutes(params));
+		},
+		[dispatch, listType]
+	);
 
 	const handleResetFilters = () => {
 		setActiveFilters(null);
@@ -128,7 +150,7 @@ export const FilterDesktopPage: React.FC = () => {
 							<RouteCard
 								key={route.id}
 								route={route}
-								variant="standard"
+								variant='standard'
 							/>
 						))}
 					</div>

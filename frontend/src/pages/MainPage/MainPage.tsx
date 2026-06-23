@@ -9,15 +9,14 @@ import {
 } from '../../services/slices/routeSlice/routeSlice';
 
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
-
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 
 import { useDeviceType } from '../../hooks/useDeviceType';
-
 import lightImage from '../../assets/images/main-page.png';
 import blackImage from '../../assets/images/main-black.png';
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
+import { Route } from '../../types/Route';
 
 import styles from './MainPage.module.scss';
 
@@ -100,7 +99,6 @@ export const MainPage: React.FC = () => {
 			/>
 
 			<section className={styles.mainPageContainer}>
-				{/* Маршрут дня */}
 				<div className={styles.containerRouteOfTheDay}>
 					<div className={styles.routeContainer}>
 						{isLoading && <div>Загрузка маршрута дня...</div>}

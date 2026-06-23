@@ -1,5 +1,4 @@
 import { UUID } from './User';
-import { ProfileImage } from './Profile';
 import { Tags } from './Tags';
 import { Landmark } from './Landmark';
 
@@ -7,15 +6,15 @@ export type RouteType = 'TOURIST' | 'SPORT' | 'MIXED';
 
 export interface Checkpoint {
 	id: UUID;
-	latitude: number | null;
-	longitude: number | null;
+	latitude: number;
+	longitude: number;
 	sortOrder: number;
 	landmark: Landmark;
 }
 
 export interface CheckpointCreate {
-	latitude: number | null;
-	longitude: number | null;
+	latitude: number;
+	longitude: number;
 	sortOrder: number;
 	landmarkId: UUID;
 }
@@ -31,7 +30,7 @@ export interface Route {
 	city: string;
 	completionsCount: number;
 	isActive: boolean;
-	images: ProfileImage[];
+	images: RouteImage[];
 	tags: Tags[];
 }
 
