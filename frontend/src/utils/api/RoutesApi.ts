@@ -141,6 +141,42 @@ export const getFullRouteApi = async (
 	}
 };
 
+/** Получение избранных маршрутов */
+export const getFavoritesApi = async (params?: {
+	page?: number;
+	size?: number;
+}): Promise<ApiResponse<PaginatedRoutes>> => {
+	try {
+		const queryParams = new URLSearchParams();
+		if (params?.page !== undefined)
+			queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined)
+			queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_ROUTES_URL}/favorites${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedRoutes>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_FAVORITES_ERROR',
+				message:
+					error.message || 'Ошибка получения избранных маршрутов',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
 /** Получение популярных маршрутов */
 export const getPopularRoutesApi = async (params?: {
 	startDate?: string;
@@ -321,6 +357,60 @@ export const createRouteApi = async (
 			error: {
 				code: 'CREATE_ROUTE_ERROR',
 				message: error.message,
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Toggle избранного (добавить / удалить) */
+export const toggleFavoriteApi = async (
+	routeId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}/favorite`,
+			{
+				method: 'POST',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'TOGGLE_FAVORITE_ERROR',
+				message: error.message || 'Ошибка изменения избранного',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Удаление маршрута из избранного */
+export const removeFromFavoritesApi = async (
+	routeId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}/favorite`,
+			{
+				method: 'DELETE',           // ← DELETE для удаления
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'REMOVE_FROM_FAVORITES_ERROR',
+				message: error.message || 'Ошибка удаления из избранного',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),

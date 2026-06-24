@@ -105,7 +105,7 @@ export const fetchRecommendedRoutes = createAsyncThunk<
 });
 
 export const fetchPopularRoutes = createAsyncThunk<
-	Route[], // ← возвращаем массив
+	Route[],
 	{ limit?: number } | undefined,
 	{ rejectValue: string }
 >(
@@ -120,12 +120,10 @@ export const fetchPopularRoutes = createAsyncThunk<
 			);
 		}
 
-		// Если сервер возвращает массив напрямую — используем его
 		if (Array.isArray(response.data)) {
 			return response.data;
 		}
 
-		// Если вдруг вернётся PaginatedRoutes — берём content
 		return response.data.content || [];
 	}
 );

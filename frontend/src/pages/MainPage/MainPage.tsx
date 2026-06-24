@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useDeviceType } from '../../hooks/useDeviceType';
+
 import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
-import { useDeviceType } from '../../hooks/useDeviceType';
-import { PaginatedRoutes, Route } from '../../types/Route';
 
 import lightImage from '../../assets/images/main-page.png';
 import blackImage from '../../assets/images/main-black.png';
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
 
 import styles from './MainPage.module.scss';
-
+import { PaginatedRoutes, Route } from '../../types/Route';
+import {
+	toggleFavoriteApi,
+	getFavoritesApi,
+	removeFromFavoritesApi
+} from '../../utils/api/RoutesApi';
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
+
 	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
 
 	const { dailyRoute, recommendedRoutes, popularRoutes, routeImages } =
@@ -28,14 +34,70 @@ export const MainPage: React.FC = () => {
 		};
 
 	const recommendedList = recommendedRoutes?.content ?? [];
-	const popularList = popularRoutes;
+	const popularList = popularRoutes || [];
 
 	const [theme] = useState<boolean>(
 		() => localStorage.getItem('theme') === 'light'
 	);
 
-	const handleToggleLike = (routeId: string) => {
-		setLikedRoutes((prev) => ({ ...prev, [routeId]: !prev[routeId] }));
+	// Загружаем текущие избранные маршруты
+	useEffect(() => {
+		const loadFavorites = async () => {
+			try {
+				const res = await getFavoritesApi({ page: 0, size: 100 });
+				if (res.success && res.data?.content) {
+					const initialLiked: Record<string, boolean> = {};
+					res.data.content.forEach(route => {
+						initialLiked[route.id] = true;
+					});
+					setLikedRoutes(initialLiked);
+				}
+			} catch (err) {
+				console.error('Не удалось загрузить избранное:', err);
+			}
+		};
+
+		loadFavorites();
+	}, []);
+
+	// Toggle избранного с правильным методом
+	const handleToggleLike = async (routeId: string) => {
+		const isCurrentlyLiked = likedRoutes[routeId] || false;
+
+		// Оптимистическое обновление
+		setLikedRoutes((prev) => ({
+			...prev,
+			[routeId]: !isCurrentlyLiked,
+		}));
+
+		try {
+			if (isCurrentlyLiked) {
+				// Удаляем из избранного
+				const response = await removeFromFavoritesApi(routeId);
+				if (!response.success) {
+					setLikedRoutes((prev) => ({
+						...prev,
+						[routeId]: true,
+					}));
+				}
+			} else {
+				// Добавляем в избранное
+				const response = await toggleFavoriteApi(routeId);
+				if (!response.success) {
+					setLikedRoutes((prev) => ({
+						...prev,
+						[routeId]: false,
+					}));
+				}
+			}
+		} catch (error) {
+			// Откат при любой ошибке
+			setLikedRoutes((prev) => ({
+				...prev,
+				[routeId]: isCurrentlyLiked,
+			}));
+			console.error('Ошибка изменения избранного:', error);
+		}
 	};
 
 	const handleCardClick = (routeId: string) => {
@@ -51,6 +113,7 @@ export const MainPage: React.FC = () => {
 			/>
 
 			<section className={styles.mainPageContainer}>
+				{/* Маршрут дня */}
 				<div className={styles.containerRouteOfTheDay}>
 					<div className={styles.routeContainer}>
 						<RouteOfTheDay
@@ -60,6 +123,7 @@ export const MainPage: React.FC = () => {
 					</div>
 				</div>
 
+				{/* Популярное */}
 				{popularList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
@@ -108,6 +172,7 @@ export const MainPage: React.FC = () => {
 					</article>
 				)}
 
+				{/* Рекомендованное */}
 				{recommendedList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
@@ -121,7 +186,7 @@ export const MainPage: React.FC = () => {
 								onClick={() =>
 									navigate(
 										isMobile
-											? '/recommended'
+											? '/recommended-mobile'
 											: '/recommended'
 									)
 								}
