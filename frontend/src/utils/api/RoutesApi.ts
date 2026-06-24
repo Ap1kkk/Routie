@@ -442,3 +442,20 @@ export const updateRouteApi = async (
 		};
 	}
 };
+
+export const routeApi = {
+	search: searchRoutesApi,
+	create: createRouteApi,
+	update: updateRouteApi,
+	delete: deleteRouteApi,
+	getFavorites: getFavoritesApi,
+	removeFavorites: removeFromFavoritesApi,
+	toggleFavorite: toggleFavoriteApi,
+	uploadImages: uploadRouteImagesApi,
+	get: getRouteApi,
+	getFull: getFullRouteApi,
+	getPopular: getPopularRoutesApi,
+	getRecommended: getRecommendedRoutesApi,
+	getDaily: getDailyRouteApi,
+	publish: publishRouteApi,
+};

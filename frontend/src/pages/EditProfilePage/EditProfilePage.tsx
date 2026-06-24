@@ -60,12 +60,14 @@ export const EditProfilePage = () => {
 			username: profile.username || '',
 			email: profile.email || '',
 			birthDate: profile.dateOfBirth || null,
-			weight: profile.weight !== null && profile.weight !== undefined
-				? String(profile.weight)
-				: '',
-			height: profile.height !== null && profile.height !== undefined
-				? String(profile.height)
-				: '',
+			weight:
+				profile.weight !== null && profile.weight !== undefined
+					? String(profile.weight)
+					: '',
+			height:
+				profile.height !== null && profile.height !== undefined
+					? String(profile.height)
+					: '',
 			avatar: null,
 			preferences: profile.preferredTags?.map((tag) => tag.id) || [],
 		});
@@ -74,13 +76,18 @@ export const EditProfilePage = () => {
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!profile?.avatar?.id) return;
+
 			try {
-				const avatar = await downloadFileApi(profile.avatar.id);
-				setAvatarUrl(avatar);
+				const response = await downloadFileApi(profile.avatar.id);
+
+				if (response.success && response.data) {
+					setAvatarUrl(response.data);
+				}
 			} catch (error) {
 				console.error('Ошибка загрузки аватара', error);
 			}
 		};
+
 		loadAvatar();
 	}, [profile]);
 

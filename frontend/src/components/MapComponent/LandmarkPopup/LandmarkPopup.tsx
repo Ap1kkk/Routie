@@ -17,8 +17,11 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 			if (!landmark.images?.length) return;
 
 			try {
-				const url = await downloadFileApi(landmark.images[0].id);
-				setImageUrl(url);
+				const response = await downloadFileApi(landmark.images[0].id);
+
+				if (response.success && response.data) {
+					setImageUrl(response.data);
+				}
 			} catch (e) {
 				console.error(e);
 			}
@@ -27,7 +30,7 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 		loadImage();
 
 		return () => {
-			if (imageUrl) {
+			if (imageUrl?.startsWith('blob:')) {
 				URL.revokeObjectURL(imageUrl);
 			}
 		};
@@ -38,9 +41,13 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 			if (!landmark.audioGuide?.file?.id) return;
 
 			try {
-				const url = await downloadFileApi(landmark.audioGuide.file.id);
+				const response = await downloadFileApi(
+					landmark.audioGuide.file.id
+				);
 
-				setAudioUrl(url);
+				if (response.success && response.data) {
+					setAudioUrl(response.data);
+				}
 			} catch (e) {
 				console.error(e);
 			}
@@ -63,7 +70,7 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 
 				<p>{landmark.description}</p>
 
-				{audioUrl && landmark.audioGuide && (
+				{audioUrl && landmark.audioGuide?.file && (
 					<audio controls className={styles.audioControle}>
 						<source
 							src={audioUrl}

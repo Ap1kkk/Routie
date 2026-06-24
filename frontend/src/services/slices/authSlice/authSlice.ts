@@ -18,9 +18,7 @@ import {
 	RegisterRequest,
 	RegisterResponse,
 } from '../../../types/Auth';
-import {
-	ApiResponse,
-} from '../../../utils/api/Api';
+import { ApiResponse } from '../../../utils/api/Api';
 
 type TUserState = {
 	initialized: boolean;
@@ -311,5 +309,6 @@ const authSlice = createSlice({
 	},
 });
 
-export const { clearErrors, setInitialized, resetAuthState } = authSlice.actions;
+export const { clearErrors, setInitialized, resetAuthState } =
+	authSlice.actions;
 export default authSlice.reducer;

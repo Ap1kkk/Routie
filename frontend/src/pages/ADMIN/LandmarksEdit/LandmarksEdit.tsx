@@ -1,31 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-	createLandmark,
-	deleteLandmark,
-	searchLandmarks,
-	updateLandmark,
-	uploadLandmarkImages,
-} from '../../../services/slices/landmarkSlice/landmarkSlice';
-import { searchAudioGuides } from '../../../services/slices/audioGuideSlice/audioGuideSlice';
-import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
-import { Landmark } from '../../../types/Landmark';
+import { landmarkApi } from '../../../utils/api/LandmarkApi';
+import { audioGuideApi } from '../../../utils/api/AudioGuideApi';
+import { fileApi } from '../../../utils/api/FileApi';
 import { Button, Input, Modal, Textarea } from '@ui';
-import { useDispatch, useSelector } from '@store';
+import { Landmark } from '../../../types/Landmark';
+import { AudioGuide } from '../../../types/AudioGuide';
 
 import styles from './LandmarksEdit.module.scss';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 
 export const LandmarksEdit = () => {
-	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const {
-		searchResults: landmarkResults,
-		isLoading,
-		error,
-	} = useSelector((state) => state.landmarks);
-	const { searchResults: audioGuideResults } = useSelector(
-		(state) => state.audioGuides
-	);
+	const [audioGuides, setAudioGuides] = useState<AudioGuide[]>([]);
+	const [error, setError] = useState<string | null>(null);
+
 	const [editingLandmark, setEditingLandmark] = useState<Landmark | null>(
 		null
 	);
@@ -41,14 +30,47 @@ export const LandmarksEdit = () => {
 	const [images, setImages] = useState<File[]>([]);
 	const [search, setSearch] = useState('');
 
-	useEffect(() => {
-		loadData();
-	}, []);
+	const {
+		items: landmarks,
+		loading: isLoading,
+		reset,
+		loaderRef,
+	} = useInfiniteScroll<Landmark>({
+		loadPage: async (page, size) => {
+			const response = await landmarkApi.search({
+				page,
+				size,
+			});
 
-	const loadData = () => {
-		dispatch(searchLandmarks({ page: 0, size: 100 }));
-		dispatch(searchAudioGuides({ page: 0, size: 100 }));
+			if (!response.success || !response.data) {
+				return {
+					content: [],
+					totalPages: 0,
+				};
+			}
+
+			return response.data;
+		},
+	});
+
+	const loadAudioGuides = async () => {
+		try {
+			const response = await audioGuideApi.search({
+				page: 0,
+				size: 100,
+			});
+
+			if (response.success && response.data) {
+				setAudioGuides(response.data.content);
+			}
+		} catch {
+			setError('Ошибка загрузки аудиогидов');
+		}
 	};
+
+	useEffect(() => {
+		loadAudioGuides();
+	}, []);
 
 	const resetForm = () => {
 		setEditingLandmark(null);
@@ -60,69 +82,55 @@ export const LandmarksEdit = () => {
 	};
 
 	const handleCreate = async () => {
-		const result = await dispatch(
-			createLandmark({
-				title,
-				description,
-				audioGuideId: audioGuideId || undefined,
-			})
-		);
+		const response = await landmarkApi.create({
+			title,
+			description,
+			audioGuideId: audioGuideId || undefined,
+		});
 
-		if (createLandmark.fulfilled.match(result)) {
-			if (images.length) {
-				await dispatch(
-					uploadLandmarkImages({
-						landmarkId: result.payload.id,
-						files: images,
-					})
-				);
-			}
-			closeModal();
-			loadData();
+		if (!response.success || !response.data) return;
+
+		if (images.length) {
+			await landmarkApi.uploadImages(response.data.id, images);
 		}
+
+		reset();
+		closeModal();
 	};
 
 	const handleUpdate = async () => {
 		if (!editingLandmark) return;
 
-		await dispatch(
-			updateLandmark({
-				landmarkId: editingLandmark.id,
-				data: {
-					title,
-					description,
-					audioGuideId: audioGuideId || undefined,
-				},
-			})
-		);
+		const response = await landmarkApi.update(editingLandmark.id, {
+			title,
+			description,
+			audioGuideId: audioGuideId || undefined,
+		});
+
+		if (!response.success) return;
 
 		if (images.length) {
-			await dispatch(
-				uploadLandmarkImages({
-					landmarkId: editingLandmark.id,
-					files: images,
-				})
-			);
+			await landmarkApi.uploadImages(editingLandmark.id, images);
 		}
 
+		reset();
 		closeModal();
-		loadData();
 	};
 
 	const handleDelete = async (id: string) => {
 		if (!window.confirm('Удалить достопримечательность?')) return;
-		await dispatch(deleteLandmark(id));
-		loadData();
+		const response = await landmarkApi.delete(id);
+		if (!response.success) return;
+		reset();
 	};
 
-	const filteredLandmarks =
-		landmarkResults?.content.filter((landmark) =>
-			landmark.title.toLowerCase().includes(search.toLowerCase())
-		) ?? [];
+	const filteredLandmarks = landmarks.filter((landmark) =>
+		landmark.title.toLowerCase().includes(search.toLowerCase())
+	);
 
 	const filteredGuides =
 		audioGuideSearch.trim().length > 0
-			? audioGuideResults?.content.filter((guide) =>
+			? audioGuides.filter((guide) =>
 					guide.title
 						.toLowerCase()
 						.includes(audioGuideSearch.toLowerCase())
@@ -141,53 +149,72 @@ export const LandmarksEdit = () => {
 
 	useEffect(() => {
 		const loadImages = async () => {
-			if (!landmarkResults?.content) return;
+			const unloaded = landmarks.filter((l) => !imageUrls[l.id]);
 
-			const urls: Record<string, string[]> = {};
+			if (!unloaded.length) return;
 
-			for (const landmark of landmarkResults.content) {
-				const images: string[] = [];
+			const entries = await Promise.all(
+				unloaded.map(async (landmark) => {
+					const images = await Promise.all(
+						(landmark.images ?? []).map(async (image) => {
+							const response = await fileApi.download(image.id);
 
-				for (const image of landmark.images || []) {
-					const result = await dispatch(downloadFile(image.id));
+							return response.success && response.data
+								? response.data
+								: null;
+						})
+					);
 
-					if (downloadFile.fulfilled.match(result)) {
-						images.push(result.payload);
-					}
-				}
+					return [
+						landmark.id,
+						images.filter((url): url is string => url !== null),
+					] as const;
+				})
+			);
 
-				urls[landmark.id] = images;
-			}
-
-			setImageUrls(urls);
+			setImageUrls((prev) => ({
+				...prev,
+				...Object.fromEntries(entries),
+			}));
 		};
 
 		loadImages();
-	}, [landmarkResults, dispatch]);
+	}, [landmarks]);
 
 	useEffect(() => {
 		const loadAudio = async () => {
-			if (!landmarkResults?.content) return;
+			if (!landmarks.length) return;
 
-			const urls: Record<string, string> = {};
+			const entries = await Promise.all(
+				landmarks.map(async (landmark) => {
+					const fileId = landmark.audioGuide?.file?.id;
 
-			for (const landmark of landmarkResults.content) {
-				const fileId = landmark.audioGuide?.file?.id;
+					if (!fileId) {
+						return null;
+					}
 
-				if (!fileId) continue;
+					const response = await fileApi.download(fileId);
 
-				const result = await dispatch(downloadFile(fileId));
+					if (!response.success || !response.data) {
+						return null;
+					}
 
-				if (downloadFile.fulfilled.match(result)) {
-					urls[landmark.id] = result.payload;
-				}
-			}
+					return [landmark.id, response.data] as const;
+				})
+			);
 
-			setAudioUrls(urls);
+			setAudioUrls(
+				Object.fromEntries(
+					entries.filter(
+						(entry): entry is readonly [string, string] =>
+							entry !== null
+					)
+				)
+			);
 		};
 
 		loadAudio();
-	}, [landmarkResults]);
+	}, [landmarks]);
 
 	const openCreateModal = () => {
 		resetForm();
@@ -204,10 +231,7 @@ export const LandmarksEdit = () => {
 			<h3 className={styles.title}>Управление достопримечательностями</h3>
 
 			<div className={styles.headerActions}>
-				<Button
-					variant='secondary'
-					onClick={() => navigate('/admin')}
-				>
+				<Button variant='secondary' onClick={() => navigate('/admin')}>
 					Назад
 				</Button>
 
@@ -218,10 +242,7 @@ export const LandmarksEdit = () => {
 					className={styles.searchInput}
 				/>
 
-				<Button
-					variant='primary'
-					onClick={openCreateModal}
-				>
+				<Button variant='primary' onClick={openCreateModal}>
 					Создать достопримечательность
 				</Button>
 			</div>
@@ -300,6 +321,10 @@ export const LandmarksEdit = () => {
 					))}
 				</tbody>
 			</table>
+
+			<div ref={loaderRef} className={styles.loader}>
+				{isLoading && <p>Загрузка...</p>}
+			</div>
 
 			<Modal
 				isOpen={isModalOpen}

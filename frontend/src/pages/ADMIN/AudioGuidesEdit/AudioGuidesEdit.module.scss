@@ -95,6 +95,25 @@
   gap: 20px;
 }
 
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deleteAudioForm {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.buttonDeleteAudio {
+  padding: 2px;
+  border-radius: var(--border-radius);
+  height: auto;
+  width: auto;
+}
+
 .modalTitle {
   text-align: left;
 }

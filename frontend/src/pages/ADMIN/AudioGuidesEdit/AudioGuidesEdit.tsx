@@ -1,38 +1,53 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-	searchAudioGuides,
-	createAudioGuide,
-	updateAudioGuide,
-	deleteAudioGuide,
-	uploadAudioGuideFile,
-} from '../../../services/slices/audioGuideSlice/audioGuideSlice';
 import { Button, Input, Modal } from '@ui';
 import { useNavigate } from 'react-router-dom';
-import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
+import { fileApi } from '../../../utils/api/FileApi';
+import { audioGuideApi } from '../../../utils/api/AudioGuideApi';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import { AudioGuide } from '../../../types/AudioGuide';
-import { useDispatch, useSelector } from '@store';
+
+import { ReactComponent as Cross } from '../../../assets/icons/cross.svg';
 
 import styles from './AudioGuidesEdit.module.scss';
 
 export const AudioGuidesEdit = () => {
-	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const { searchResults, isLoading, error } = useSelector(
-		(state) => state.audioGuides
-	);
+	const [error, setError] = useState<string | null>(null);
 
 	const [guideSearch, setGuideSearch] = useState('');
+
 	const [title, setTitle] = useState('');
 	const [durationSeconds, setDurationSeconds] = useState(0);
 	const [editingGuide, setEditingGuide] = useState<AudioGuide | null>(null);
 	const [file, setFile] = useState<File | null>(null);
+
 	const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
 	const audioUrlsRef = useRef<Record<string, string>>({});
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [removeCurrentFile, setRemoveCurrentFile] = useState(false);
 
-	useEffect(() => {
-		loadAudioGuides();
-	}, []);
+	const {
+		items: guides,
+		loading: isLoading,
+		reset,
+		loaderRef,
+	} = useInfiniteScroll<AudioGuide>({
+		loadPage: async (page, size) => {
+			const response = await audioGuideApi.search({
+				page,
+				size,
+			});
+
+			if (!response.success || !response.data) {
+				return {
+					content: [],
+					totalPages: 0,
+				};
+			}
+
+			return response.data;
+		},
+	});
 
 	useEffect(() => {
 		audioUrlsRef.current = audioUrls;
@@ -46,19 +61,9 @@ export const AudioGuidesEdit = () => {
 		};
 	}, []);
 
-	const filteredGuides =
-		searchResults?.content.filter((guide) =>
-			guide.title.toLowerCase().includes(guideSearch.toLowerCase())
-		) ?? [];
-
-	const loadAudioGuides = () => {
-		dispatch(
-			searchAudioGuides({
-				page: 0,
-				size: 20,
-			})
-		);
-	};
+	const filteredGuides = guides.filter((guide) =>
+		guide.title.toLowerCase().includes(guideSearch.toLowerCase())
+	);
 
 	const resetForm = () => {
 		setEditingGuide(null);
@@ -78,53 +83,59 @@ export const AudioGuidesEdit = () => {
 	};
 
 	const handleCreate = async () => {
-		const result = await dispatch(
-			createAudioGuide({
-				title,
-				durationSeconds,
-			})
-		);
-		if (!createAudioGuide.fulfilled.match(result)) return;
-		if (file) {
-			await dispatch(
-				uploadAudioGuideFile({
-					audioGuideId: result.payload.id,
-					file,
-				})
-			);
-		}
-		loadAudioGuides();
+		const response = await audioGuideApi.create({
+			title,
+			durationSeconds,
+		});
+
+		if (!response.success) return;
 		closeModal();
+		reset();
 	};
 
 	const handleUpdate = async () => {
 		if (!editingGuide) return;
 
-		await dispatch(
-			updateAudioGuide({
-				audioGuideId: editingGuide.id,
-				data: {
-					title,
-					durationSeconds,
-				},
-			})
-		);
+		const response = await audioGuideApi.update(editingGuide.id, {
+			title,
+			durationSeconds,
+		});
+
+		if (!response.success) return;
+
+		if (removeCurrentFile && editingGuide.file) {
+			await fileApi.delete(editingGuide.file.id);
+		}
 
 		if (file) {
-			await dispatch(
-				uploadAudioGuideFile({
-					audioGuideId: editingGuide.id,
-					file,
-				})
-			);
+			await audioGuideApi.uploadFile(editingGuide.id, file);
 		}
-		loadAudioGuides();
+
 		closeModal();
+		reset();
 	};
 
 	const handleDelete = async (audioGuideId: string) => {
-		await dispatch(deleteAudioGuide(audioGuideId));
-		loadAudioGuides();
+		const response = await audioGuideApi.delete(audioGuideId);
+		if (!response.success) return;
+		reset();
+	};
+
+	const handleLoadAudio = async (audioGuideId: string, fileId: string) => {
+		if (audioUrls[audioGuideId]) return;
+
+		try {
+			const response = await fileApi.download(fileId);
+
+			if (!response.success || !response.data) return;
+
+			setAudioUrls((prev) => ({
+				...prev,
+				[audioGuideId]: response.data!,
+			}));
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	const startEdit = (guide: AudioGuide) => {
@@ -132,20 +143,12 @@ export const AudioGuidesEdit = () => {
 		setTitle(guide.title);
 		setDurationSeconds(guide.durationSeconds);
 		setFile(null);
+		setRemoveCurrentFile(false);
 		setIsModalOpen(true);
 	};
 
-	const handleLoadAudio = async (audioGuideId: string, fileId: string) => {
-		if (audioUrls[audioGuideId]) return;
-
-		const result = await dispatch(downloadFile(fileId));
-
-		if (!downloadFile.fulfilled.match(result)) return;
-
-		setAudioUrls((prev) => ({
-			...prev,
-			[audioGuideId]: result.payload,
-		}));
+	const markFileForDeletion = () => {
+		setRemoveCurrentFile(true);
 	};
 
 	return (
@@ -153,9 +156,7 @@ export const AudioGuidesEdit = () => {
 			<h2 className={styles.title}>Управление аудиогидами</h2>
 
 			<div className={styles.headerActions}>
-				<Button
-					variant='secondary'
-					onClick={() => navigate('/admin')}>
+				<Button variant='secondary' onClick={() => navigate('/admin')}>
 					Назад
 				</Button>
 
@@ -166,14 +167,10 @@ export const AudioGuidesEdit = () => {
 					onChange={(e) => setGuideSearch(e.target.value)}
 				/>
 
-				<Button
-					variant='primary'
-					onClick={openCreateModal}>
+				<Button variant='primary' onClick={openCreateModal}>
 					Создать аудиогид
 				</Button>
 			</div>
-
-			{isLoading && <p className={styles.loading}>Загрузка...</p>}
 
 			{error && <p className={styles.error}>Ошибка: {error}</p>}
 
@@ -215,7 +212,7 @@ export const AudioGuidesEdit = () => {
 											onClick={() =>
 												handleLoadAudio(
 													guide.id,
-													guide.file.id
+													guide.file!.id
 												)
 											}>
 											Загрузить
@@ -246,7 +243,7 @@ export const AudioGuidesEdit = () => {
 						</tr>
 					))}
 
-					{searchResults?.content.length === 0 && (
+					{guides.length === 0 && (
 						<tr>
 							<td colSpan={5} className={styles.emptyState}>
 								Аудиогиды отсутствуют
@@ -255,6 +252,10 @@ export const AudioGuidesEdit = () => {
 					)}
 				</tbody>
 			</table>
+
+			<div ref={loaderRef} className={styles.loader}>
+				{isLoading && <p>Загрузка...</p>}
+			</div>
 
 			<Modal
 				isOpen={isModalOpen}
@@ -281,13 +282,29 @@ export const AudioGuidesEdit = () => {
 						}
 					/>
 
-					<Input
-						label={'Файл'}
-						type='file'
-						accept='audio/*'
-						className={styles.fileInput}
-						onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-					/>
+					{editingGuide?.file && !removeCurrentFile ? (
+						<div className={styles.formGroup}>
+							<span> Удалить аудиогид </span>
+							<p className={styles.deleteAudioForm}>
+								{editingGuide.file.filename}
+								<Button
+									variant='secondary'
+									onClick={markFileForDeletion}
+									iconRight={<Cross />}
+									className={styles.buttonDeleteAudio}
+								/>
+							</p>
+						</div>
+					) : (
+						<Input
+							label='Новый файл'
+							type='file'
+							accept='audio/*'
+							onChange={(e) =>
+								setFile(e.target.files?.[0] ?? null)
+							}
+						/>
+					)}
 
 					{editingGuide && audioUrls[editingGuide.id] && (
 						<div className={styles.formGroup}>

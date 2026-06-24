@@ -1,15 +1,31 @@
 import React from 'react';
 import { Button } from '@ui';
 
-import styles from './RouteSessionPanel.module.scss'
+import styles from './RouteSessionPanel.module.scss';
 
 interface Props {
 	current: number;
 	total: number;
 	progress: number;
+
+	isStarted: boolean;
+	isFinished: boolean;
+
+	onStart: () => void;
+	onCheckpoint: () => void;
+	onFinish: () => void;
 }
 
-export const RouteSessionPanel = ({ current, total, progress }: Props) => {
+export const RouteSessionPanel = ({
+	current,
+	total,
+	progress,
+	isStarted,
+	isFinished,
+	onStart,
+	onCheckpoint,
+	onFinish,
+}: Props) => {
 	return (
 		<div className={styles.panel}>
 			<div className={styles.progress}>
@@ -17,7 +33,25 @@ export const RouteSessionPanel = ({ current, total, progress }: Props) => {
 			</div>
 
 			<div className={styles.buttons}>
-				<Button>Начать</Button>
+				{!isStarted && (
+					<Button variant='primary' onClick={onStart}>
+						Начать маршрут
+					</Button>
+				)}
+
+				{isStarted && !isFinished && (
+					<>
+						<Button variant='primary' onClick={onCheckpoint}>
+							Следующая точка
+						</Button>
+
+						<Button variant='secondary' onClick={onFinish}>
+							Завершить маршрут
+						</Button>
+					</>
+				)}
+
+				{isFinished && <Button disabled>Маршрут завершён</Button>}
 			</div>
 		</div>
 	);

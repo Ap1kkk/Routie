@@ -1,55 +1,81 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from '@store';
 import { useNavigate } from 'react-router-dom';
-import { Route, RouteType } from '../../../types/Route';
-import {
-	createNewRoute,
-	fetchRoute,
-	routeDelete,
-	routeImagesUpload,
-	routePublish,
-	routeUpdate,
-	searchRoutes,
-} from '../../../services/slices/routeSlice/routeSlice';
+import { useDispatch, useSelector } from '@store';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { routeApi } from '../../../utils/api/RoutesApi';
+import { tagApi } from '../../../utils/api/TagApi';
+import { landmarkApi } from '../../../utils/api/LandmarkApi';
 import { clearDraft, setDraft, setModalOpen, } from '../../../services/slices/routeDraftSlice/routeDraftSlice';
-import { fetchAllTags } from '../../../services/slices/tagsSlice/tagsSlice';
-import { searchLandmarks } from '../../../services/slices/landmarkSlice/landmarkSlice';
 import { Button, Input, Modal, Select, Tag, Textarea } from '@ui';
+import { Route, RouteType } from '../../../types/Route';
+import { Tags } from '../../../types/Tags';
+import { Landmark } from '../../../types/Landmark';
 
 import styles from './RouteEdit.module.scss';
 
 export const RouteEdit = () => {
-	const dispatch = useDispatch();
 	const navigate = useNavigate();
-
-	const { searchResults, isLoading } = useSelector((state) => state.routes);
-
-	const { allTags } = useSelector((state) => state.tags);
+	const dispatch = useDispatch();
 
 	const [editingRoute, setEditingRoute] = useState<Route | null>(null);
 	const [images, setImages] = useState<FileList | null>(null);
 	const [routeSearch, setRouteSearch] = useState('');
+	const [allTags, setAllTags] = useState<Tags[]>([]);
+	const [landmarks, setLandmarks] = useState<Landmark[]>([]);
 
 	const draft = useSelector((state) => state.routeDraft);
 
-	const loadRoutes = () =>
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
+	const {
+		items: routes,
+		loading: isLoading,
+		loaderRef,
+		reset,
+	} = useInfiniteScroll<Route>({
+		loadPage: async (page, size) => {
+			const response = await routeApi.search({
+				page,
+				size,
+			});
+
+			if (!response.success || !response.data) {
+				return {
+					content: [],
+					totalPages: 0,
+				};
+			}
+
+			return response.data;
+		},
+		pageSize: 10,
+	});
 
 	useEffect(() => {
-		loadRoutes();
-		dispatch(fetchAllTags());
-		dispatch(
-			searchLandmarks({
-				page: 0,
-				size: 100,
-			})
-		);
+		loadInitialData();
 	}, []);
+
+	const loadInitialData = async () => {
+		const [tagsResponse, landmarksResponse] = await Promise.all([
+			tagApi.getAll(),
+			landmarkApi.search({
+				page: 0,
+				size: 15,
+			}),
+		]);
+
+		if (tagsResponse.success && tagsResponse.data) {
+			setAllTags(tagsResponse.data);
+		}
+
+		if (landmarksResponse.success && landmarksResponse.data) {
+			setLandmarks(landmarksResponse.data.content);
+		}
+	};
+
+	const filteredRoutes = routeSearch.trim()
+		? routes.filter((route) =>
+				route.title.toLowerCase().includes(routeSearch.toLowerCase())
+		  )
+		: routes;
 
 	const openCreateModal = () => {
 		dispatch(clearDraft());
@@ -67,12 +93,6 @@ export const RouteEdit = () => {
 		setEditingRoute(null);
 	};
 
-	const filteredRoutes = routeSearch.trim()
-		? searchResults?.content.filter((route) =>
-				route.title.toLowerCase().includes(routeSearch.toLowerCase())
-		  ) ?? []
-		: searchResults?.content ?? [];
-
 	const preparedCheckpoints = draft.checkpoints.map((cp, index) => ({
 		latitude: cp.latitude,
 		longitude: cp.longitude,
@@ -81,89 +101,74 @@ export const RouteEdit = () => {
 	}));
 
 	const handleCreate = async () => {
-		const result = await dispatch(
-			createNewRoute({
-				title: draft.title,
-				description: draft.description,
-				type: draft.type,
-				difficulty: draft.difficulty,
-				lengthMeters: draft.lengthMeters,
-				estimatedTimeMinutes:
-				draft.estimatedTimeMinutes,
-				city: draft.city,
-				tagIds: draft.selectedTags,
-				checkpoints: preparedCheckpoints,
-			})
-		);
+		const result = await routeApi.create({
+			title: draft.title,
+			description: draft.description,
+			type: draft.type,
+			difficulty: draft.difficulty,
+			lengthMeters: draft.lengthMeters,
+			estimatedTimeMinutes: draft.estimatedTimeMinutes,
+			city: draft.city,
+			tagIds: draft.selectedTags,
+			checkpoints: preparedCheckpoints,
+		});
 
-		if (!createNewRoute.fulfilled.match(result)) return;
+		if (!result.success || !result.data) return;
 
 		if (images) {
 			for (const file of Array.from(images)) {
-				await dispatch(
-					routeImagesUpload({
-						routeId: result.payload.id,
-						file,
-					})
-				);
+				await routeApi.uploadImages(result.data.id, file);
 			}
 		}
 
 		setEditingRoute(null);
 		dispatch(clearDraft());
 		dispatch(setModalOpen(false));
-		loadRoutes();
+		reset();
 	};
 
 	const handleUpdate = async () => {
 		if (!draft.editingRouteId) return;
 
-		await dispatch(
-			routeUpdate({
-				routeId: draft.editingRouteId,
-				data: {
-					title: draft.title,
-					description: draft.description,
-					type: draft.type,
-					difficulty: draft.difficulty,
-					lengthMeters: draft.lengthMeters,
-					estimatedTimeMinutes: draft.estimatedTimeMinutes,
-					city: draft.city,
-					tagIds: draft.selectedTags,
-					checkpoints: preparedCheckpoints,
-				},
-			})
-		);
+		await routeApi.update(draft.editingRouteId, {
+			title: draft.title,
+			description: draft.description,
+			type: draft.type,
+			difficulty: draft.difficulty,
+			lengthMeters: draft.lengthMeters,
+			estimatedTimeMinutes: draft.estimatedTimeMinutes,
+			city: draft.city,
+			tagIds: draft.selectedTags,
+			checkpoints: preparedCheckpoints,
+		});
 
 		if (images) {
 			for (const file of Array.from(images)) {
-				await dispatch(
-					routeImagesUpload({
-						routeId: draft.editingRouteId,
-						file,
-					})
-				);
+				await routeApi.uploadImages(draft.editingRouteId, file);
 			}
 		}
+
 		dispatch(clearDraft());
 		dispatch(setModalOpen(false));
-		loadRoutes();
+		reset();
 	};
 
 	const handleDelete = async (routeId: string) => {
-		await dispatch(routeDelete(routeId));
-		loadRoutes();
+		const response = await routeApi.delete(routeId);
+		if (!response.success) return;
+		reset();
 	};
 
 	const handlePublish = async (routeId: string) => {
-		await dispatch(routePublish(routeId));
-		loadRoutes();
+		const response = await routeApi.publish(routeId);
+		if (!response.success) return;
+		reset();
 	};
 
 	const startEdit = async (route: Route) => {
-		const result = await dispatch(fetchRoute(route.id));
-		if (!fetchRoute.fulfilled.match(result)) return;
-		const fullRoute = result.payload;
+		const result = await routeApi.getFull(route.id);
+		if (!result.success || !result.data) return;
+		const fullRoute = result.data;
 
 		setEditingRoute(route);
 
@@ -197,10 +202,7 @@ export const RouteEdit = () => {
 			<h3 className={styles.title}>Управление маршрутами</h3>
 
 			<div className={styles.headerActions}>
-				<Button
-					variant='secondary'
-					onClick={() => navigate('/admin')}
-				>
+				<Button variant='secondary' onClick={() => navigate('/admin')}>
 					Назад
 				</Button>
 
@@ -211,15 +213,10 @@ export const RouteEdit = () => {
 					onChange={(e) => setRouteSearch(e.target.value)}
 				/>
 
-				<Button
-					variant='primary'
-					onClick={openCreateModal}
-				>
+				<Button variant='primary' onClick={openCreateModal}>
 					Создать маршрут
 				</Button>
 			</div>
-
-			{isLoading && <p>Загрузка...</p>}
 
 			<table className={styles.table}>
 				<thead className={styles.tableHead}>
@@ -291,6 +288,11 @@ export const RouteEdit = () => {
 					))}
 				</tbody>
 			</table>
+
+			<div ref={loaderRef} className={styles.loader}>
+				{isLoading && <p>Загрузка...</p>}
+			</div>
+
 			<Modal
 				isOpen={draft.isModalOpen}
 				onClose={closeModal}
@@ -464,7 +466,10 @@ export const RouteEdit = () => {
 								draft.editingRouteId
 									? handleUpdate
 									: handleCreate
-							} children={draft.editingRouteId ? 'Сохранить' : 'Создать'}
+							}
+							children={
+								draft.editingRouteId ? 'Сохранить' : 'Создать'
+							}
 						/>
 					</div>
 				</div>

@@ -7,8 +7,8 @@ import {
 	createAudioGuideApi,
 	updateAudioGuideApi,
 } from '../../../utils/api/AudioGuideApi';
-import { AudioGuide } from '../../../types/Landmark';
 import {
+	AudioGuide,
 	AudioGuideCreateRequest,
 	AudioGuidesSearchParams,
 	AudioGuideUpdateRequest,

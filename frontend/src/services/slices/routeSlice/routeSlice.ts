@@ -124,7 +124,7 @@ export const fetchPopularRoutes = createAsyncThunk<
 			return response.data;
 		}
 
-		return response.data.content || [];
+		return response.data || [];
 	}
 );
 

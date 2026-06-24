@@ -1,38 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '@store';
-import {
-	createTag,
-	deleteTag,
-	fetchAllTags,
-	updateTag,
-} from '../../../services/slices/tagsSlice/tagsSlice';
-import { Tags } from '../../../types/Tags';
+import { tagApi } from '../../../utils/api/TagApi';
 import { Button, Input, Modal } from '@ui';
+import { Tags } from '../../../types/Tags';
 
 import styles from './TagsEdit.module.scss';
 
 export const TagsEdit = () => {
-	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const { allTags, isLoading, error } = useSelector((state) => state.tags);
+
+	const [tags, setTags] = useState<Tags[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const [editingTag, setEditingTag] = useState<Tags | null>(null);
 	const [tagTitle, setTagTitle] = useState('');
-	const [isModalOpen, setIsModalOpen] = useState(false);
+
 	const [tagSearch, setTagSearch] = useState('');
 
-	useEffect(() => {
-		dispatch(fetchAllTags());
-	}, [dispatch]);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	const handleDeleteTag = async (tagId: string) => {
-		await dispatch(deleteTag(tagId));
+	useEffect(() => {
+		loadTags();
+	}, []);
+
+	const loadTags = async () => {
+		try {
+			setIsLoading(true);
+
+			const response = await tagApi.getAll();
+
+			if (!response.success || !response.data) {
+				setError(response.error?.message ?? 'Ошибка загрузки тегов');
+				return;
+			}
+
+			setTags(response.data);
+		} catch {
+			setError('Ошибка загрузки тегов');
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
-	const filteredTags = allTags?.filter((tag) =>
+	const filteredTags = tags.filter((tag) =>
 		tag.title.toLowerCase().includes(tagSearch.toLowerCase())
 	);
+
+	const handleDeleteTag = async (tagId: string) => {
+		const response = await tagApi.delete(tagId);
+
+		if (!response.success) return;
+
+		loadTags();
+	};
 
 	const openCreateModal = () => {
 		setEditingTag(null);
@@ -54,23 +75,23 @@ export const TagsEdit = () => {
 
 	const handleSave = async () => {
 		if (!tagTitle.trim()) return;
+
 		if (editingTag) {
-			await dispatch(
-				updateTag({
-					tagId: editingTag.id,
-					data: {
-						title: tagTitle.trim(),
-					},
-				})
-			);
+			const response = await tagApi.update(editingTag.id, {
+				title: tagTitle.trim(),
+			});
+
+			if (!response.success) return;
 		} else {
-			await dispatch(
-				createTag({
-					title: tagTitle.trim(),
-				})
-			);
+			const response = await tagApi.create({
+				title: tagTitle.trim(),
+			});
+
+			if (!response.success) return;
 		}
+
 		closeModal();
+		loadTags();
 	};
 
 	return (
@@ -135,7 +156,7 @@ export const TagsEdit = () => {
 						</tr>
 					))}
 
-					{allTags?.length === 0 && (
+					{tags.length === 0 && (
 						<tr className={styles.tableRow}>
 							<td colSpan={3} className={styles.emptyState}>
 								Теги отсутствуют

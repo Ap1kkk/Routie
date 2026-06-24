@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { useDeviceType } from '../../hooks/useDeviceType';
-
-import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
 import { Blur, Button, Slider } from '@ui';
-import { RouteCard, RouteOfTheDay } from '@components';
-
-import lightImage from '../../assets/images/main-page.png';
-import blackImage from '../../assets/images/main-black.png';
-import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
-
-import styles from './MainPage.module.scss';
-import { PaginatedRoutes, Route } from '../../types/Route';
 import {
 	toggleFavoriteApi,
 	getFavoritesApi,
-	removeFromFavoritesApi
+	removeFromFavoritesApi,
 } from '../../utils/api/RoutesApi';
+import { RouteCard, RouteOfTheDay } from '@components';
+import { PaginatedRoutes, Route } from '../../types/Route';
+
+import lightImage from '../../assets/images/main-page.png';
+import blackImage from '../../assets/images/main-black.png';
+
+import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
+
+import styles from './MainPage.module.scss';
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -39,8 +38,7 @@ export const MainPage: React.FC = () => {
 	const [theme] = useState<boolean>(
 		() => localStorage.getItem('theme') === 'light'
 	);
-
-	// Загружаем текущие избранные маршруты
+	
 	useEffect(() => {
 		const loadFavorites = async () => {
 			try {
@@ -60,11 +58,9 @@ export const MainPage: React.FC = () => {
 		loadFavorites();
 	}, []);
 
-	// Toggle избранного с правильным методом
 	const handleToggleLike = async (routeId: string) => {
 		const isCurrentlyLiked = likedRoutes[routeId] || false;
 
-		// Оптимистическое обновление
 		setLikedRoutes((prev) => ({
 			...prev,
 			[routeId]: !isCurrentlyLiked,
@@ -72,7 +68,6 @@ export const MainPage: React.FC = () => {
 
 		try {
 			if (isCurrentlyLiked) {
-				// Удаляем из избранного
 				const response = await removeFromFavoritesApi(routeId);
 				if (!response.success) {
 					setLikedRoutes((prev) => ({
@@ -81,7 +76,6 @@ export const MainPage: React.FC = () => {
 					}));
 				}
 			} else {
-				// Добавляем в избранное
 				const response = await toggleFavoriteApi(routeId);
 				if (!response.success) {
 					setLikedRoutes((prev) => ({
@@ -91,7 +85,6 @@ export const MainPage: React.FC = () => {
 				}
 			}
 		} catch (error) {
-			// Откат при любой ошибке
 			setLikedRoutes((prev) => ({
 				...prev,
 				[routeId]: isCurrentlyLiked,
@@ -113,7 +106,6 @@ export const MainPage: React.FC = () => {
 			/>
 
 			<section className={styles.mainPageContainer}>
-				{/* Маршрут дня */}
 				<div className={styles.containerRouteOfTheDay}>
 					<div className={styles.routeContainer}>
 						<RouteOfTheDay
@@ -123,7 +115,6 @@ export const MainPage: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Популярное */}
 				{popularList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
@@ -172,7 +163,6 @@ export const MainPage: React.FC = () => {
 					</article>
 				)}
 
-				{/* Рекомендованное */}
 				{recommendedList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>

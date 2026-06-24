@@ -294,9 +294,8 @@ export const requestPasswordResetApi = async (
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					// Токен здесь не нужен
 				},
-				body: JSON.stringify({ email }),   // именно так, как требует сервер
+				body: JSON.stringify({ email }),
 			}
 		);
 

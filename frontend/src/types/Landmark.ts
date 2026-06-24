@@ -1,24 +1,11 @@
+import { AudioGuide } from './AudioGuide';
+
 export interface LandmarkImage {
 	id: string;
 	filename: string;
 	contentType: string;
 	createTs: string;
 	sortOrder: number;
-}
-
-export interface AudioGuideFile {
-	id: string;
-	filename: string;
-	contentType: string;
-	createTs: string;
-	sortOrder: number;
-}
-
-export interface AudioGuide {
-	id: string;
-	title: string;
-	durationSeconds: number;
-	file: AudioGuideFile;
 }
 
 export interface Landmark {

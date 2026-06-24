@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '@store';
+import { useDispatch } from '@store';
 
 import { RecoveryPasswordForm1 } from '@components';
 import { RecoveryPasswordForm2 } from '@components';
 
 import {
-	requestPasswordReset,
 	confirmPasswordReset,
+	requestPasswordReset,
 } from '../../services/slices/authSlice/authSlice';
 
 import styles from './RecoveryPasswordPage.module.scss';
@@ -21,7 +21,6 @@ export const RecoveryPasswordPage = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// Шаг 1: Запрос кода на почту
 	const handleRequestCode = async (userEmail: string) => {
 		setIsLoading(true);
 		setError(null);
@@ -37,7 +36,6 @@ export const RecoveryPasswordPage = () => {
 		}
 	};
 
-	// Шаг 2: Подтверждение кода и смена пароля
 	const handleResetPassword = async (data: {
 		code: string;
 		newPassword: string;

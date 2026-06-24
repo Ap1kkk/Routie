@@ -215,3 +215,12 @@ export const updateLandmarkApi = async (
 		};
 	}
 };
+
+export const landmarkApi = {
+	search: searchLandmarksApi,
+	create: createLandmarkApi,
+	update: updateLandmarkApi,
+	delete: deleteLandmarkApi,
+	uploadImages: uploadLandmarkImagesApi,
+	get: getLandmarkApi,
+};

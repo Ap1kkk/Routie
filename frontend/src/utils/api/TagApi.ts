@@ -133,3 +133,11 @@ export const updateTagApi = async (
 		};
 	}
 };
+
+export const tagApi = {
+	getAll: getAllTagsApi,
+	get: getTagApi,
+	create: createTagApi,
+	update: updateTagApi,
+	delete: deleteTagApi,
+};

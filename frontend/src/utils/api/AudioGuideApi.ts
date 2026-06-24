@@ -206,3 +206,12 @@ export const updateAudioGuideApi = async (
 		};
 	}
 };
+
+export const audioGuideApi = {
+	search: searchAudioGuidesApi,
+	create: createAudioGuideApi,
+	update: updateAudioGuideApi,
+	delete: deleteAudioGuideApi,
+	uploadFile: uploadAudioGuideFileApi,
+	get: getAudioGuideApi,
+};

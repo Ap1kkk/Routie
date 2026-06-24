@@ -6,10 +6,16 @@ import { createRoot } from 'react-dom/client';
 import { Marker } from './Marker/Marker';
 import { Checkpoint, FullRoute } from '../../types/Route';
 import { LandmarkPopup } from './LandmarkPopup/LandmarkPopup';
+import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
+import { Session } from 'react-router-dom';
 
 import 'mmr-gl/dist/mmr-gl.css';
 import styles from './MapComponent.module.scss';
-import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
+import {
+	finishSessionApi,
+	reachCheckpointApi,
+	startSessionApi,
+} from '../../utils/api/SessionApi';
 
 interface RouteOnMapProps {
 	routeData?: FullRoute;
@@ -50,6 +56,8 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const [routeType, setRouteType] = useState<RouteType>('pedestrian');
 	const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
 	const CHECKPOINT_RADIUS = 50;
+	const [session, setSession] = useState<Session | null>(null);
+	const [distance, setDistance] = useState(0);
 
 	const progress = routeData?.checkpoints?.length
 		? Math.round(
@@ -74,17 +82,54 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const handleCheckpointReached = async (checkpoint: Checkpoint) => {
-		await fetch('/api/v1/sessions/checkpoint', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				checkpointId: checkpoint.id,
-				avgSpeedKmh: 0,
-			}),
+		if (!session) return;
+
+		const response = await reachCheckpointApi({
+			sessionId: session.id,
+			checkpointId: checkpoint.id,
+			avgSpeedKmh: 0,
 		});
 
-		setActiveCheckpointIndex((i) => i + 1);
+		if (response.success) {
+			setActiveCheckpointIndex((i) => i + 1);
+		}
 	};
+
+	const handleStartSession = async () => {
+		if (!routeData) return;
+
+		const response = await startSessionApi({
+			routeId: routeData.id,
+		});
+
+		if (response.success && response.data) {
+			setSession(response.data);
+		}
+	};
+
+	const handleFinishSession = async () => {
+		if (!session) return;
+
+		const response = await finishSessionApi({
+			sessionId: session.id,
+			status: 'FINISHED',
+			totalDistanceMeters: distance,
+		});
+
+		if (response.success && response.data) {
+			setSession(response.data);
+		}
+	};
+
+	useEffect(() => {
+		if (
+			session &&
+			routeData &&
+			activeCheckpointIndex >= routeData.checkpoints.length
+		) {
+			handleFinishSession();
+		}
+	}, [activeCheckpointIndex]);
 
 	const getRouteCosting = (type: RouteType): string => {
 		switch (type) {
@@ -479,6 +524,11 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				current={activeCheckpointIndex}
 				total={routeData?.checkpoints?.length || 0}
 				progress={progress}
+				isStarted={!!session}
+				isFinished={session?.data.status === 'FINISHED'}
+				onStart={handleStartSession}
+				onCheckpoint={() => {}}
+				onFinish={handleFinishSession}
 			/>
 		</>
 	);

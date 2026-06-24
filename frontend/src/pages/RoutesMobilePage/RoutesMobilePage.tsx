@@ -1,46 +1,47 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-
 import { RouteCard } from '@components';
 import { Button, Input } from '@ui';
+import { routeApi } from '../../utils/api/RoutesApi';
+import { Route } from '../../types/Route';
 
 import { ReactComponent as Filter } from '../../assets/icons/filter-square.svg';
 import { ReactComponent as Search } from '../../assets/icons/search.svg';
 
 import styles from './RoutesMobilePage.module.scss';
-import { Route } from '../../types/Route';
-import {
-	getFavoritesApi,
-	removeFromFavoritesApi,
-	toggleFavoriteApi,
-} from '../../utils/api/RoutesApi';
 
 type LoaderData = {
 	routes: Route[];
-	routeImages: Record<string, string>;
+	routeImages: Record<string, string | null>;
 	title: string;
 	isFavoritesPage: boolean;
 };
 
 export const RoutesMobilePage = () => {
 	const navigate = useNavigate();
+	const loaderData = useLoaderData() as LoaderData;
 
 	const {
-		routes: initialRoutes,
-		routeImages,
-		title,
-		isFavoritesPage,
-	} = useLoaderData() as LoaderData;
+		routes: initialRoutes = [],
+		routeImages = {},
+		title = 'Маршруты',
+		isFavoritesPage = false,
+	} = loaderData;
 
 	const [localRoutes, setLocalRoutes] = useState<Route[]>(initialRoutes);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
 
-	// Загружаем актуальное состояние избранного (как на главной странице)
+	useEffect(() => {
+		setLocalRoutes(initialRoutes);
+		setSearchQuery('');
+		setLikedRoutes({});
+	}, [initialRoutes]);
+
 	useEffect(() => {
 		const loadFavorites = async () => {
 			try {
-				const res = await getFavoritesApi({ page: 0, size: 100 });
+				const res = await routeApi.getFavorites({ page: 0, size: 100 });
 				if (res.success && res.data?.content) {
 					const favoriteIds = new Set(
 						res.data.content.map((r) => r.id)
@@ -61,7 +62,6 @@ export const RoutesMobilePage = () => {
 		loadFavorites();
 	}, [initialRoutes]);
 
-	// Фильтрация по поиску
 	const filteredRoutes = useMemo(() => {
 		if (!searchQuery.trim()) return localRoutes;
 
@@ -71,11 +71,9 @@ export const RoutesMobilePage = () => {
 		);
 	}, [localRoutes, searchQuery]);
 
-	// Toggle избранного
 	const handleToggleLike = async (routeId: string) => {
 		const isCurrentlyLiked = likedRoutes[routeId] || false;
 
-		// Оптимистическое обновление
 		setLikedRoutes((prev) => ({
 			...prev,
 			[routeId]: !isCurrentlyLiked,
@@ -83,11 +81,10 @@ export const RoutesMobilePage = () => {
 
 		try {
 			let response;
-
 			if (isCurrentlyLiked) {
-				response = await removeFromFavoritesApi(routeId);
+				response = await routeApi.removeFavorites(routeId);
 			} else {
-				response = await toggleFavoriteApi(routeId);
+				response = await routeApi.toggleFavorite(routeId);
 			}
 
 			if (!response.success) {
@@ -98,7 +95,6 @@ export const RoutesMobilePage = () => {
 				return;
 			}
 
-			// Если удалили из избранного и мы на странице избранного — убираем из списка
 			if (isFavoritesPage && isCurrentlyLiked) {
 				setLocalRoutes((prev) =>
 					prev.filter((route) => route.id !== routeId)

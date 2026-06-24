@@ -40,15 +40,10 @@ import {
 	setInitialized,
 } from './services/slices/authSlice/authSlice';
 import { selectInitialized } from './services/selectors/userSelectors';
+import { routeApi } from './utils/api/RoutesApi';
+import { fileApi } from './utils/api/FileApi';
 import { getAccessToken, getRefreshToken } from './utils/auth';
-import {
-	getDailyRouteApi,
-	getFavoritesApi,
-	getPopularRoutesApi,
-	getRecommendedRoutesApi,
-	searchRoutesApi,
-} from './utils/api/RoutesApi';
-import { downloadFileApi } from './utils/api/FileApi';
+import { Route } from './types/Route';
 
 export function App() {
 	const dispatch = useDispatch();
@@ -150,25 +145,28 @@ export const router = createBrowserRouter([
 						element: <RoutesMobilePage />,
 					},
 					{
+						path: '/routes',
+						loader: routesLoader,
+						element: <RoutesMobilePage />,
+					},
+					{
 						path: '/filter-mobile',
 						element: <FilterMobilePage />,
 					},
 					{
 						path: '/recommended',
+						loader: routesLoader,
 						element: <FilterDesktopPage />,
 					},
 					{
 						path: '/popular',
+						loader: routesLoader,
 						element: <FilterDesktopPage />,
 					},
 					{
 						path: '/favorites',
 						loader: routesLoader,
 						element: <FilterDesktopPage />,
-					},
-					{
-						path: '/routes',
-						element: <RoutesMobilePage />,
 					},
 					{
 						path: '/settings/sessions',
@@ -231,9 +229,9 @@ export const router = createBrowserRouter([
 
 export async function mainPageLoader() {
 	const [dailyRes, recommendedRes, popularRes] = await Promise.all([
-		getDailyRouteApi(),
-		getRecommendedRoutesApi({ page: 0, size: 8 }),
-		getPopularRoutesApi({ limit: 6 }),
+		routeApi.getDaily(),
+		routeApi.getRecommended({ page: 0, size: 8 }),
+		routeApi.getPopular({ limit: 6 }),
 	]);
 
 	if (
@@ -259,9 +257,18 @@ export async function mainPageLoader() {
 				return [route.id, null];
 			}
 
-			const imageUrl = await downloadFileApi(route.images[0].id);
-
-			return [route.id, imageUrl];
+			try {
+				const response = await fileApi.download(route.images[0].id);
+				const imageUrl =
+					response.success && response.data ? response.data : null;
+				return [route.id, imageUrl];
+			} catch (err) {
+				console.error(
+					`Ошибка загрузки изображения для ${route.id}:`,
+					err
+				);
+				return [route.id, null];
+			}
 		})
 	);
 
@@ -273,61 +280,59 @@ export async function mainPageLoader() {
 	};
 }
 
-export async function routesLoader({
-									   request,
-								   }: {
-	request: Request;
-}) {
+export async function routesLoader({ request }: { request: Request }) {
 	try {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
 
-		let routes = [];
+		let routes: Route[] = [];
 		let title = 'Маршруты';
+		let isFavoritesPage = false;
 
 		if (pathname.includes('/favorites')) {
-			const response = await getFavoritesApi({
+			const response = await routeApi.getFavorites({
 				page: 0,
 				size: 20,
 			});
 
 			if (!response.success || !response.data) {
-				throw new Error();
+				throw new Error('Не удалось загрузить избранное');
 			}
 
 			routes = response.data.content ?? [];
 			title = 'Избранное';
+			isFavoritesPage = true;
 		} else if (pathname.includes('/recommended')) {
-			const response = await getRecommendedRoutesApi({
+			const response = await routeApi.getRecommended({
 				page: 0,
 				size: 20,
 			});
 
 			if (!response.success || !response.data) {
-				throw new Error();
+				throw new Error('Не удалось загрузить рекомендации');
 			}
 
 			routes = response.data.content ?? [];
 			title = 'Рекомендованные';
 		} else if (pathname.includes('/popular')) {
-			const response = await getPopularRoutesApi({
+			const response = await routeApi.getPopular({
 				limit: 20,
 			});
 
 			if (!response.success || !response.data) {
-				throw new Error();
+				throw new Error('Не удалось загрузить популярные');
 			}
 
 			routes = response.data;
 			title = 'Популярные';
 		} else {
-			const response = await searchRoutesApi({
+			const response = await routeApi.search({
 				page: 0,
 				size: 20,
 			});
 
 			if (!response.success || !response.data) {
-				throw new Error();
+				throw new Error('Не удалось загрузить маршруты');
 			}
 
 			routes = response.data.content ?? [];
@@ -340,12 +345,12 @@ export async function routesLoader({
 			}
 
 			try {
-				const imageUrl = await downloadFileApi(
-					route.images[0].id
-				);
-
+				const response = await fileApi.download(route.images[0].id);
+				const imageUrl =
+					response.success && response.data ? response.data : null;
 				return [route.id, imageUrl];
-			} catch {
+			} catch (err) {
+				console.error(`Ошибка загрузки изображения ${route.id}:`, err);
 				return [route.id, null];
 			}
 		});
@@ -358,10 +363,10 @@ export async function routesLoader({
 			routes,
 			routeImages,
 			title,
+			isFavoritesPage,
 		};
-	} catch {
-		throw new Response('Ошибка загрузки маршрутов', {
-			status: 500,
-		});
+	} catch (error) {
+		console.error('routesLoader error:', error);
+		throw new Response('Ошибка загрузки маршрутов', { status: 500 });
 	}
 }

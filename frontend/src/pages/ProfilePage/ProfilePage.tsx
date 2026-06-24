@@ -23,19 +23,25 @@ export const ProfilePage = () => {
 	}, [dispatch]);
 
 	useEffect(() => {
-		dispatch(fetchFriends({
-			page: 0,
-			size: 20,
-			//status: 'FRIENDS'
-		}));
+		dispatch(
+			fetchFriends({
+				page: 0,
+				size: 20,
+				//status: 'FRIENDS'
+			})
+		);
 	}, [dispatch]);
 
 	useEffect(() => {
 		const loadAvatar = async () => {
 			if (!myProfile?.avatar?.id) return;
+
 			try {
-				const avatar = await downloadFileApi(myProfile.avatar.id);
-				setAvatarSrc(avatar);
+				const response = await downloadFileApi(myProfile.avatar.id);
+
+				if (response.success && response.data) {
+					setAvatarSrc(response.data);
+				}
 			} catch (error) {
 				console.error('Ошибка загрузки аватара', error);
 			}
