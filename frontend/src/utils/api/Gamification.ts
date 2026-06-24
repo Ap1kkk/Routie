@@ -127,10 +127,19 @@ export const getLeaderboardApi = async (
 
 export const getFriendsLeaderboardApi = async (
 	period: 'WEEK' | 'MONTH' | 'SEASON',
-	limit = 50
+	limit: number = 50,
+	sort:
+		| 'TOTAL_XP'
+		| 'TOTAL_DISTANCE_METERS'
+		| 'TOTAL_ROUTES_COMPLETED' = 'TOTAL_XP'
 ): Promise<ApiResponse<LeaderboardResponse>> => {
 	try {
-		const query = new URLSearchParams({ period, limit: limit.toString() });
+		const query = new URLSearchParams({
+			period,
+			limit: limit.toString(),
+			sort,
+		});
+
 		const response = await fetch(
 			`${API_URL}/${API_GAMIFICATION_URL}/leaderboard/friends?${query.toString()}`,
 			{
@@ -138,6 +147,7 @@ export const getFriendsLeaderboardApi = async (
 				headers: getHeaders(true),
 			}
 		);
+
 		return await handleResponse<LeaderboardResponse>(response);
 	} catch (error: any) {
 		return {
