@@ -124,6 +124,39 @@ export const formatName = (name: string): string => {
 	return sanitized.charAt(0).toUpperCase() + sanitized.slice(1).toLowerCase();
 };
 
+export const validateRecoveryCode = (
+	code: string,
+	length: number = 6
+): ValidationResult => {
+	if (!code || code.trim() === '') {
+		return {
+			isValid: false,
+			errorMessage: 'Введите код подтверждения',
+		};
+	}
+
+	const trimmedCode = code.trim();
+
+	if (!/^\d+$/.test(trimmedCode)) {
+		return {
+			isValid: false,
+			errorMessage: 'Код должен состоять только из цифр',
+		};
+	}
+
+	if (trimmedCode.length !== length) {
+		return {
+			isValid: false,
+			errorMessage: `Код должен состоять из ${length} цифр`,
+		};
+	}
+
+	return {
+		isValid: true,
+		errorMessage: '',
+	};
+};
+
 /** Валидация имени (только кириллица, без пробелов и дефисов) */
 export const validateName = (name: string): ValidationResult => {
 	if (isEmpty(name)) return invalid('Имя обязательно для заполнения');

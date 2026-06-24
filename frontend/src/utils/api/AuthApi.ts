@@ -282,3 +282,67 @@ export const fetchWithAuth = async (
 
 	return doRequest();
 };
+
+/** 1. Запрос кода восстановления на почту */
+export const requestPasswordResetApi = async (
+	email: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/password/reset/request`,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					// Токен здесь не нужен
+				},
+				body: JSON.stringify({ email }),   // именно так, как требует сервер
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		console.error('Request password reset error:', error);
+		return {
+			success: false,
+			error: {
+				code: 'PASSWORD_RESET_REQUEST_ERROR',
+				message: error.message || 'Не удалось отправить код',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** 2. Подтверждение кода и смена пароля */
+export const confirmPasswordResetApi = async (
+	data: {
+		email: string;
+		code: string;
+		newPassword: string;
+	}
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/password/reset/confirm`,
+			{
+				method: 'POST',
+				headers: getHeaders(),
+				body: JSON.stringify(data),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'PASSWORD_RESET_CONFIRM_ERROR',
+				message: error.message || 'Ошибка подтверждения кода',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
