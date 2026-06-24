@@ -2,12 +2,14 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { User } from '../../../types/User';
 import { clearTokens } from '../../../utils/auth';
 import {
+	confirmPasswordResetApi,
 	getActiveSessionsApi,
 	getUserApi,
 	getUserRolesApi,
 	loginUserApi,
 	logoutApi,
 	registerUserApi,
+	requestPasswordResetApi,
 	terminateSessionApi,
 } from '../../../utils/api/AuthApi';
 import {
@@ -133,6 +135,38 @@ export const fetchActiveSessions = createAsyncThunk<
 	}
 
 	return response.data;
+});
+
+export const requestPasswordReset = createAsyncThunk<
+	string,
+	string,
+	{ rejectValue: string }
+>('auth/requestPasswordReset', async (email, { rejectWithValue }) => {
+	const response = await requestPasswordResetApi(email);
+
+	if (!response.success) {
+		return rejectWithValue(
+			response.error?.message || 'Не удалось отправить код на почту'
+		);
+	}
+
+	return 'Код успешно отправлен на вашу почту';
+});
+
+export const confirmPasswordReset = createAsyncThunk<
+	string,
+	{ email: string; code: string; newPassword: string },
+	{ rejectValue: string }
+>('auth/confirmPasswordReset', async (data, { rejectWithValue }) => {
+	const response = await confirmPasswordResetApi(data);
+
+	if (!response.success) {
+		return rejectWithValue(
+			response.error?.message || 'Не удалось сменить пароль'
+		);
+	}
+
+	return response.data || 'Пароль успешно изменён';
 });
 
 export const terminateSession = createAsyncThunk<
