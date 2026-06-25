@@ -45,4 +45,12 @@ public interface XpTransactionRepository extends JpaRepository<XpTransaction, UU
         ORDER BY SUM(t.amount) DESC
         """)
     List<UserXpSum> findTopByPeriodSince(@Param("since") Instant since, Pageable pageable);
+
+    /** Суммарный XP, выданный всем пользователям, в диапазоне [since, until] (для общей статистики). */
+    @Query("""
+        SELECT COALESCE(SUM(t.amount), 0)
+        FROM XpTransaction t
+        WHERE t.createdAt BETWEEN :since AND :until
+        """)
+    long sumAmountBetween(@Param("since") Instant since, @Param("until") Instant until);
 }

@@ -1,5 +1,6 @@
 package ru.ngtu.v1.routie.repository;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,6 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.model.RouteSession;
 import ru.ngtu.v1.routie.repository.projection.RoutePopularityCount;
+import ru.ngtu.v1.routie.repository.projection.UserActivityAggregate;
 
 import java.time.Instant;
 import java.util.List;
@@ -52,4 +54,39 @@ public interface RouteSessionRepository extends JpaRepository<RouteSession, UUID
             @Param("userId") UUID userId,
             @Param("excludeSessionId") UUID excludeSessionId
     );
+
+    /** Кол-во завершённых сессий в диапазоне [since, until] (для общей сводки по приложению). */
+    @Query("SELECT COUNT(s) FROM RouteSession s WHERE s.status = 'FINISHED' AND s.startedAt BETWEEN :since AND :until")
+    long countFinishedBetween(@Param("since") Instant since, @Param("until") Instant until);
+
+    /** Суммарная дистанция завершённых сессий в диапазоне [since, until]. */
+    @Query("""
+            SELECT COALESCE(SUM(s.totalDistanceMeters), 0)
+            FROM RouteSession s
+            WHERE s.status = 'FINISHED' AND s.startedAt BETWEEN :since AND :until
+            """)
+    long sumDistanceMetersFinishedBetween(@Param("since") Instant since, @Param("until") Instant until);
+
+    /** Кол-во уникальных пользователей, начавших сессию в диапазоне [since, until]. */
+    @Query("SELECT COUNT(DISTINCT s.userId) FROM RouteSession s WHERE s.startedAt BETWEEN :since AND :until")
+    long countDistinctUsersBetween(@Param("since") Instant since, @Param("until") Instant until);
+
+    /** Агрегированная активность по пользователям (для ручки статистики активности), с пагинацией. */
+    @Query(value = """
+            SELECT s.userId AS userId,
+                   COUNT(s) AS routesCompleted,
+                   COALESCE(SUM(s.totalDistanceMeters), 0) AS totalDistanceMeters,
+                   MAX(s.startedAt) AS lastActivityDate
+            FROM RouteSession s
+            WHERE s.status = 'FINISHED' AND s.startedAt BETWEEN :since AND :until
+            GROUP BY s.userId
+            ORDER BY MAX(s.startedAt) DESC
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT s.userId)
+            FROM RouteSession s
+            WHERE s.status = 'FINISHED' AND s.startedAt BETWEEN :since AND :until
+            """)
+    Page<UserActivityAggregate> findUserActivityBetween(
+            @Param("since") Instant since, @Param("until") Instant until, Pageable pageable);
 }

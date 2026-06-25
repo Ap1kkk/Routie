@@ -448,7 +448,6 @@ public class FakeDataFactory {
                 .averageXpPerUser((float) faker.number().randomDouble(1, 100, 5000))
                 .topAchievement(faker.options().option("Первый шаг", "Марафонец", "Исследователь", "Коллекционер"))
                 .usersByLevel(usersByLevel)
-                .mostPopularPeriod(faker.options().option("WEEK", "MONTH", "SEASON"))
                 .build();
     }
 
