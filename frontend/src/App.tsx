@@ -11,7 +11,7 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage,
+	FilterMobilePage, FindFriendPage,
 	FriendsPage,
 	LandmarksEdit,
 	LeaderBoardPage,
@@ -103,6 +103,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/friends',
 						element: <FriendsPage />,
+					},
+					{
+						path: '/friends/find',
+						element: <FindFriendPage />
 					},
 					{
 						path: '/leader-board',

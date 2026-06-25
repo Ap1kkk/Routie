@@ -101,10 +101,7 @@ export const Profile: React.FC<ProfileProps> = ({
 						<Avatar src={avatar} size='large' />
 						<h4 className={styles.profileName}>
 							{name}
-							<Circle
-								level={level}
-								size='small'
-							/>
+							<Circle level={level} size='small' />
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
@@ -135,6 +132,7 @@ export const Profile: React.FC<ProfileProps> = ({
 											key={friend.id}
 											friend={friend}
 											variant='compact'
+											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
@@ -226,6 +224,7 @@ export const Profile: React.FC<ProfileProps> = ({
 											key={friend.id}
 											friend={friend}
 											variant='standard'
+											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
