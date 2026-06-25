@@ -90,6 +90,14 @@ public class ProfileServiceStub implements ProfileService {
     }
 
     @Override
+    public PageResponse<UserProfileShortResponse> searchUsers(String query, int page, int size) {
+        log.debug("[STUB] searchUsers query={}, page={}, size={}", query, page, size);
+        long total = 17L;
+        List<UserProfileShortResponse> content = FakeDataFactory.fakeUserProfileShortList(size);
+        return FakeDataFactory.fakePage(content, page, size, total);
+    }
+
+    @Override
     public void sendFriendRequest(UUID friendId) {
         log.debug("[STUB] sendFriendRequest: {}", friendId);
     }

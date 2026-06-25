@@ -32,6 +32,7 @@ public interface ProfileService {
 
   // Друзья
   PageResponse<UserProfileShortResponse> getFriends(int page, int size, String sort, String search, String status);
+  PageResponse<UserProfileShortResponse> searchUsers(String query, int page, int size);
   void sendFriendRequest(UUID friendId);
   void acceptFriendRequest(UUID friendshipId);
   void rejectFriendRequest(UUID friendshipId);
