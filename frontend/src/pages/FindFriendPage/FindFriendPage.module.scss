@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  height: 100%;
+  width: 100%;
+  gap: 20px;
+}
+
+.headerMenu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+}

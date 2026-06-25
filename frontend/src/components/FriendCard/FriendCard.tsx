@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Blur, Circle } from '@ui';
 import styles from './FriendCard.module.scss';
 import { ReactComponent as Cross } from '../../assets/icons/cross.svg';
+import { ReactComponent as Add } from '../../assets/icons/add.svg';
 import { Friend } from '../../types/Friends';
 
 interface FriendCardProps {
@@ -14,10 +15,11 @@ interface FriendCardProps {
 	showMedal?: boolean;
 
 	showRemoveButton?: boolean;
+	showAddButton?: boolean;
 
 	onCardClick?: (friendId: string) => void;
-
 	onRemove?: (friendId: string) => void;
+	onAddFriend?: (friendId: string) => void; // ← новое
 }
 
 export const FriendCard: React.FC<FriendCardProps> = ({
@@ -26,9 +28,11 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 	rank,
 	showRank = false,
 	showMedal = false,
-	showRemoveButton = true, // ← по умолчанию показываем
+	showRemoveButton = true,
+	showAddButton = false,
 	onCardClick,
 	onRemove,
+	onAddFriend,
 }) => {
 	const handleCardClick = () => {
 		onCardClick?.(friend.id);
@@ -37,6 +41,11 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 	const handleRemoveClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		onRemove?.(friend.id);
+	};
+
+	const handleAddClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onAddFriend?.(friend.id);
 	};
 
 	const getMedalClass = () => {
@@ -62,6 +71,12 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 
 				<div className={styles.compactCardButtons}>
 					<Circle level={friend.currentLevel} size='medium' />
+					{showAddButton && (
+						<Add
+							onClick={handleAddClick}
+							style={{ cursor: 'pointer' }}
+						/>
+					)}
 					{showRemoveButton && (
 						<Cross
 							onClick={handleRemoveClick}
@@ -73,11 +88,11 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 		);
 	}
 
+	// Standard variant
 	return (
 		<Blur
 			className={`${styles.standardCard} ${getMedalClass()}`}
-			onClick={handleCardClick}
-		>
+			onClick={handleCardClick}>
 			<div className={styles.standardContent}>
 				{showRank && rank !== undefined && (
 					<div className={styles.rank}>#{rank}</div>
@@ -88,6 +103,12 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 
 			<div className={styles.standardCardButtons}>
 				<Circle level={friend.currentLevel} size='large' />
+				{showAddButton && (
+					<Add
+						onClick={handleAddClick}
+						style={{ cursor: 'pointer' }}
+					/>
+				)}
 				{showRemoveButton && (
 					<Cross
 						onClick={handleRemoveClick}
