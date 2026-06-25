@@ -243,6 +243,7 @@ public class FakeDataFactory {
         return UserProfileShortResponse.builder()
                 .id(UUID.randomUUID())
                 .name(faker.name().fullName())
+                .username(faker.internet().username())
                 .avatar(fakeMediaFile())
                 .currentLevel(faker.number().numberBetween(1, 50))
                 .totalXp(faker.number().numberBetween(0, 10000))

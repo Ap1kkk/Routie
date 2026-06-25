@@ -285,6 +285,29 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<UserProfileShortResponse> searchUsers(String query, int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        String normalizedQuery = query != null ? query.trim() : "";
+
+        Page<User> users = userRepository.searchByUsernameOrName(
+                currentUser.getId(), normalizedQuery, pageable);
+
+        List<UUID> friendIds = friendshipRepository.findAcceptedFriendIds(currentUser.getId());
+
+        List<UserProfileShortResponse> content = users.stream()
+                .map(user -> {
+                    UserProfile profile = getOrCreateProfile(user);
+                    return toShortResponse(user, profile, friendIds.contains(user.getId()));
+                })
+                .toList();
+
+        return new PageResponse<>(content, users.getTotalElements(), users.getTotalPages(), page);
+    }
+
+    @Override
     @Transactional
     public void sendFriendRequest(UUID friendId) {
         User currentUser = getCurrentUser();
@@ -467,6 +490,7 @@ public class ProfileServiceImpl implements ProfileService {
         return UserProfileShortResponse.builder()
                 .id(user.getId())
                 .name(profile.getName())
+                .username(user.getUsername())
                 .avatar(buildAvatarResponse(profile.getAvatarFileId()))
                 .currentLevel(profile.getCurrentLevel())
                 .totalXp(profile.getTotalXp())
