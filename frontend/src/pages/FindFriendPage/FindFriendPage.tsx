@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@ui';
 
@@ -6,27 +6,43 @@ import { FriendCard } from '@components';
 import { ReactComponent as Search } from '../../assets/icons/search.svg';
 
 import styles from './FindFriendPage.module.scss';
-import { LeaderboardEntry } from '../../types/Gamification';
+import { PaginatedFriends, Friend } from '../../types/Friends';
+import { searchUsersApi } from '../../utils/api/FriendsApi';
 import { sendFriendRequestApi } from '../../utils/api/FriendsApi';
-import { getFriendsLeaderboardApi } from '../../utils/api/Gamification';
+import { downloadFileApi } from '../../utils/api/FileApi';
 
 export const FindFriendPage: React.FC = () => {
 	const navigate = useNavigate();
 
-	const [users, setUsers] = useState<LeaderboardEntry[]>([]);
+	const [users, setUsers] = useState<Friend[]>([]);
+	const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
 	const [searchQuery, setSearchQuery] = useState('');
+	const [debouncedQuery, setDebouncedQuery] = useState('');
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	// Загрузка пользователей
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedQuery(searchQuery);
+		}, 500);
+
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
 	useEffect(() => {
 		const loadUsers = async () => {
 			try {
 				setLoading(true);
-				const response = await getFriendsLeaderboardApi('WEEK', 50);
+				setError(null);
 
-				if (response.success && response.data?.entries) {
-					setUsers(response.data.entries);
+				const response = await searchUsersApi({
+					query: debouncedQuery || undefined,
+					page: 0,
+					size: 50,
+				});
+
+				if (response.success && response.data) {
+					setUsers(response.data.content || []);
 				} else {
 					setError(
 						response.error?.message ||
@@ -42,14 +58,35 @@ export const FindFriendPage: React.FC = () => {
 		};
 
 		loadUsers();
-	}, []);
+	}, [debouncedQuery]);
 
-	// Поиск
-	const filteredUsers = useMemo(() => {
-		if (!searchQuery.trim()) return users;
-		const query = searchQuery.toLowerCase().trim();
-		return users.filter((user) => user.name.toLowerCase().includes(query));
-	}, [users, searchQuery]);
+	useEffect(() => {
+		const loadAvatars = async () => {
+			const newAvatarUrls: Record<string, string> = { ...avatarUrls };
+
+			for (const user of users) {
+				if (user.avatar?.id && !newAvatarUrls[user.id]) {
+					try {
+						const result = await downloadFileApi(user.avatar.id);
+						if (result.success && result.data) {
+							newAvatarUrls[user.id] = result.data;
+						}
+					} catch (err) {
+						console.error(
+							`Не удалось загрузить аватар для ${user.id}`,
+							err
+						);
+					}
+				}
+			}
+
+			setAvatarUrls(newAvatarUrls);
+		};
+
+		if (users.length > 0) {
+			loadAvatars();
+		}
+	}, [users]);
 
 	const handleCardClick = (userId: string) => {
 		navigate(`/profile/${userId}`);
@@ -60,7 +97,6 @@ export const FindFriendPage: React.FC = () => {
 			const response = await sendFriendRequestApi(friendId);
 		} catch (err) {
 			console.error(err);
-			alert('Ошибка при отправке запроса');
 		}
 	};
 
@@ -71,7 +107,7 @@ export const FindFriendPage: React.FC = () => {
 
 				<Input
 					className={styles.search}
-					placeholder='Поиск по имени...'
+					placeholder='Поиск по имени или username...'
 					iconLeft={<Search />}
 					inputPadding='5px 10px'
 					value={searchQuery}
@@ -80,63 +116,29 @@ export const FindFriendPage: React.FC = () => {
 			</div>
 
 			<div className={styles.userList}>
-				{loading && (
-					<div className={styles.loading}>
-						Загрузка пользователей...
-					</div>
-				)}
 				{error && <div className={styles.error}>{error}</div>}
 
-				{!loading && !error && filteredUsers.length === 0 && (
-					<div className={styles.empty}>Пользователи не найдены</div>
+				{!loading && !error && users.length === 0 && (
+					<div className={styles.empty}>
+						{searchQuery
+							? 'Пользователи не найдены'
+							: 'Начните поиск'}
+					</div>
 				)}
 
-				{filteredUsers.map((user) => (
+				{users.map((user) => (
 					<FriendCard
-						key={user.userId}
-						friend={{
-							id: user.userId,
-							name: user.name,
-							currentLevel: user.currentLevel,
-							totalXp: user.totalXp,
-							isFriend: false,
-						}}
+						key={user.id}
+						friend={user}
 						variant='standard'
 						onCardClick={handleCardClick}
-						onAddFriend={handleAddFriend} // ← добавили
+						onAddFriend={handleAddFriend}
 						showAddButton={true}
 						showRemoveButton={false}
+						avatarSrc={avatarUrls[user.id]}
 					/>
 				))}
 			</div>
 		</section>
 	);
 };
-
-
-
-// Загрузка пользователей
-// useEffect(() => {
-// 	const loadUsers = async () => {
-// 		try {
-// 			setLoading(true);
-// 			const response = await getUsersActivityApi({
-// 				page: 0,
-// 				size: 50,
-// 			});
-//
-// 			if (response.success && response.data) {
-// 				setUsers(response.data.content || []);
-// 			} else {
-// 				setError(response.error?.message || 'Не удалось загрузить пользователей');
-// 			}
-// 		} catch (err: any) {
-// 			setError('Ошибка при загрузке пользователей');
-// 			console.error(err);
-// 		} finally {
-// 			setLoading(false);
-// 		}
-// 	};
-//
-// 	loadUsers();
-// }, []);

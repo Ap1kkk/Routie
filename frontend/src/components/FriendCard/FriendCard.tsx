@@ -7,29 +7,32 @@ import { Friend } from '../../types/Friends';
 
 interface FriendCardProps {
 	friend: Friend;
+	avatarSrc?: string; // ← новое
 
 	variant?: 'standard' | 'compact';
-
 	rank?: number;
 	showRank?: boolean;
 	showMedal?: boolean;
 
 	showRemoveButton?: boolean;
 	showAddButton?: boolean;
+	showUsername?: boolean;
 
 	onCardClick?: (friendId: string) => void;
 	onRemove?: (friendId: string) => void;
-	onAddFriend?: (friendId: string) => void; // ← новое
+	onAddFriend?: (friendId: string) => void;
 }
 
 export const FriendCard: React.FC<FriendCardProps> = ({
 	friend,
+	avatarSrc,
 	variant = 'standard',
 	rank,
 	showRank = false,
 	showMedal = false,
 	showRemoveButton = true,
 	showAddButton = false,
+	showUsername = true,
 	onCardClick,
 	onRemove,
 	onAddFriend,
@@ -63,7 +66,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 				onClick={handleCardClick}
 				style={{ cursor: onCardClick ? 'pointer' : 'default' }}>
 				<div className={styles.compactContent}>
-					<Avatar size='small' />
+					<Avatar size='small' src={avatarSrc} />
 					<span className={styles.compactCardTitle}>
 						{friend.name}
 					</span>
@@ -88,7 +91,6 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 		);
 	}
 
-	// Standard variant
 	return (
 		<Blur
 			className={`${styles.standardCard} ${getMedalClass()}`}
@@ -97,8 +99,17 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 				{showRank && rank !== undefined && (
 					<div className={styles.rank}>#{rank}</div>
 				)}
-				<Avatar size='medium' />
-				<span className={styles.standardCardTitle}>{friend.name}</span>
+				<Avatar size='medium' src={avatarSrc} />
+				<div>
+					<span className={styles.standardCardTitle}>
+						{friend.name}
+					</span>
+					{showUsername && friend.username && (
+						<span className={styles.standardCardUsername}>
+							@{friend.username}
+						</span>
+					)}
+				</div>
 			</div>
 
 			<div className={styles.standardCardButtons}>

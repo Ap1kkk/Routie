@@ -163,3 +163,43 @@ export const acceptFriendRequestApi = async (
 		};
 	}
 };
+
+/**
+ * Поиск пользователей для добавления в друзья
+ */
+export const searchUsersApi = async (
+	params?: {
+		query?: string;
+		page?: number;
+		size?: number;
+	}
+): Promise<ApiResponse<PaginatedFriends>> => {
+	try {
+		const queryParams = new URLSearchParams();
+
+		if (params?.query !== undefined) queryParams.append('query', params.query);
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_FRIENDS_URL}/search${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedFriends>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'SEARCH_USERS_ERROR',
+				message: error.message || 'Ошибка поиска пользователей',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
