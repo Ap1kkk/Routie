@@ -145,6 +145,19 @@ export const Settings: React.FC<SettingsProps> = ({
 					</div>
 				</article>
 
+				<article className={styles.card}>
+					<div className={styles.buttonCard}>
+						<Monitor />
+						<Button
+							children={`Уведомления (${activeSessions.length})`}
+							iconRight={<ArrowRight />}
+							variant='tertiary'
+							className={styles.buttonMenu}
+							onClick={() => navigate('/settings/notifications')}
+						/>
+					</div>
+				</article>
+
 				{isAdmin && (
 					<article className={styles.card}>
 						<Button

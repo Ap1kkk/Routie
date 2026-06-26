@@ -11,13 +11,15 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage, FindFriendPage,
+	FilterMobilePage,
+	FindFriendPage,
 	FriendsPage,
 	LandmarksEdit,
 	LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage,
+	NotificationPage,
 	Privacy,
 	ProfilePage,
 	RecoveryPasswordPage,
@@ -106,7 +108,7 @@ export const router = createBrowserRouter([
 					},
 					{
 						path: '/friends/find',
-						element: <FindFriendPage />
+						element: <FindFriendPage />,
 					},
 					{
 						path: '/leader-board',
@@ -175,6 +177,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/settings/sessions',
 						element: <SessionsPage />,
+					},
+					{
+						path: '/settings/notifications',
+						element: <NotificationPage />,
 					},
 					{
 						path: '/statistic',
