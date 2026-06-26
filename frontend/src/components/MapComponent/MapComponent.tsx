@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mmrgl from 'mmr-gl';
 import { decodePolyline } from './map';
 import { useTheme } from '../../hooks/useTheme';
@@ -7,28 +7,25 @@ import { Marker } from './Marker/Marker';
 import { Checkpoint, FullRoute } from '../../types/Route';
 import { LandmarkPopup } from './LandmarkPopup/LandmarkPopup';
 import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
-import { Session } from 'react-router-dom';
+import { sessionsApi } from '../../utils/api/SessionApi';
+import type { Session, FinishSessionRequest } from '../../types/Sessions';
 
 import 'mmr-gl/dist/mmr-gl.css';
 import styles from './MapComponent.module.scss';
-import {
-	finishSessionApi,
-	reachCheckpointApi,
-	startSessionApi,
-} from '../../utils/api/SessionApi';
 
 interface RouteOnMapProps {
 	routeData?: FullRoute;
 }
+
+type MarkerType = 'default' | 'active' | 'completed';
 
 function calculateDistance(
 	lat1: number,
 	lon1: number,
 	lat2: number,
 	lon2: number
-) {
+): number {
 	const R = 6371000;
-
 	const dLat = ((lat2 - lat1) * Math.PI) / 180;
 	const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
@@ -53,71 +50,141 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const userMarkerRef = useRef<mmrgl.Marker | null>(null);
 	const controlsContainerRef = useRef<HTMLDivElement | null>(null);
 	const controlsButtonRef = useRef<HTMLDivElement | null>(null);
+	const watchIdRef = useRef<number | null>(null);
+	const reachingRef = useRef(false);
+
+	const lastPositionRef = useRef<{
+		lat: number;
+		lon: number;
+	} | null>(null);
+
 	const [routeType, setRouteType] = useState<RouteType>('pedestrian');
 	const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
-	const CHECKPOINT_RADIUS = 50;
 	const [session, setSession] = useState<Session | null>(null);
 	const [distance, setDistance] = useState(0);
 
+	const CHECKPOINT_RADIUS = 50;
+
+	const completed = Math.min(
+		activeCheckpointIndex,
+		routeData?.checkpoints.length ?? 0
+	);
+
 	const progress = routeData?.checkpoints?.length
-		? Math.round(
-				(activeCheckpointIndex / routeData.checkpoints.length) * 100
-		  )
+		? Math.round((completed / routeData.checkpoints.length) * 100)
 		: 0;
 
-	const checkDistance = (lat: number, lon: number) => {
-		const checkpoint = routeData?.checkpoints?.[activeCheckpointIndex];
-		if (!checkpoint) return;
+	const updateUserPosition = (lat: number, lon: number) => {
+		if (!mapRef.current) return;
 
-		const distance = calculateDistance(
-			lat,
-			lon,
-			checkpoint.latitude,
-			checkpoint.longitude
-		);
+		if (!userMarkerRef.current) {
+			const el = document.createElement('div');
+			el.className = styles.userLocationMarker;
 
-		if (distance < CHECKPOINT_RADIUS) {
-			handleCheckpointReached(checkpoint);
+			userMarkerRef.current = new mmrgl.Marker({
+				element: el,
+				anchor: 'center',
+			})
+				.setLngLat([lon, lat])
+				.addTo(mapRef.current);
+		} else {
+			userMarkerRef.current.setLngLat([lon, lat]);
 		}
 	};
 
-	const handleCheckpointReached = async (checkpoint: Checkpoint) => {
-		if (!session) return;
+	const checkDistance = useCallback(
+		(lat: number, lon: number, speed: number) => {
+			updateUserPosition(lat, lon);
 
-		const response = await reachCheckpointApi({
-			sessionId: session.id,
-			checkpointId: checkpoint.id,
-			avgSpeedKmh: 0,
-		});
+			if (!session) return;
 
-		if (response.success) {
-			setActiveCheckpointIndex((i) => i + 1);
+			const checkpoint = routeData?.checkpoints?.[activeCheckpointIndex];
+			if (!checkpoint) return;
+
+			const dist = calculateDistance(
+				lat,
+				lon,
+				checkpoint.latitude,
+				checkpoint.longitude
+			);
+
+			if (dist < CHECKPOINT_RADIUS) {
+				handleCheckpointReached(checkpoint, speed);
+			}
+		},
+		[session, routeData, activeCheckpointIndex]
+	);
+
+	const handleCheckpointReached = async (
+		checkpoint: Checkpoint,
+		speed: number
+	) => {
+		if (reachingRef.current || !session) return;
+
+		reachingRef.current = true;
+
+		try {
+			const response = await sessionsApi.reachCheckpoint({
+				sessionId: session.id,
+				checkpointId: checkpoint.id,
+				avgSpeedKmh: Math.max(0, speed),
+			});
+
+			if (response.success) {
+				setActiveCheckpointIndex((prev) => prev + 1);
+			}
+		} finally {
+			reachingRef.current = false;
 		}
 	};
 
 	const handleStartSession = async () => {
-		if (!routeData) return;
+		if (!routeData?.id) return;
 
-		const response = await startSessionApi({
+		const response = await sessionsApi.start({
 			routeId: routeData.id,
 		});
 
-		if (response.success && response.data) {
-			setSession(response.data);
-		}
+		if (!response.success || !response.data) return;
+
+		setSession(response.data);
+		setActiveCheckpointIndex(0);
+
+		navigator.geolocation.getCurrentPosition(
+			({ coords }) => {
+				updateUserPosition(coords.latitude, coords.longitude);
+				checkDistance(
+					coords.latitude,
+					coords.longitude,
+					(coords.speed ?? 0) * 3.6
+				);
+				startUserLocationTracking();
+			},
+			() => {
+				startUserLocationTracking();
+			},
+			{
+				enableHighAccuracy: true,
+				timeout: 90000,
+				maximumAge: 5000,
+			}
+		);
 	};
 
 	const handleFinishSession = async () => {
 		if (!session) return;
 
-		const response = await finishSessionApi({
+		const request: FinishSessionRequest = {
 			sessionId: session.id,
 			status: 'FINISHED',
-			totalDistanceMeters: distance,
-		});
+			totalDistanceMeters: Math.round(distance),
+		};
+
+		const response = await sessionsApi.finish(request);
 
 		if (response.success && response.data) {
 			setSession(response.data);
+			stopUserLocationTracking();
 		}
 	};
 
@@ -125,11 +192,188 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		if (
 			session &&
 			routeData &&
-			activeCheckpointIndex >= routeData.checkpoints.length
+			activeCheckpointIndex >= (routeData.checkpoints?.length || 0)
 		) {
 			handleFinishSession();
 		}
-	}, [activeCheckpointIndex]);
+	}, [activeCheckpointIndex, session, routeData]);
+
+	const startUserLocationTracking = () => {
+		if (watchIdRef.current !== null) return;
+
+		watchIdRef.current = navigator.geolocation.watchPosition(
+			(position) => {
+				const { latitude, longitude, speed } = position.coords;
+				if (lastPositionRef.current) {
+					const d = calculateDistance(
+						lastPositionRef.current.lat,
+						lastPositionRef.current.lon,
+						latitude,
+						longitude
+					);
+					setDistance((prev) => prev + d);
+				}
+				lastPositionRef.current = { lat: latitude, lon: longitude };
+				checkDistance(latitude, longitude, (speed ?? 0) * 3.6);
+			},
+			(error) => {
+				console.error('Ошибка геолокации:', error);
+
+				switch (error.code) {
+					case error.PERMISSION_DENIED:
+						console.log('Пользователь запретил доступ');
+						break;
+
+					case error.POSITION_UNAVAILABLE:
+						console.log('Координаты недоступны');
+						break;
+
+					case error.TIMEOUT:
+						console.log('Истекло время ожидания');
+						break;
+
+					default:
+						console.log('Неизвестная ошибка');
+				}
+			},
+			{
+				enableHighAccuracy: false,
+				maximumAge: 5000,
+				timeout: 8000,
+			}
+		);
+	};
+
+	const stopUserLocationTracking = () => {
+		if (watchIdRef.current !== null) {
+			navigator.geolocation.clearWatch(watchIdRef.current);
+			watchIdRef.current = null;
+		}
+		if (userMarkerRef.current) {
+			userMarkerRef.current.remove();
+			userMarkerRef.current = null;
+		}
+	};
+
+	const addMarkers = (
+		map: mmrgl.Map,
+		checkpoints: Checkpoint[],
+		activeIdx: number
+	) => {
+		markersRef.current.forEach((m) => m.remove());
+		markersRef.current = [];
+
+		checkpoints.forEach((point, index) => {
+			const el = document.createElement('div');
+			const root = createRoot(el);
+
+			let type: MarkerType = 'default';
+
+			if (index < activeIdx) {
+				type = 'completed';
+			} else if (index === activeIdx) {
+				type = 'active';
+			}
+
+			root.render(<Marker type={type} />);
+
+			const popupContainer = document.createElement('div');
+			const popupRoot = createRoot(popupContainer);
+			popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
+
+			const popup = new mmrgl.Popup({ offset: 1 }).setDOMContent(
+				popupContainer
+			);
+
+			const marker = new mmrgl.Marker({ element: el })
+				.setLngLat([point.longitude, point.latitude])
+				.setPopup(popup)
+				.addTo(map);
+
+			markersRef.current.push(marker);
+		});
+	};
+
+	const updateControls = () => {
+		if (!controlsContainerRef.current) return;
+
+		const selector = controlsContainerRef.current.querySelectorAll(
+			`.${styles.controlsButtons}`
+		);
+		selector.forEach((button) => {
+			const buttonElement = button as HTMLButtonElement;
+			const buttonType = buttonElement.getAttribute('data-type');
+			if (buttonType === routeType) {
+				buttonElement.classList.add(styles.active);
+			} else {
+				buttonElement.classList.remove(styles.active);
+			}
+		});
+	};
+
+	const focusOnUser = () => {
+		if (!userMarkerRef.current) return;
+
+		const lngLat = userMarkerRef.current.getLngLat();
+
+		mapRef.current?.flyTo({
+			center: [lngLat.lng, lngLat.lat],
+			zoom: 16,
+			duration: 700,
+		});
+	};
+
+	const addControls = (map: mmrgl.Map) => {
+		controlsContainerRef.current?.remove();
+		controlsButtonRef.current?.remove();
+
+		const geolocateButton = document.createElement('button');
+		geolocateButton.className = `${styles.controlsButtons} ${styles.controleButtonUser}`;
+		geolocateButton.innerHTML = '📍';
+		geolocateButton.title = 'Мое местоположение';
+		geolocateButton.onclick = focusOnUser;
+
+		const zoomToRouteButton = document.createElement('button');
+		zoomToRouteButton.className = `${styles.controlsButtons} ${styles.controleButtonRoute}`;
+		zoomToRouteButton.innerHTML = '🗺️';
+		zoomToRouteButton.title = 'Показать весь маршрут';
+		zoomToRouteButton.onclick = fitBoundsToRoute;
+
+		const routeButtonsContainer = document.createElement('div');
+		routeButtonsContainer.className = styles.routeButtonsContainer;
+
+		const routeTypes: { type: RouteType; label: string; icon: string }[] = [
+			{ type: 'pedestrian', label: 'Пешком', icon: '🚶' },
+			{ type: 'bicycle', label: 'Велосипед', icon: '🚲' },
+			{ type: 'auto', label: 'Авто', icon: '🚗' },
+		];
+
+		routeTypes.forEach(({ type, label, icon }) => {
+			const button = document.createElement('button');
+			button.className = `${styles.controlsButtons} ${
+				styles.controlsButtonsMove
+			} ${routeType === type ? styles.active : ''}`;
+			button.innerHTML = `${icon} ${label}`;
+			button.setAttribute('data-type', type);
+			button.onclick = () => setRouteType(type);
+			routeButtonsContainer.appendChild(button);
+		});
+
+		const controlsContainer = document.createElement('div');
+		controlsContainer.className = styles.controlsContainer;
+		controlsContainer.appendChild(routeButtonsContainer);
+
+		const controlsButton = document.createElement('div');
+		controlsButton.className = styles.controlsButtonContainer;
+		controlsButton.appendChild(geolocateButton);
+		controlsButton.appendChild(zoomToRouteButton);
+
+		controlsContainerRef.current = controlsContainer;
+		map.getContainer().appendChild(controlsContainer);
+
+		controlsButtonRef.current = controlsButton;
+		map.getContainer().appendChild(controlsButton);
+	};
 
 	const getRouteCosting = (type: RouteType): string => {
 		switch (type) {
@@ -218,7 +462,6 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 			}
 
 			if (!data?.trips?.length) {
-				console.error(`Маршрут "${type}" не построен`, data);
 				return;
 			}
 
@@ -328,133 +571,6 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	};
 
-	const getUserLocation = () => {
-		navigator.geolocation.watchPosition(
-			(position) => {
-				const { latitude, longitude } = position.coords;
-
-				checkDistance(latitude, longitude);
-			},
-			console.error,
-			{
-				enableHighAccuracy: true,
-			}
-		);
-	};
-
-	const addMarkers = (map: mmrgl.Map, checkpoints: Checkpoint[]) => {
-		markersRef.current.forEach((marker) => marker.remove());
-		markersRef.current = [];
-
-		checkpoints.forEach((point, index) => {
-			const el = document.createElement('div');
-
-			const root = createRoot(el);
-
-			root.render(
-				<Marker
-					type={
-						index === activeCheckpointIndex
-							? 'active'
-							: index === 0
-							? 'start'
-							: 'finish'
-					}
-				/>
-			);
-
-			const popupContainer = document.createElement('div');
-
-			const popupRoot = createRoot(popupContainer);
-
-			popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
-
-			const popup = new mmrgl.Popup({
-				offset: 1,
-			}).setDOMContent(popupContainer);
-
-			const marker = new mmrgl.Marker({
-				element: el,
-			})
-				.setLngLat([point.longitude, point.latitude])
-				.setPopup(popup)
-				.addTo(map);
-
-			markersRef.current.push(marker);
-		});
-	};
-
-	const updateControls = () => {
-		if (!controlsContainerRef.current) return;
-
-		const selector = controlsContainerRef.current.querySelectorAll(
-			`.${styles.controlsButtons}`
-		);
-		selector.forEach((button) => {
-			const buttonElement = button as HTMLButtonElement;
-			const buttonType = buttonElement.getAttribute('data-type');
-			if (buttonType === routeType) {
-				buttonElement.classList.add(styles.active);
-			} else {
-				buttonElement.classList.remove(styles.active);
-			}
-		});
-	};
-
-	const addControls = (map: mmrgl.Map) => {
-		controlsContainerRef.current?.remove();
-		controlsButtonRef.current?.remove();
-
-		const geolocateButton = document.createElement('button');
-		geolocateButton.className = `${styles.controlsButtons} ${styles.controleButtonUser}`;
-		geolocateButton.innerHTML = '📍';
-		geolocateButton.title = 'Мое местоположение';
-		geolocateButton.onclick = getUserLocation;
-
-		const zoomToRouteButton = document.createElement('button');
-		zoomToRouteButton.className = `${styles.controlsButtons} ${styles.controleButtonRoute}`;
-		zoomToRouteButton.innerHTML = '🗺️';
-		zoomToRouteButton.title = 'Показать весь маршрут';
-		zoomToRouteButton.onclick = fitBoundsToRoute;
-
-		const routeButtonsContainer = document.createElement('div');
-		routeButtonsContainer.className = styles.routeButtonsContainer;
-
-		const routeTypes: { type: RouteType; label: string; icon: string }[] = [
-			{ type: 'pedestrian', label: 'Пешком', icon: '🚶' },
-			{ type: 'bicycle', label: 'Велосипед', icon: '🚲' },
-			{ type: 'auto', label: 'Авто', icon: '🚗' },
-		];
-
-		routeTypes.forEach(({ type, label, icon }) => {
-			const button = document.createElement('button');
-			button.className = `${styles.controlsButtons} ${
-				styles.controlsButtonsMove
-			} ${routeType === type ? styles.active : ''}`;
-			button.innerHTML = `${icon} ${label}`;
-			button.setAttribute('data-type', type);
-			button.onclick = () => {
-				setRouteType(type);
-			};
-			routeButtonsContainer.appendChild(button);
-		});
-
-		const controlsContainer = document.createElement('div');
-		controlsContainer.className = styles.controlsContainer;
-		controlsContainer.appendChild(routeButtonsContainer);
-
-		const controlsButton = document.createElement('div');
-		controlsButton.className = styles.controlsButtonContainer;
-		controlsButton.appendChild(geolocateButton);
-		controlsButton.appendChild(zoomToRouteButton);
-
-		controlsContainerRef.current = controlsContainer;
-		map.getContainer().appendChild(controlsContainer);
-
-		controlsButtonRef.current = controlsButton;
-		map.getContainer().appendChild(controlsButton);
-	};
-
 	useEffect(() => {
 		mmrgl.accessToken = API_MAP_KEY;
 		mmrgl.workerCount = 3;
@@ -474,12 +590,10 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 
 		map.on('load', () => {
 			if (routeData?.checkpoints?.length) {
-				addMarkers(map, routeData.checkpoints);
+				addMarkers(map, routeData.checkpoints, activeCheckpointIndex);
 
 				setTimeout(() => {
-					if (routeData.checkpoints) {
-						buildRoute(map, routeData.checkpoints, routeType);
-					}
+					buildRoute(map, routeData.checkpoints, routeType);
 				}, 100);
 
 				const bounds = new mmrgl.LngLatBounds();
@@ -489,22 +603,32 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				map.fitBounds(bounds, { padding: 50 });
 			}
 
+			startUserLocationTracking();
 			addControls(map);
 		});
 
 		return () => {
+			stopUserLocationTracking();
 			if (mapRef.current) {
 				try {
 					clearRoute(mapRef.current);
 				} catch (e) {}
 				markersRef.current.forEach((m) => m.remove());
-				if (userMarkerRef.current) {
-					userMarkerRef.current.remove();
-				}
+				if (userMarkerRef.current) userMarkerRef.current.remove();
 				mapRef.current.remove();
 			}
 		};
 	}, [routeData, isLight]);
+
+	useEffect(() => {
+		if (!mapRef.current || !routeData) return;
+
+		addMarkers(
+			mapRef.current,
+			routeData.checkpoints,
+			activeCheckpointIndex
+		);
+	}, [activeCheckpointIndex]);
 
 	useEffect(() => {
 		if (
@@ -525,9 +649,8 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				total={routeData?.checkpoints?.length || 0}
 				progress={progress}
 				isStarted={!!session}
-				isFinished={session?.data.status === 'FINISHED'}
+				isFinished={session?.status === 'FINISHED'}
 				onStart={handleStartSession}
-				onCheckpoint={() => {}}
 				onFinish={handleFinishSession}
 			/>
 		</>

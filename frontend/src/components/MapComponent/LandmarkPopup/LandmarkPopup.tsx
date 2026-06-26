@@ -5,12 +5,23 @@ import { downloadFileApi } from '../../../utils/api/FileApi';
 import styles from './LandmarkPopup.module.scss';
 
 interface Props {
-	landmark: Landmark;
+	landmark: Landmark | null;
 }
 
 export const LandmarkPopup = ({ landmark }: Props) => {
 	const [imageUrl, setImageUrl] = useState('');
 	const [audioUrl, setAudioUrl] = useState('');
+
+	if (!landmark) {
+		return (
+			<div className={styles.popup}>
+				<article className={styles.popupContainer}>
+					<h3>Информация отсутствует</h3>
+					<p>Данные о landmark не найдены.</p>
+				</article>
+			</div>
+		);
+	}
 
 	useEffect(() => {
 		const loadImage = async () => {
@@ -34,7 +45,7 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 				URL.revokeObjectURL(imageUrl);
 			}
 		};
-	}, [landmark]);
+	}, [landmark, imageUrl]);
 
 	useEffect(() => {
 		const loadAudio = async () => {
@@ -61,14 +72,14 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 			{imageUrl && (
 				<img
 					src={imageUrl}
-					alt={landmark.title}
+					alt={landmark.title || 'Landmark'}
 					className={styles.imagePopup}
 				/>
 			)}
 			<article className={styles.popupContainer}>
-				<h3>{landmark.title}</h3>
+				<h3>{landmark.title || 'Без названия'}</h3>
 
-				<p>{landmark.description}</p>
+				<p>{landmark.description || 'Описание отсутствует'}</p>
 
 				{audioUrl && landmark.audioGuide?.file && (
 					<audio controls className={styles.audioControle}>

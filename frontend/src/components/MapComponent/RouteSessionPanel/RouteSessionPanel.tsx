@@ -12,7 +12,6 @@ interface Props {
 	isFinished: boolean;
 
 	onStart: () => void;
-	onCheckpoint: () => void;
 	onFinish: () => void;
 }
 
@@ -23,7 +22,6 @@ export const RouteSessionPanel = ({
 	isStarted,
 	isFinished,
 	onStart,
-	onCheckpoint,
 	onFinish,
 }: Props) => {
 	return (
@@ -40,15 +38,9 @@ export const RouteSessionPanel = ({
 				)}
 
 				{isStarted && !isFinished && (
-					<>
-						<Button variant='primary' onClick={onCheckpoint}>
-							Следующая точка
-						</Button>
-
-						<Button variant='secondary' onClick={onFinish}>
-							Завершить маршрут
-						</Button>
-					</>
+					<Button variant='secondary' onClick={onFinish}>
+						Завершить маршрут
+					</Button>
 				)}
 
 				{isFinished && <Button disabled>Маршрут завершён</Button>}

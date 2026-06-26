@@ -2,13 +2,26 @@
   width: 30px;
   height: 30px;
   border-radius: 50% 50% 50% 0;
-  background: var(--color-text);
   position: absolute;
   transform: rotate(-45deg);
   left: 50%;
   top: 50%;
   margin: -20px 0 0 -20px;
 }
+
+.default {
+  background: var(--color-text);
+}
+
+.active {
+  background: var(--color-accent);
+  transform: scale(1.1);
+}
+
+.completed {
+  background: var(--color-disabled);
+}
+
 .pin:after {
   content: "";
   width: 14px;

@@ -8,9 +8,9 @@ import {
 import {
 	FinishSessionRequest,
 	ReachCheckpointRequest,
+	Session,
 	StartSessionRequest,
 } from '../../types/Sessions';
-import { Session } from 'react-router-dom';
 
 export const startSessionApi = async (
 	data: StartSessionRequest
@@ -47,3 +47,9 @@ export const reachCheckpointApi = async (
 
 	return handleResponse(response);
 };
+
+export const sessionsApi = {
+	start: startSessionApi,
+	finish: finishSessionApi,
+	reachCheckpoint: reachCheckpointApi,
+}

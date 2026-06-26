@@ -92,3 +92,12 @@
 .markerCircle {
   pointer-events: auto;
 }
+
+.userLocationMarker {
+  width: 18px;
+  height: 18px;
+  background-color: #13BBFA;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(19, 187, 250, 0.3);
+}

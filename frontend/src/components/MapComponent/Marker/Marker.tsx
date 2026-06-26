@@ -1,7 +1,7 @@
-import styles from './Marker.module.scss'
+import styles from './Marker.module.scss';
 
 interface MarkerProps {
-	type: 'active' | 'start' | 'finish';
+	type: 'default' | 'active' | 'completed';
 	animated?: boolean;
 }
 
@@ -9,11 +9,12 @@ export const Marker = ({ type, animated = false }: MarkerProps) => (
 	<div>
 		<div
 			className={`
-                ${styles.pin}
-                ${animated ? styles.bounce : ''}
-            `}
+        ${styles.pin}
+        ${styles[type]}
+        ${type === 'active' ? styles.bounce : ''}
+    `}
 		/>
 
-		{animated && <div className={styles.pulse}></div>}
+		{type === 'active' && <div className={styles.pulse}></div>}
 	</div>
 );
