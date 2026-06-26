@@ -20,7 +20,6 @@ export const ProfilePage = () => {
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
 
-	// Моковый друг для тестирования
 	const mockFriend: Friend = {
 		id: "mock-friend-123",
 		name: "Анна Смирнова",
@@ -34,7 +33,7 @@ export const ProfilePage = () => {
 	}, [dispatch]);
 
 	useEffect(() => {
-		dispatch(fetchFriends({ page: 0, size: 20 }));
+		dispatch(fetchFriends({ status: "ACCEPTED", page: 0, size: 20 }));
 	}, [dispatch]);
 
 	useEffect(() => {

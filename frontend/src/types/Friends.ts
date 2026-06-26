@@ -28,5 +28,5 @@ export interface FriendsSearchParams {
 	size?: number;
 	sort?: string;
 	search?: string;
-	status?: 'ALL' | 'FRIENDS' | 'INCOMING' | 'OUTGOING';
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 }

@@ -13,6 +13,7 @@ export const API_TAGS_URL = 'api/v1/tags';
 export const API_GAMIFICATION_URL = 'api/v1/gamification';
 export const API_STATISTICS_URL = 'api/v1/statistics';
 export const API_SESSIONS_URL = 'api/v1/sessions';
+export const API_NOTIFICATIONS_URL = 'api/v1/notifications';
 
 export interface ApiError {
 	code: string;

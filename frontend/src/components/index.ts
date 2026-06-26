@@ -19,6 +19,7 @@ export * from './RouteCard';
 export * from './RouteOfDay';
 export * from './SessionCard'
 export * from './MapComponent';
+export * from './NotificationCard'
 export * from './Settings';
 export * from './Statistic';
 export * from './StatisticCard';

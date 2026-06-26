@@ -20,6 +20,7 @@ export * from './FriendsPage';
 export * from './LeaderBoardPage';
 export * from './MainPage';
 export * from './MapPage';
+export * from './NotificationPage'
 export * from './ProfilePage';
 export * from './RegistrationPage';
 export * from './RoutesMobilePage';
