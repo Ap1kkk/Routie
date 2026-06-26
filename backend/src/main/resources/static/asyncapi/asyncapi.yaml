@@ -64,7 +64,7 @@ components:
           enum: [ACHIEVEMENT_UNLOCKED, XP_AWARDED]
         title:
           type: string
-          example: "Новое достижение: Первые шаги"
+          example: "Первые шаги"
         body:
           type: string
           nullable: true

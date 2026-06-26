@@ -156,7 +156,7 @@ public class AchievementServiceImpl implements AchievementService {
                 notificationService.notify(
                         userId,
                         NotificationType.ACHIEVEMENT_UNLOCKED,
-                        "Новое достижение: " + achievement.getTitle(),
+                        achievement.getTitle(),
                         achievement.getDescription(),
                         "{\"achievementId\":\"" + achievement.getId() + "\",\"xpReward\":" + achievement.getXpReward() + "}"
                 );
