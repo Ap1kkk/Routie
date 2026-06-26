@@ -337,7 +337,7 @@ export const Statistic = () => {
 						{sessions?.content?.map((session) => (
 							<tr key={session.id} className={styles.tableRow}>
 								<td className={styles.tableCell}>
-									{session.userDisplayName}
+									{session.username}
 								</td>
 
 								<td className={styles.tableCell}>
