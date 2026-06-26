@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import mmrgl from 'mmr-gl';
 import { decodePolyline } from './map';
 import { useTheme } from '../../hooks/useTheme';
@@ -8,7 +8,7 @@ import { Checkpoint, FullRoute } from '../../types/Route';
 import { LandmarkPopup } from './LandmarkPopup/LandmarkPopup';
 import { RouteSessionPanel } from './RouteSessionPanel/RouteSessionPanel';
 import { sessionsApi } from '../../utils/api/SessionApi';
-import type { Session, FinishSessionRequest } from '../../types/Sessions';
+import type { FinishSessionRequest, Session } from '../../types/Sessions';
 
 import 'mmr-gl/dist/mmr-gl.css';
 import styles from './MapComponent.module.scss';
@@ -25,6 +25,12 @@ function calculateDistance(
 	lat2: number,
 	lon2: number
 ): number {
+	console.log('[calculateDistance] Вызов с координатами:', {
+		lat1,
+		lon1,
+		lat2,
+		lon2,
+	});
 	const R = 6371000;
 	const dLat = ((lat2 - lat1) * Math.PI) / 180;
 	const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -46,24 +52,38 @@ const API_MAP_KEY =
 export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	const { isLight } = useTheme();
 	const mapRef = useRef<mmrgl.Map | null>(null);
-	const markersRef = useRef<mmrgl.Marker[]>([]);
 	const userMarkerRef = useRef<mmrgl.Marker | null>(null);
 	const controlsContainerRef = useRef<HTMLDivElement | null>(null);
 	const controlsButtonRef = useRef<HTMLDivElement | null>(null);
 	const watchIdRef = useRef<number | null>(null);
 	const reachingRef = useRef(false);
-
-	const lastPositionRef = useRef<{
-		lat: number;
-		lon: number;
-	} | null>(null);
+	const reachedCheckpointIds = useRef<Set<string>>(new Set());
+	const checkDistanceRef = useRef<(lat: number, lon: number, speed: number) => void>(() => {});
 
 	const [routeType, setRouteType] = useState<RouteType>('pedestrian');
 	const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
 	const [session, setSession] = useState<Session | null>(null);
-	const [distance, setDistance] = useState(0);
+	const distanceRef = useRef(0);
+	const timeRef = useRef(0);
+	const startTimeRef = useRef<number>(0);
 
-	const CHECKPOINT_RADIUS = 50;
+	const sessionRef = useRef<Session | null>(null);
+	const routeRef = useRef<FullRoute | null>(null);
+	const activeIdxRef = useRef(0);
+
+	useEffect(() => {
+		sessionRef.current = session;
+	}, [session]);
+
+	useEffect(() => {
+		routeRef.current = routeData ?? null;
+	}, [routeData]);
+
+	useEffect(() => {
+		activeIdxRef.current = activeCheckpointIndex;
+	}, [activeCheckpointIndex]);
+
+	const CHECKPOINT_RADIUS = 100;
 
 	const completed = Math.min(
 		activeCheckpointIndex,
@@ -75,7 +95,9 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		: 0;
 
 	const updateUserPosition = (lat: number, lon: number) => {
-		if (!mapRef.current) return;
+		if (!mapRef.current) {
+			return;
+		}
 
 		if (!userMarkerRef.current) {
 			const el = document.createElement('div');
@@ -92,34 +114,39 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	};
 
-	const checkDistance = useCallback(
-		(lat: number, lon: number, speed: number) => {
-			updateUserPosition(lat, lon);
+	const checkDistance = useCallback((lat: number, lon: number, speed: number) => {
+		updateUserPosition(lat, lon);
 
-			if (!session) return;
+		const session = sessionRef.current;
+		const route = routeRef.current;
+		const idx = activeIdxRef.current;
 
-			const checkpoint = routeData?.checkpoints?.[activeCheckpointIndex];
-			if (!checkpoint) return;
+		if (!session) return;
 
-			const dist = calculateDistance(
-				lat,
-				lon,
-				checkpoint.latitude,
-				checkpoint.longitude
-			);
+		const checkpoint = route?.checkpoints?.[idx];
+		if (!checkpoint) return;
 
-			if (dist < CHECKPOINT_RADIUS) {
-				handleCheckpointReached(checkpoint, speed);
-			}
-		},
-		[session, routeData, activeCheckpointIndex]
-	);
+		const distance = calculateDistance(
+			lat,
+			lon,
+			checkpoint.latitude,
+			checkpoint.longitude
+		);
 
-	const handleCheckpointReached = async (
-		checkpoint: Checkpoint,
-		speed: number
-	) => {
-		if (reachingRef.current || !session) return;
+		if (
+			distance <= CHECKPOINT_RADIUS &&
+			!reachedCheckpointIds.current.has(checkpoint.id)
+		) {
+			handleCheckpointReached(checkpoint, speed);
+		}
+	}, []);
+
+	const handleCheckpointReached = async (checkpoint: Checkpoint, speed: number) => {
+		const session = sessionRef.current;
+
+		if (reachingRef.current || !session) {
+			return;
+		}
 
 		reachingRef.current = true;
 
@@ -127,10 +154,11 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 			const response = await sessionsApi.reachCheckpoint({
 				sessionId: session.id,
 				checkpointId: checkpoint.id,
-				avgSpeedKmh: Math.max(0, speed),
+				avgSpeedKmh: distanceRef.current / (timeRef.current / 60)
 			});
 
 			if (response.success) {
+				reachedCheckpointIds.current.add(checkpoint.id);
 				setActiveCheckpointIndex((prev) => prev + 1);
 			}
 		} finally {
@@ -139,7 +167,11 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const handleStartSession = async () => {
-		if (!routeData?.id) return;
+		if (!routeData?.id) {
+			return;
+		}
+
+		startTimeRef.current = Date.now();
 
 		const response = await sessionsApi.start({
 			routeId: routeData.id,
@@ -158,26 +190,32 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 					coords.longitude,
 					(coords.speed ?? 0) * 3.6
 				);
-				startUserLocationTracking();
 			},
-			() => {
-				startUserLocationTracking();
+			(error) => {
+				if (error.code === 2) {
+					console.warn('[watchPosition] POSITION_UNAVAILABLE — пропуск тик');
+					return;
+				}
+
+				console.error('[watchPosition] Ошибка геолокации:', error);
 			},
 			{
 				enableHighAccuracy: true,
-				timeout: 90000,
-				maximumAge: 5000,
+				timeout: 5000,
+				maximumAge: 0,
 			}
 		);
 	};
 
 	const handleFinishSession = async () => {
-		if (!session) return;
+		if (!session) {
+			return;
+		}
 
 		const request: FinishSessionRequest = {
 			sessionId: session.id,
 			status: 'FINISHED',
-			totalDistanceMeters: Math.round(distance),
+			totalDistanceMeters: distanceRef.current * 1000,
 		};
 
 		const response = await sessionsApi.finish(request);
@@ -199,102 +237,130 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	}, [activeCheckpointIndex, session, routeData]);
 
 	const startUserLocationTracking = () => {
-		if (watchIdRef.current !== null) return;
+		if (watchIdRef.current !== null) {
+			return;
+		}
 
 		watchIdRef.current = navigator.geolocation.watchPosition(
 			(position) => {
 				const { latitude, longitude, speed } = position.coords;
-				if (lastPositionRef.current) {
-					const d = calculateDistance(
-						lastPositionRef.current.lat,
-						lastPositionRef.current.lon,
-						latitude,
-						longitude
-					);
-					setDistance((prev) => prev + d);
-				}
-				lastPositionRef.current = { lat: latitude, lon: longitude };
-				checkDistance(latitude, longitude, (speed ?? 0) * 3.6);
+
+				checkDistanceRef.current(
+					latitude,
+					longitude,
+					(speed ?? 0) * 3.6
+				);
 			},
 			(error) => {
-				console.error('Ошибка геолокации:', error);
-
-				switch (error.code) {
-					case error.PERMISSION_DENIED:
-						console.log('Пользователь запретил доступ');
-						break;
-
-					case error.POSITION_UNAVAILABLE:
-						console.log('Координаты недоступны');
-						break;
-
-					case error.TIMEOUT:
-						console.log('Истекло время ожидания');
-						break;
-
-					default:
-						console.log('Неизвестная ошибка');
-				}
+				console.error('[watchPosition] Ошибка геолокации:', error);
 			},
 			{
-				enableHighAccuracy: false,
-				maximumAge: 5000,
-				timeout: 8000,
+				enableHighAccuracy: true,
+				maximumAge: 0,
+				timeout: 5000,
 			}
 		);
 	};
+
+	useEffect(() => {
+		checkDistanceRef.current = checkDistance;
+	}, [checkDistance]);
 
 	const stopUserLocationTracking = () => {
 		if (watchIdRef.current !== null) {
 			navigator.geolocation.clearWatch(watchIdRef.current);
 			watchIdRef.current = null;
 		}
-		if (userMarkerRef.current) {
-			userMarkerRef.current.remove();
-			userMarkerRef.current = null;
-		}
 	};
 
-	const addMarkers = (
-		map: mmrgl.Map,
-		checkpoints: Checkpoint[],
-		activeIdx: number
-	) => {
-		markersRef.current.forEach((m) => m.remove());
-		markersRef.current = [];
+	useEffect(() => {
+		if (!session) return;
+		startUserLocationTracking();
+	}, [session]);
 
-		checkpoints.forEach((point, index) => {
-			const el = document.createElement('div');
-			const root = createRoot(el);
+	const markersDataRef = useRef<
+		Array<{
+			marker: mmrgl.Marker;
+			root: ReturnType<typeof createRoot>;
+			popupRoot: ReturnType<typeof createRoot>;
+		}>
+	>([]);
 
-			let type: MarkerType = 'default';
-
-			if (index < activeIdx) {
-				type = 'completed';
-			} else if (index === activeIdx) {
-				type = 'active';
+	const addMarkers = useCallback(
+		(map: mmrgl.Map, checkpoints: Checkpoint[]) => {
+			if (markersDataRef.current.length > 0) {
+				return;
 			}
 
+			markersDataRef.current = [];
+
+			checkpoints.forEach((point, idx) => {
+				const el = document.createElement('div');
+				const root = createRoot(el);
+
+				const type: MarkerType =
+					idx < activeCheckpointIndex
+						? 'completed'
+						: idx === activeCheckpointIndex
+						? 'active'
+						: 'default';
+
+				root.render(<Marker type={type} />);
+
+				const popupContainer = document.createElement('div');
+				const popupRoot = createRoot(popupContainer);
+				popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
+
+				const popup = new mmrgl.Popup({ offset: 1 }).setDOMContent(
+					popupContainer
+				);
+
+				const marker = new mmrgl.Marker({ element: el })
+					.setLngLat([point.longitude, point.latitude])
+					.setPopup(popup)
+					.addTo(map);
+
+				markersDataRef.current.push({ marker, root, popupRoot });
+			});
+		},
+		[]
+	);
+
+	const updateMarkerTypes = useCallback((activeIdx: number) => {
+		console.log(
+			'[updateMarkerTypes] Обновление типов маркеров. Активный:',
+			activeIdx
+		);
+		markersDataRef.current.forEach(({ root }, idx) => {
+			const type: MarkerType =
+				idx < activeIdx
+					? 'completed'
+					: idx === activeIdx
+					? 'active'
+					: 'default';
+
 			root.render(<Marker type={type} />);
-
-			const popupContainer = document.createElement('div');
-			const popupRoot = createRoot(popupContainer);
-			popupRoot.render(<LandmarkPopup landmark={point.landmark} />);
-
-			const popup = new mmrgl.Popup({ offset: 1 }).setDOMContent(
-				popupContainer
-			);
-
-			const marker = new mmrgl.Marker({ element: el })
-				.setLngLat([point.longitude, point.latitude])
-				.setPopup(popup)
-				.addTo(map);
-
-			markersRef.current.push(marker);
 		});
-	};
+	}, []);
+
+	useEffect(() => {
+		console.log('[useEffect] routeData изменился → добавляем маркеры');
+		const map = mapRef.current;
+		if (map && routeData?.checkpoints?.length) {
+			addMarkers(map, routeData.checkpoints);
+		}
+	}, [routeData, addMarkers]);
+
+	useEffect(() => {
+		console.log('[useEffect] activeCheckpointIndex изменился');
+		updateMarkerTypes(activeCheckpointIndex);
+	}, [activeCheckpointIndex]);
 
 	const updateControls = () => {
+		console.log(
+			'[updateControls] Обновление активной кнопки маршрута:',
+			routeType
+		);
 		if (!controlsContainerRef.current) return;
 
 		const selector = controlsContainerRef.current.querySelectorAll(
@@ -312,7 +378,11 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const focusOnUser = () => {
-		if (!userMarkerRef.current) return;
+		console.log('[focusOnUser] Фокус на пользователя');
+		if (!userMarkerRef.current) {
+			console.log('[focusOnUser] Маркер пользователя отсутствует');
+			return;
+		}
 
 		const lngLat = userMarkerRef.current.getLngLat();
 
@@ -559,8 +629,10 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				},
 			});
 
-			const totalDistance = data.trips[0].summary?.length || 0;
-			const totalTime = data.trips[0].summary?.time || 0;
+			const totalDistance = data.trips[0].trip.summary.length;
+			const totalTime = data.trips[0].trip.summary.time;
+			distanceRef.current = totalDistance;
+			timeRef.current = Math.round(totalTime / 60);
 			console.log(
 				`${type} маршрут: ${totalDistance} км, ~${Math.round(
 					totalTime / 60
@@ -575,60 +647,42 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		mmrgl.accessToken = API_MAP_KEY;
 		mmrgl.workerCount = 3;
 
-		const mapStyle = isLight
-			? 'mmr://api/styles/main_style.json'
-			: 'mmr://api/styles/dark_style.json';
-
 		const map = new mmrgl.Map({
 			container: 'map',
 			zoom: 12,
 			center: [43.990696, 56.313476],
-			style: mapStyle,
+			style: isLight
+				? 'mmr://api/styles/main_style.json'
+				: 'mmr://api/styles/dark_style.json',
 		});
 
 		mapRef.current = map;
 
-		map.on('load', () => {
+		const handleLoad = () => {
 			if (routeData?.checkpoints?.length) {
-				addMarkers(map, routeData.checkpoints, activeCheckpointIndex);
-
-				setTimeout(() => {
-					buildRoute(map, routeData.checkpoints, routeType);
-				}, 100);
-
-				const bounds = new mmrgl.LngLatBounds();
-				routeData.checkpoints.forEach((p) =>
-					bounds.extend([p.longitude, p.latitude])
-				);
-				map.fitBounds(bounds, { padding: 50 });
+				addMarkers(map, routeData.checkpoints);
+				buildRoute(map, routeData.checkpoints, routeType);
+				fitBoundsToRoute();
 			}
-
-			startUserLocationTracking();
 			addControls(map);
+		};
+
+		map.on('load', handleLoad);
+
+		map.on('style.load', () => {
+			if (routeData?.checkpoints) {
+				buildRoute(map, routeData.checkpoints, routeType);
+			}
 		});
 
 		return () => {
-			stopUserLocationTracking();
+			map.off('load', handleLoad);
 			if (mapRef.current) {
-				try {
-					clearRoute(mapRef.current);
-				} catch (e) {}
-				markersRef.current.forEach((m) => m.remove());
-				if (userMarkerRef.current) userMarkerRef.current.remove();
 				mapRef.current.remove();
+				mapRef.current = null;
 			}
 		};
-	}, [routeData, isLight]);
-
-	useEffect(() => {
-		if (!mapRef.current || !routeData) return;
-
-		addMarkers(
-			mapRef.current,
-			routeData.checkpoints,
-			activeCheckpointIndex
-		);
-	}, [activeCheckpointIndex]);
+	}, []);
 
 	useEffect(() => {
 		if (

@@ -6,14 +6,10 @@ import {
 	SessionStatistics,
 	SessionStatus,
 } from '../../../types/Statistics';
-import {
-	getOverviewApi,
-	getSessionsApi,
-	getSessionsSummaryApi,
-} from '../../../utils/api/Statistics';
-import { Button, Input, Modal } from '@ui';
+import { Button, Input } from '@ui';
 
 import styles from './Statistic.module.scss';
+import { statisticsApi } from '../../../utils/api/Statistics';
 
 const getDefaultDates = () => {
 	const end = new Date();
@@ -60,7 +56,7 @@ export const Statistic = () => {
 	});
 
 	const loadOverview = async () => {
-		const response = await getOverviewApi(overviewFilters);
+		const response = await statisticsApi.getOverview(overviewFilters);
 
 		if (response.success && response.data) {
 			setOverview(response.data);
@@ -68,7 +64,7 @@ export const Statistic = () => {
 	};
 
 	const loadSummary = async () => {
-		const response = await getSessionsSummaryApi(summaryFilters);
+		const response = await statisticsApi.getSessionsSummary(summaryFilters);
 
 		if (response.success && response.data) {
 			setSummary(response.data);
@@ -76,7 +72,7 @@ export const Statistic = () => {
 	};
 
 	const loadSessions = async () => {
-		const response = await getSessionsApi({
+		const response = await statisticsApi.getSessions({
 			...sessionFilters,
 			status: sessionFilters.status
 				? (sessionFilters.status as SessionStatus)
@@ -118,21 +114,19 @@ export const Statistic = () => {
 			};
 
 			const [overviewRes, summaryRes, sessionsRes] = await Promise.all([
-				getOverviewApi(commonFilters),
+				statisticsApi.getOverview(commonFilters),
 
-				getSessionsSummaryApi({
+				statisticsApi.getSessionsSummary({
 					...commonFilters,
 					routeId: routeId || undefined,
 				}),
 
-				getSessionsApi({
+				statisticsApi.getSessions({
 					...commonFilters,
 					userId: userId || undefined,
 					routeId: routeId || undefined,
 					status:
-						status === ''
-							? undefined
-							: (status as 'ACTIVE' | 'FINISHED' | 'ABORTED'),
+						status === '' ? undefined : (status as SessionStatus),
 					page: 0,
 					size: 10,
 				}),
@@ -370,15 +364,11 @@ export const Statistic = () => {
 								</td>
 
 								<td className={styles.tableCell}>
-									{(
-										session.totalDistanceMeters / 1000
-									).toFixed(2)}
-									км
+									{((session.totalDistanceMeters ?? 0) / 1000).toFixed(2)} км
 								</td>
 
 								<td className={styles.tableCell}>
-									{session.avgSpeedKmh.toFixed(1)}
-									км/ч
+									{(session.avgSpeedKmh ?? 0).toFixed(1)} км/ч
 								</td>
 							</tr>
 						))}

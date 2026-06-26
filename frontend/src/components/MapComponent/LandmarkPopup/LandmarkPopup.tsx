@@ -1,5 +1,5 @@
 import { Landmark } from '../../../types/Landmark';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import { downloadFileApi } from '../../../utils/api/FileApi';
 
 import styles from './LandmarkPopup.module.scss';
@@ -8,9 +8,10 @@ interface Props {
 	landmark: Landmark | null;
 }
 
-export const LandmarkPopup = ({ landmark }: Props) => {
-	const [imageUrl, setImageUrl] = useState('');
-	const [audioUrl, setAudioUrl] = useState('');
+const LandmarkPopupComponent = ({ landmark }: Props) => {
+	const [imageUrl, setImageUrl] = useState<string>('');
+	const [audioUrl, setAudioUrl] = useState<string>('');
+	const isLoadedRef = useRef(false);
 
 	if (!landmark) {
 		return (
@@ -24,48 +25,46 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 	}
 
 	useEffect(() => {
-		const loadImage = async () => {
-			if (!landmark.images?.length) return;
+		if (isLoadedRef.current || !landmark.images?.length) return;
 
+		isLoadedRef.current = true;
+
+		const load = async () => {
 			try {
-				const response = await downloadFileApi(landmark.images[0].id);
-
-				if (response.success && response.data) {
-					setImageUrl(response.data);
+				const res = await downloadFileApi(landmark.images[0].id);
+				if (res.success && res.data) {
+					setImageUrl(res.data);
 				}
 			} catch (e) {
-				console.error(e);
+				console.error('Ошибка загрузки изображения:', e);
 			}
 		};
 
-		loadImage();
+		load();
 
 		return () => {
 			if (imageUrl?.startsWith('blob:')) {
 				URL.revokeObjectURL(imageUrl);
 			}
 		};
-	}, [landmark, imageUrl]);
+	}, [landmark.id]);
 
 	useEffect(() => {
+		if (!landmark.audioGuide?.file?.id) return;
+
 		const loadAudio = async () => {
-			if (!landmark.audioGuide?.file?.id) return;
-
 			try {
-				const response = await downloadFileApi(
-					landmark.audioGuide.file.id
-				);
-
-				if (response.success && response.data) {
-					setAudioUrl(response.data);
+				const res = await downloadFileApi(landmark.audioGuide!.file!.id);
+				if (res.success && res.data) {
+					setAudioUrl(res.data);
 				}
 			} catch (e) {
-				console.error(e);
+				console.error('Ошибка загрузки аудио:', e);
 			}
 		};
 
 		loadAudio();
-	}, [landmark]);
+	}, [landmark.audioGuide?.file?.id]);
 
 	return (
 		<div className={styles.popup}>
@@ -74,11 +73,13 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 					src={imageUrl}
 					alt={landmark.title || 'Landmark'}
 					className={styles.imagePopup}
+					loading="lazy"
+					decoding="async"
 				/>
 			)}
+
 			<article className={styles.popupContainer}>
 				<h3>{landmark.title || 'Без названия'}</h3>
-
 				<p>{landmark.description || 'Описание отсутствует'}</p>
 
 				{audioUrl && landmark.audioGuide?.file && (
@@ -93,3 +94,6 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 		</div>
 	);
 };
+
+export const LandmarkPopup = memo(LandmarkPopupComponent);
+LandmarkPopup.displayName = 'LandmarkPopup';

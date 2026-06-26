@@ -134,3 +134,12 @@ export const getGamificationStatisticsApi = async (params?: {
 
 	return handleResponse(response);
 };
+
+export const statisticsApi = {
+	getUsersActivity: getUsersActivityApi,
+	getSessions: getSessionsApi,
+	getSessionsSummary: getSessionsSummaryApi,
+	getPopularRoutes: getPopularRoutesApi,
+	getOverview: getOverviewApi,
+	getGamificationStatistics: getGamificationStatisticsApi,
+};

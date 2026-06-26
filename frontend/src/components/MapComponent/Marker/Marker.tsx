@@ -1,11 +1,12 @@
 import styles from './Marker.module.scss';
+import React from 'react';
 
 interface MarkerProps {
 	type: 'default' | 'active' | 'completed';
 	animated?: boolean;
 }
 
-export const Marker = ({ type, animated = false }: MarkerProps) => (
+const MarkerComponent = ({ type, animated = false }: MarkerProps) => (
 	<div>
 		<div
 			className={`
@@ -18,3 +19,6 @@ export const Marker = ({ type, animated = false }: MarkerProps) => (
 		{type === 'active' && <div className={styles.pulse}></div>}
 	</div>
 );
+
+export const Marker = React.memo(MarkerComponent);
+Marker.displayName = 'Marker';
