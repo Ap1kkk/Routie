@@ -27,6 +27,7 @@ import ru.ngtu.v1.routie.exception.EntityNotFoundException;
 import ru.ngtu.v1.routie.exception.ForbiddenException;
 import ru.ngtu.v1.routie.model.Friendship;
 import ru.ngtu.v1.routie.model.FriendshipStatus;
+import ru.ngtu.v1.routie.model.NotificationType;
 import ru.ngtu.v1.routie.model.RouteSession;
 import ru.ngtu.v1.routie.model.Tag;
 import ru.ngtu.v1.routie.model.User;
@@ -40,6 +41,7 @@ import ru.ngtu.v1.routie.repository.UserProfileRepository;
 import ru.ngtu.v1.routie.repository.UserRepository;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.FileService;
+import ru.ngtu.v1.routie.service.NotificationService;
 import ru.ngtu.v1.routie.service.ProfileService;
 
 import java.time.Instant;
@@ -60,6 +62,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final FileService fileService;
     private final RouteSessionRepository routeSessionRepository;
     private final CheckpointProgressRepository checkpointProgressRepository;
+    private final NotificationService notificationService;
 
     /** Средняя длина шага человека, используется для приблизительной оценки кол-ва шагов. */
     private static final double AVG_STEP_LENGTH_METERS = 0.75;
@@ -329,8 +332,17 @@ public class ProfileServiceImpl implements ProfileService {
                 .status(FriendshipStatus.PENDING)
                 .build();
 
-        friendshipRepository.save(friendship);
+        friendship = friendshipRepository.save(friendship);
         log.info("Запрос в друзья отправлен: {} -> {}", currentUser.getId(), friendId);
+
+        String senderName = getDisplayName(currentUser);
+        notificationService.notify(
+                addressee.getId(),
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                senderName + " хочет добавить вас в друзья",
+                null,
+                "{\"friendshipId\":\"" + friendship.getId() + "\",\"fromUserId\":\"" + currentUser.getId() + "\"}"
+        );
     }
 
     @Override
@@ -349,6 +361,15 @@ public class ProfileServiceImpl implements ProfileService {
         friendship.setStatus(FriendshipStatus.ACCEPTED);
         friendshipRepository.save(friendship);
         log.info("Запрос в друзья принят: {}", friendshipId);
+
+        String accepterName = getDisplayName(currentUser);
+        notificationService.notify(
+                friendship.getRequester().getId(),
+                NotificationType.FRIEND_REQUEST_ACCEPTED,
+                accepterName + " принял ваш запрос в друзья",
+                null,
+                "{\"friendshipId\":\"" + friendship.getId() + "\",\"fromUserId\":\"" + currentUser.getId() + "\"}"
+        );
     }
 
     @Override
@@ -403,6 +424,12 @@ public class ProfileServiceImpl implements ProfileService {
     private Friendship findFriendshipById(UUID friendshipId) {
         return friendshipRepository.findById(friendshipId)
                 .orElseThrow(() -> new EntityNotFoundException("Запрос в друзья", friendshipId));
+    }
+
+    /** Отображаемое имя пользователя для текстов уведомлений: name из профиля, либо username, если name не задано. */
+    private String getDisplayName(User user) {
+        UserProfile profile = getOrCreateProfile(user);
+        return profile.getName() != null ? profile.getName() : user.getUsername();
     }
 
     private UserProfile getOrCreateProfile(User user) {
