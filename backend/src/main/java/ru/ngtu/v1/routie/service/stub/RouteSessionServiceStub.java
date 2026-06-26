@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
+import ru.ngtu.v1.routie.dto.session.request.AbortActiveSessionRequest;
 import ru.ngtu.v1.routie.dto.session.request.FinishSessionRequest;
 import ru.ngtu.v1.routie.dto.session.request.ReachCheckpointRequest;
 import ru.ngtu.v1.routie.dto.session.request.StartSessionRequest;
@@ -74,5 +76,33 @@ public class RouteSessionServiceStub implements RouteSessionService {
         }
 
         return session;
+    }
+
+    @Override
+    public RouteSessionResponse getActiveSession() {
+        log.debug("[STUB] getActiveSession");
+        return FakeDataFactory.fakeRouteSession(
+                UUID.randomUUID(), UUID.randomUUID(), RouteSessionStatus.ACTIVE);
+    }
+
+    @Override
+    public void abortActiveSession(AbortActiveSessionRequest request) {
+        log.debug("[STUB] abortActiveSession totalDistanceMeters={}", request.getTotalDistanceMeters());
+    }
+
+    @Override
+    public PageResponse<RouteSessionResponse> getSessionHistory(
+            RouteSessionStatus status, UUID routeId, int page, int size) {
+        log.debug("[STUB] getSessionHistory status={}, routeId={}, page={}, size={}",
+                status, routeId, page, size);
+        long total = 58L;
+        List<RouteSessionResponse> content = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            content.add(FakeDataFactory.fakeRouteSession(
+                    routeId != null ? routeId : UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    status != null ? status : RouteSessionStatus.FINISHED));
+        }
+        return FakeDataFactory.fakePage(content, page, size, total);
     }
 }

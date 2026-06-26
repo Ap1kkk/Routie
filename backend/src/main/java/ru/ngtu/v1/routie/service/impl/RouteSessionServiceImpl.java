@@ -2,10 +2,16 @@ package ru.ngtu.v1.routie.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
+import ru.ngtu.v1.routie.dto.session.request.AbortActiveSessionRequest;
 import ru.ngtu.v1.routie.dto.session.request.FinishSessionRequest;
 import ru.ngtu.v1.routie.dto.session.request.ReachCheckpointRequest;
 import ru.ngtu.v1.routie.dto.session.request.StartSessionRequest;
@@ -155,6 +161,51 @@ public class RouteSessionServiceImpl implements RouteSessionService {
             throw new BadRequestException("Нельзя завершить сессию со статусом ACTIVE");
         }
 
+        return finishSessionInternal(session, userId, newStatus, request.getTotalDistanceMeters());
+    }
+
+    // ==================== Активные сессии и история ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public RouteSessionResponse getActiveSession() {
+        UUID userId = getCurrentUserId();
+        return routeSessionRepository.findByUserIdAndStatus(userId, RouteSessionStatus.ACTIVE)
+                .map(this::toResponse)
+                .orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void abortActiveSession(AbortActiveSessionRequest request) {
+        UUID userId = getCurrentUserId();
+        routeSessionRepository.findByUserIdAndStatus(userId, RouteSessionStatus.ACTIVE)
+                .ifPresent(session -> finishSessionInternal(
+                        session, userId, RouteSessionStatus.ABORTED, request.getTotalDistanceMeters()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RouteSessionResponse> getSessionHistory(
+            RouteSessionStatus status, UUID routeId, int page, int size) {
+        UUID userId = getCurrentUserId();
+
+        Specification<RouteSession> spec = buildHistorySpec(userId, status, routeId);
+        Page<RouteSession> result = routeSessionRepository.findAll(
+                spec, PageRequest.of(page, size, Sort.by("startedAt").descending()));
+
+        List<RouteSessionResponse> content = result.getContent().stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new PageResponse<>(content, result.getTotalElements(), result.getTotalPages(), page);
+    }
+
+    // ==================== Вспомогательные методы ====================
+
+    /** Общая логика завершения сессии (FINISHED или ABORTED), используется finishSession и abortActiveSession. */
+    private RouteSessionResponse finishSessionInternal(
+            RouteSession session, UUID userId, RouteSessionStatus newStatus, Integer totalDistanceMeters) {
         Instant now = Instant.now();
         long durationSeconds = session.getStartedAt().until(now, ChronoUnit.SECONDS);
 
@@ -167,7 +218,7 @@ public class RouteSessionServiceImpl implements RouteSessionService {
         session.setStatus(newStatus);
         session.setFinishedAt(now);
         session.setTotalDurationSeconds(durationSeconds);
-        session.setTotalDistanceMeters(request.getTotalDistanceMeters());
+        session.setTotalDistanceMeters(totalDistanceMeters);
         session.setAvgSpeedKmh(avgSpeedOpt.isPresent() ? avgSpeedOpt.getAsDouble() : null);
 
         // ---- Обновление статистики ----
@@ -175,9 +226,9 @@ public class RouteSessionServiceImpl implements RouteSessionService {
                 .orElseThrow(() -> new EntityNotFoundException("Профиль", userId));
 
         // Дистанция учитывается и при FINISHED, и при ABORTED
-        if (request.getTotalDistanceMeters() != null && request.getTotalDistanceMeters() > 0) {
+        if (totalDistanceMeters != null && totalDistanceMeters > 0) {
             profile.setTotalDistanceMeters(
-                    profile.getTotalDistanceMeters() + request.getTotalDistanceMeters());
+                    profile.getTotalDistanceMeters() + totalDistanceMeters);
         }
 
         if (newStatus == RouteSessionStatus.FINISHED) {
@@ -203,10 +254,10 @@ public class RouteSessionServiceImpl implements RouteSessionService {
             achievementService.evaluateForUser(userId);
 
             log.info("Маршрут завершён: sessionId={}, userId={}, distance={}m, duration={}s, newLandmarks={}, xp={}",
-                    session.getId(), userId, request.getTotalDistanceMeters(), durationSeconds, newLandmarks, xpAmount);
+                    session.getId(), userId, totalDistanceMeters, durationSeconds, newLandmarks, xpAmount);
         } else {
             log.info("Сессия прервана: sessionId={}, userId={}, distance={}m",
-                    session.getId(), userId, request.getTotalDistanceMeters());
+                    session.getId(), userId, totalDistanceMeters);
         }
 
         userProfileRepository.save(profile);
@@ -214,7 +265,19 @@ public class RouteSessionServiceImpl implements RouteSessionService {
         return toResponse(session);
     }
 
-    // ==================== Вспомогательные методы ====================
+    private Specification<RouteSession> buildHistorySpec(UUID userId, RouteSessionStatus status, UUID routeId) {
+        return (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("userId"), userId));
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (routeId != null) {
+                predicates.add(cb.equal(root.get("routeId"), routeId));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
 
     /**
      * Считает количество ландмарков из текущей сессии, которые пользователь
