@@ -34,3 +34,22 @@ export interface ReachCheckpointRequest {
 	checkpointId: string;
 	avgSpeedKmh: number;
 }
+
+export interface AbortSessionRequest {
+	totalDistanceMeters: number;
+}
+
+export interface SessionHistoryParams {
+	status?: SessionStatus;
+	routeId?: string;
+	page?: number;
+	size?: number;
+}
+
+export interface SessionHistoryResponse {
+	content: Session[];
+	totalElements: number;
+	totalPages: number;
+	size: number;
+	number: number;
+}

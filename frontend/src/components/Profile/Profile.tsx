@@ -26,6 +26,7 @@ interface ProfileProps {
 	birthday?: string;
 	friends?: Friend[];
 	recentRoutes?: Route[];
+	routeImages?: Record<string, string>;
 
 	/** Обработчики для друзей */
 	onFriendClick?: (friendId: string) => void;
@@ -48,6 +49,7 @@ export const Profile: React.FC<ProfileProps> = ({
 	birthday,
 	friends = [],
 	recentRoutes = [],
+	routeImages = {},
 
 	onFriendClick,
 	onRemoveFriend,
@@ -155,7 +157,7 @@ export const Profile: React.FC<ProfileProps> = ({
 										<div
 											key={route.id}
 											className={styles.routeCards}>
-											<RouteCard route={route} />
+											<RouteCard route={route} imageUrl={routeImages[route.id]}/>
 											<span
 												className={
 													styles.separator
@@ -247,7 +249,10 @@ export const Profile: React.FC<ProfileProps> = ({
 										<div
 											key={route.id}
 											className={styles.routeCards}>
-											<RouteCard route={route} />
+											<RouteCard
+												route={route}
+												imageUrl={routeImages[route.id]}
+											/>
 											<span
 												className={
 													styles.separator

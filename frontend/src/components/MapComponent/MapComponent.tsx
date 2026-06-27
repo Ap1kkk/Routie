@@ -166,10 +166,8 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	};
 
-	const handleStartSession = async () => {
-		if (!routeData?.id) {
-			return;
-		}
+	const startNewSession = async () => {
+		if (!routeData?.id) return;
 
 		startTimeRef.current = Date.now();
 
@@ -192,12 +190,9 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				);
 			},
 			(error) => {
-				if (error.code === 2) {
-					console.warn('[watchPosition] POSITION_UNAVAILABLE — пропуск тик');
-					return;
-				}
+				if (error.code === 2) return;
 
-				console.error('[watchPosition] Ошибка геолокации:', error);
+				console.error(error);
 			},
 			{
 				enableHighAccuracy: true,
@@ -205,6 +200,31 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				maximumAge: 0,
 			}
 		);
+	};
+
+	const handleStartSession = async () => {
+		if (!routeData?.id) return;
+
+		const activeResponse = await sessionsApi.getActive();
+
+		if (!activeResponse.success) {
+			return;
+		}
+
+		if (!activeResponse.data) {
+			await startNewSession();
+			return;
+		}
+
+		const abortResponse = await sessionsApi.abort({
+			totalDistanceMeters: 0,
+		});
+
+		if (!abortResponse.success) {
+			return;
+		}
+
+		await startNewSession();
 	};
 
 	const handleFinishSession = async () => {

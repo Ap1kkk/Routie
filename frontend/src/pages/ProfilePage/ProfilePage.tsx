@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '@store';
 import { useNavigate } from 'react-router-dom';
-
+import { Friend } from '../../types/Friends';
+import { sessionsApi } from '../../utils/api/SessionApi';
+import { Session } from '../../types/Sessions';
 import { Profile } from '@components';
 import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
-import { fetchFriends, removeFriend } from '../../services/slices/friendsSlice/friendsSlice';
-import { downloadFileApi } from '../../utils/api/FileApi';
+import {
+	fetchFriends,
+	removeFriend,
+} from '../../services/slices/friendsSlice/friendsSlice';
+import { downloadFileApi, fileApi } from '../../utils/api/FileApi';
 import { sendFriendRequestApi } from '../../utils/api/FriendsApi';
 
 import styles from './ProfilePage.module.scss';
-import { Friend } from '../../types/Friends';
+import { Route } from '../../types/Route';
+import { routeApi } from '../../utils/api/RoutesApi';
 
 export const ProfilePage = () => {
 	const dispatch = useDispatch();
@@ -19,6 +25,8 @@ export const ProfilePage = () => {
 	const { friendsList, isLoading: friendsLoading } = useSelector((state) => state.friends);
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
+	const [recentRoutes, setRecentRoutes] = useState<Route[]>([]);
+	const [routeImages, setRouteImages] = useState<Record<string, string>>({});
 
 	const mockFriend: Friend = {
 		id: "mock-friend-123",
@@ -35,6 +43,63 @@ export const ProfilePage = () => {
 	useEffect(() => {
 		dispatch(fetchFriends({ status: "ACCEPTED", page: 0, size: 20 }));
 	}, [dispatch]);
+
+	useEffect(() => {
+		const loadRecentRoutes = async () => {
+			const history = await sessionsApi.getHistory({
+				status: 'FINISHED',
+				page: 0,
+				size: 15,
+			});
+
+			if (!history.success || !history.data) return;
+
+			const routeIds = history.data.content.map(
+				(session) => session.routeId
+			);
+
+			const routes = await Promise.all(
+				routeIds.map(async (id) => {
+					const response = await routeApi.get(id);
+
+					return response.success ? response.data : null;
+				})
+			);
+
+			const validRoutes = routes.filter(
+				(route): route is Route => route !== null
+			);
+
+			setRecentRoutes(validRoutes);
+
+			const images = await Promise.all(
+				validRoutes.map(async (route) => {
+					if (!route.images?.length) {
+						return [route.id, ''];
+					}
+
+					try {
+						const response = await fileApi.download(
+							route.images[0].id
+						);
+
+						return [
+							route.id,
+							response.success && response.data
+								? response.data
+								: '',
+						] as const;
+					} catch {
+						return [route.id, ''] as const;
+					}
+				})
+			);
+
+			setRouteImages(Object.fromEntries(images));
+		};
+
+		loadRecentRoutes();
+	}, []);
 
 	useEffect(() => {
 		const loadAvatar = async () => {
@@ -84,6 +149,8 @@ export const ProfilePage = () => {
 				friends={friendsList?.content?.length ? friendsList.content : [mockFriend]}
 				onRemoveFriend={handleRemoveFriend}
 				onFriendClick={handleFriendClick}
+				recentRoutes={recentRoutes}
+				routeImages={routeImages}
 			/>
 		</section>
 	);
