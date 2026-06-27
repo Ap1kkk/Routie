@@ -111,10 +111,6 @@ export const router = createBrowserRouter([
 						element: <FindFriendPage />,
 					},
 					{
-						path: '/leader-board',
-						element: <LeaderBoardPage />,
-					},
-					{
 						path: '/routie',
 						loader: mainPageLoader,
 						element: <MainPage />,
@@ -183,16 +179,24 @@ export const router = createBrowserRouter([
 						element: <NotificationPage />,
 					},
 					{
-						path: '/statistic',
+						path: '/settings/statistic',
 						element: <StatisticPage />,
+					},
+					{
+						path: '/settings/friends-leader-board',
+						element: <LeaderBoardPage />,
+					},
+					{
+						path: '/settings/all-leader-board',
+						element: <LeaderBoardPage />,
+					},
+					{
+						path: '/settings/achievements',
+						element: <AchievementPage />,
 					},
 					{
 						path: '/profile/edit',
 						element: <EditProfilePage />,
-					},
-					{
-						path: '/achievements',
-						element: <AchievementPage />,
 					},
 				],
 			},

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Circle } from '@ui';
 import { useTheme } from '../../hooks/useTheme';
 import { getUserRolesApi } from '../../utils/api/AuthApi';
+import { getUnreadCountApi } from '../../utils/api/NotificationsApi';   // ← добавили
 
 import { ReactComponent as User } from '../../assets/icons/user-circle.svg';
 import { ReactComponent as Edit } from '../../assets/icons/edit.svg';
@@ -13,6 +14,8 @@ import { ReactComponent as Sun } from '../../assets/icons/sun.svg';
 import { ReactComponent as Moon } from '../../assets/icons/moon.svg';
 import { ReactComponent as ArrowRight } from '../../assets/icons/chevron-right.svg';
 import { ReactComponent as Monitor } from '../../assets/icons/book.svg';
+import { ReactComponent as Notification } from '../../assets/icons/notification.svg';
+import { ReactComponent as Dumbels } from '../../assets/icons/dumbells.svg';
 
 interface ActiveSession {
 	id: string;
@@ -34,18 +37,20 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({
-	username,
-	name,
-	level,
-	avatar,
-	activeSessions = [],
-	onLogout,
-	onTerminateSession,
-}) => {
+													  username,
+													  name,
+													  level,
+													  avatar,
+													  activeSessions = [],
+													  onLogout,
+													  onTerminateSession,
+												  }) => {
 	const navigate = useNavigate();
 	const { isLight, toggleTheme } = useTheme();
 	const [isAdmin, setIsAdmin] = useState(false);
+	const [unreadCount, setUnreadCount] = useState(0);
 
+	// Загрузка ролей
 	useEffect(() => {
 		const loadRoles = async () => {
 			try {
@@ -60,6 +65,22 @@ export const Settings: React.FC<SettingsProps> = ({
 		};
 
 		loadRoles();
+	}, []);
+
+	// Загрузка количества непрочитанных уведомлений
+	useEffect(() => {
+		const loadUnreadCount = async () => {
+			try {
+				const response = await getUnreadCountApi();
+				if (response.success) {
+					setUnreadCount(response.data || 0);
+				}
+			} catch (e) {
+				console.error('Ошибка загрузки количества уведомлений:', e);
+			}
+		};
+
+		loadUnreadCount();
 	}, []);
 
 	return (
@@ -106,7 +127,7 @@ export const Settings: React.FC<SettingsProps> = ({
 							iconRight={<ArrowRight />}
 							variant='tertiary'
 							className={styles.buttonMenu}
-							onClick={() => navigate('/statistic')}
+							onClick={() => navigate('/settings/statistic')}
 						/>
 					</div>
 					<span className={styles.separator}></span>
@@ -117,7 +138,35 @@ export const Settings: React.FC<SettingsProps> = ({
 							iconRight={<ArrowRight />}
 							variant='tertiary'
 							className={styles.buttonMenu}
-							onClick={() => navigate('/achievements')}
+							onClick={() => navigate('/settings/achievements')}
+						/>
+					</div>
+				</article>
+
+				<article className={styles.card}>
+					<div className={styles.buttonCard}>
+						<Dumbels />
+						<Button
+							children='Таблица лидеров: глобальная'
+							iconRight={<ArrowRight />}
+							variant='tertiary'
+							className={styles.buttonMenu}
+							onClick={() =>
+								navigate('/settings/all-leader-board')
+							}
+						/>
+					</div>
+					<span className={styles.separator}></span>
+					<div className={styles.buttonCard}>
+						<Dumbels />
+						<Button
+							children='Таблица лидеров: среди друзей'
+							iconRight={<ArrowRight />}
+							variant='tertiary'
+							className={styles.buttonMenu}
+							onClick={() =>
+								navigate('/settings/friends-leader-board')
+							}
 						/>
 					</div>
 				</article>
@@ -143,13 +192,11 @@ export const Settings: React.FC<SettingsProps> = ({
 							onClick={() => navigate('/settings/sessions')}
 						/>
 					</div>
-				</article>
-
-				<article className={styles.card}>
+					<span className={styles.separator}></span>
 					<div className={styles.buttonCard}>
-						<Monitor />
+						<Notification />
 						<Button
-							children={`Уведомления (${activeSessions.length})`}
+							children={`Уведомления (${unreadCount})`}
 							iconRight={<ArrowRight />}
 							variant='tertiary'
 							className={styles.buttonMenu}

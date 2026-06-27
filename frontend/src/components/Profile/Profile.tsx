@@ -16,44 +16,53 @@ interface ProfileProps {
 	email?: string;
 	phone?: string;
 	avatar?: string;
+
 	city?: string;
 	gender?: string;
+
 	level?: number;
 	totalXp?: number;
+
 	routesCounter?: number;
 	totalDistanceMeters?: number;
 	totalLandmarksVisited?: number;
+
 	birthday?: string;
 	friends?: Friend[];
+	friendAvatars?: Record<string, string>;   // ← новое
 	recentRoutes?: Route[];
 	routeImages?: Record<string, string>;
 
-	/** Обработчики для друзей */
 	onFriendClick?: (friendId: string) => void;
 	onRemoveFriend?: (friendId: string) => void;
 }
 
 export const Profile: React.FC<ProfileProps> = ({
-	username,
-	name,
-	email,
-	phone,
-	avatar,
-	city,
-	gender,
-	level,
-	totalXp,
-	routesCounter,
-	totalDistanceMeters,
-	totalLandmarksVisited,
-	birthday,
-	friends = [],
-	recentRoutes = [],
-	routeImages = {},
+													username,
+													name,
+													email,
+													phone,
+													avatar,
 
-	onFriendClick,
-	onRemoveFriend,
-}) => {
+													city,
+													gender,
+
+													level,
+													totalXp,
+
+													routesCounter,
+													totalDistanceMeters,
+													totalLandmarksVisited,
+
+													birthday,
+													friends = [],
+													friendAvatars = {},          // ← новое
+													recentRoutes = [],
+													routeImages = {},
+
+													onFriendClick,
+													onRemoveFriend,
+												}) => {
 	const navigate = useNavigate();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
@@ -133,6 +142,7 @@ export const Profile: React.FC<ProfileProps> = ({
 										<FriendCard
 											key={friend.id}
 											friend={friend}
+											avatarSrc={friendAvatars[friend.id]}   // ← добавили
 											variant='compact'
 											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
@@ -141,23 +151,26 @@ export const Profile: React.FC<ProfileProps> = ({
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет друзей
-									</span>
+                               Нет друзей
+                            </span>
 								)}
 							</div>
 						</div>
 
 						<div className={styles.containerContext}>
-							<span className={styles.containerContextTittle}>
-								Последние маршруты
-							</span>
+                      <span className={styles.containerContextTittle}>
+                         Последние маршруты
+                      </span>
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
 										<div
 											key={route.id}
 											className={styles.routeCards}>
-											<RouteCard route={route} imageUrl={routeImages[route.id]}/>
+											<RouteCard
+												route={route}
+												imageUrl={routeImages[route.id]}
+											/>
 											<span
 												className={
 													styles.separator
@@ -166,8 +179,8 @@ export const Profile: React.FC<ProfileProps> = ({
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет пройденных маршрутов
-									</span>
+                               Нет пройденных маршрутов
+                            </span>
 								)}
 							</div>
 						</div>
@@ -183,7 +196,7 @@ export const Profile: React.FC<ProfileProps> = ({
 								ref={levelRef}
 								className={styles.profileLevel}
 								onClick={handleLevelClick}>
-								{level}
+                         {level}
 								{showMenu && (
 									<div
 										className={styles.levelMenu}
@@ -192,7 +205,7 @@ export const Profile: React.FC<ProfileProps> = ({
 										<span>Ваш текущий уровень</span>
 									</div>
 								)}
-							</span>
+                      </span>
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
@@ -225,6 +238,7 @@ export const Profile: React.FC<ProfileProps> = ({
 										<FriendCard
 											key={friend.id}
 											friend={friend}
+											avatarSrc={friendAvatars[friend.id]}   // ← добавили
 											variant='standard'
 											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
@@ -233,16 +247,16 @@ export const Profile: React.FC<ProfileProps> = ({
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет друзей
-									</span>
+                               Нет друзей
+                            </span>
 								)}
 							</div>
 						</div>
 
 						<div className={styles.containerContext}>
-							<span className={styles.containerContextTittle}>
-								Последние маршруты
-							</span>
+                      <span className={styles.containerContextTittle}>
+                         Последние маршруты
+                      </span>
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
@@ -261,8 +275,8 @@ export const Profile: React.FC<ProfileProps> = ({
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет пройденных маршрутов
-									</span>
+                               Нет пройденных маршрутов
+                            </span>
 								)}
 							</div>
 						</div>

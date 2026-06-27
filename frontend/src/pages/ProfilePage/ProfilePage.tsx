@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '@store';
 import { useNavigate } from 'react-router-dom';
 import { Friend } from '../../types/Friends';
-import { sessionsApi } from '../../utils/api/SessionApi';
-import { Session } from '../../types/Sessions';
+
 import { Profile } from '@components';
 import { getMyProfile } from '../../services/slices/profileSlice/profileSlice';
 import {
@@ -11,38 +10,68 @@ import {
 	removeFriend,
 } from '../../services/slices/friendsSlice/friendsSlice';
 import { downloadFileApi, fileApi } from '../../utils/api/FileApi';
-import { sendFriendRequestApi } from '../../utils/api/FriendsApi';
 
 import styles from './ProfilePage.module.scss';
 import { Route } from '../../types/Route';
 import { routeApi } from '../../utils/api/RoutesApi';
+import {sessionsApi} from "../../utils/api/SessionApi";
 
 export const ProfilePage = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
-	const { myProfile, loading: profileLoading, error: profileError } = useSelector((state) => state.profile);
-	const { friendsList, isLoading: friendsLoading } = useSelector((state) => state.friends);
+	const {
+		myProfile,
+		loading: profileLoading,
+		error: profileError,
+	} = useSelector((state) => state.profile);
+	const { friendsList, isLoading: friendsLoading } = useSelector(
+		(state) => state.friends
+	);
 
 	const [avatarSrc, setAvatarSrc] = useState<string>();
+	const [friendAvatars, setFriendAvatars] = useState<Record<string, string>>(
+		{}
+	);
 	const [recentRoutes, setRecentRoutes] = useState<Route[]>([]);
 	const [routeImages, setRouteImages] = useState<Record<string, string>>({});
-
-	const mockFriend: Friend = {
-		id: "mock-friend-123",
-		name: "Анна Смирнова",
-		currentLevel: 42,
-		totalXp: 18750,
-		isFriend: false,
-	};
 
 	useEffect(() => {
 		dispatch(getMyProfile());
 	}, [dispatch]);
 
 	useEffect(() => {
-		dispatch(fetchFriends({ status: "ACCEPTED", page: 0, size: 20 }));
+		dispatch(fetchFriends({ status: 'ACCEPTED', page: 0, size: 20 }));
 	}, [dispatch]);
+
+	useEffect(() => {
+		const loadFriendAvatars = async () => {
+			const friends = friendsList?.content || [];
+			const avatars: Record<string, string> = {};
+
+			for (const friend of friends) {
+				if (friend.avatar?.id) {
+					try {
+						const result = await downloadFileApi(friend.avatar.id);
+						if (result.success && result.data) {
+							avatars[friend.id] = result.data;
+						}
+					} catch (err) {
+						console.error(
+							`Не удалось загрузить аватар друга ${friend.id}`,
+							err
+						);
+					}
+				}
+			}
+
+			setFriendAvatars(avatars);
+		};
+
+		if (friendsList?.content?.length) {
+			loadFriendAvatars();
+		}
+	}, [friendsList]);
 
 	useEffect(() => {
 		const loadRecentRoutes = async () => {
@@ -61,7 +90,6 @@ export const ProfilePage = () => {
 			const routes = await Promise.all(
 				routeIds.map(async (id) => {
 					const response = await routeApi.get(id);
-
 					return response.success ? response.data : null;
 				})
 			);
@@ -125,15 +153,27 @@ export const ProfilePage = () => {
 	};
 
 	if (profileLoading) {
-		return <section className={styles.section}><div>Загрузка профиля...</div></section>;
+		return (
+			<section className={styles.section}>
+				<div>Загрузка профиля...</div>
+			</section>
+		);
 	}
 
 	if (profileError) {
-		return <section className={styles.section}><div>Ошибка профиля: {profileError}</div></section>;
+		return (
+			<section className={styles.section}>
+				<div>Ошибка профиля: {profileError}</div>
+			</section>
+		);
 	}
 
 	if (!myProfile) {
-		return <section className={styles.section}><div>Профиль не найден</div></section>;
+		return (
+			<section className={styles.section}>
+				<div>Профиль не найден</div>
+			</section>
+		);
 	}
 
 	return (
@@ -146,7 +186,8 @@ export const ProfilePage = () => {
 				routesCounter={myProfile.totalRoutesCompleted}
 				birthday={myProfile.dateOfBirth}
 				avatar={avatarSrc}
-				friends={friendsList?.content?.length ? friendsList.content : [mockFriend]}
+				friends={friendsList?.content || []}
+				friendAvatars={friendAvatars}
 				onRemoveFriend={handleRemoveFriend}
 				onFriendClick={handleFriendClick}
 				recentRoutes={recentRoutes}
