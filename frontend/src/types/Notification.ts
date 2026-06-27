@@ -1,11 +1,9 @@
 export type NotificationType =
 	| 'ACHIEVEMENT_UNLOCKED'
-	| 'FRIEND_REQUEST'
-	| 'ROUTE_COMPLETED'
-	| 'LEVEL_UP'
-	| 'LIKE'
-	| 'COMMENT'
-	| 'SYSTEM';
+	| 'XP_AWARDED'
+	| 'FRIEND_REQUEST_RECEIVED'
+	| 'FRIEND_REQUEST_ACCEPTED'
+
 
 export interface Notification {
 	id: string;

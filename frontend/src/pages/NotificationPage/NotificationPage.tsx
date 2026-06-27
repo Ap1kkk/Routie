@@ -25,9 +25,8 @@ import { Button } from '@ui';
 export const NotificationPage: React.FC = () => {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [friendRequests, setFriendRequests] = useState<Friend[]>([]);
-	const [requestAvatars, setRequestAvatars] = useState<
-		Record<string, string>
-	>({});
+	const [requestAvatars, setRequestAvatars] = useState<Record<string, string>>({});
+	const [friendshipIds, setFriendshipIds] = useState<Record<string, string>>({}); // friendshipId по userId
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +39,24 @@ export const NotificationPage: React.FC = () => {
 				});
 
 				if (response.success && response.data) {
-					setNotifications(response.data.content || []);
+					const notifs = response.data.content || [];
+					setNotifications(notifs);
+
+					// Извлекаем friendshipId из payload уведомлений
+					const idsMap: Record<string, string> = {};
+					notifs.forEach((notif) => {
+						if (notif.type === 'FRIEND_REQUEST_RECEIVED' && notif.payload) {
+							try {
+								const payload = JSON.parse(notif.payload);
+								if (payload.friendshipId && payload.fromUserId) {
+									idsMap[payload.fromUserId] = payload.friendshipId;
+								}
+							} catch (e) {
+								console.error('Ошибка парсинга payload', e);
+							}
+						}
+					});
+					setFriendshipIds(idsMap);
 				}
 			} catch (err: any) {
 				console.error(err);
@@ -62,7 +78,6 @@ export const NotificationPage: React.FC = () => {
 				if (response.success && response.data) {
 					const requests = response.data.content || [];
 					setFriendRequests(requests);
-
 					loadRequestAvatars(requests);
 				}
 			} catch (err: any) {
@@ -86,10 +101,7 @@ export const NotificationPage: React.FC = () => {
 						avatars[req.id] = result.data;
 					}
 				} catch (err) {
-					console.error(
-						`Не удалось загрузить аватар для ${req.id}`,
-						err
-					);
+					console.error(`Не удалось загрузить аватар для ${req.id}`, err);
 				}
 			}
 		}
@@ -124,26 +136,31 @@ export const NotificationPage: React.FC = () => {
 		}
 	};
 
-	const handleAcceptRequest = async (friendshipId: string) => {
+	const handleAcceptRequest = async (userId: string) => {
+		const friendshipId = friendshipIds[userId];
+		if (!friendshipId) {
+			console.error('Не найден friendshipId для пользователя', userId);
+			return;
+		}
+
 		try {
 			const response = await acceptFriendRequestApi(friendshipId);
 			if (response.success) {
-				setFriendRequests((prev) =>
-					prev.filter((f) => f.id !== friendshipId)
-				);
+				setFriendRequests((prev) => prev.filter((f) => f.id !== userId));
 			}
 		} catch (err) {
 			console.error('Ошибка принятия запроса:', err);
 		}
 	};
 
-	const handleRejectRequest = async (friendshipId: string) => {
+	const handleRejectRequest = async (userId: string) => {
+		const friendshipId = friendshipIds[userId];
+		if (!friendshipId) return;
+
 		try {
 			const response = await rejectFriendRequestApi(friendshipId);
 			if (response.success) {
-				setFriendRequests((prev) =>
-					prev.filter((f) => f.id !== friendshipId)
-				);
+				setFriendRequests((prev) => prev.filter((f) => f.id !== userId));
 			}
 		} catch (err) {
 			console.error('Ошибка отклонения запроса:', err);
@@ -164,12 +181,12 @@ export const NotificationPage: React.FC = () => {
 						<FriendCard
 							key={request.id}
 							friend={request}
-							avatarSrc={requestAvatars[request.id]} // ← аватарка
+							avatarSrc={requestAvatars[request.id]}
 							variant='standard'
 							showAddButton={true}
 							showRemoveButton={true}
-							onAddFriend={handleAcceptRequest}
-							onRemove={handleRejectRequest}
+							onAddFriend={handleAcceptRequest}   // ← userId
+							onRemove={handleRejectRequest}      // ← userId
 						/>
 					))
 				) : (
