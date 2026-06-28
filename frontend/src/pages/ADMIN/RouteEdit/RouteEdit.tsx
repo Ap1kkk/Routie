@@ -417,7 +417,7 @@ export const RouteEdit = () => {
 									id: tag.id,
 									label: tag.title,
 								}))}
-								wrap={false}
+								wrap={true}
 								selectedIds={draft.selectedTags}
 								onTagClick={(id) => {
 									if (!id) return;
