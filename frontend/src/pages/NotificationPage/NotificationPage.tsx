@@ -37,9 +37,7 @@ export const NotificationPage: React.FC = () => {
 		{}
 	);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 
-	// Загрузка уведомлений
 	useEffect(() => {
 		const loadNotifications = async () => {
 			try {
@@ -82,7 +80,6 @@ export const NotificationPage: React.FC = () => {
 		loadNotifications();
 	}, []);
 
-	// Загрузка входящих заявок
 	useEffect(() => {
 		const loadFriendRequests = async () => {
 			try {
@@ -231,7 +228,7 @@ export const NotificationPage: React.FC = () => {
 
 			<div className={styles.notificationList}>
 				<div className={styles.notificationListHeader}>
-					<h3 className={styles.notificationTitle}>Достижения</h3>
+					<h3 className={styles.notificationTitle}>Уведомления</h3>
 					<Button
 						variant='primary'
 						children='Прочитать все'
