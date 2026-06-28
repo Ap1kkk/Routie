@@ -41,33 +41,55 @@ import { fileApi } from './utils/api/FileApi';
 import { authApi } from './utils/api/AuthApi';
 import { clearTokens, getAccessToken, getRefreshToken } from './utils/auth';
 import { Route } from './types/Route';
+import { useDispatch } from '@store';
+import {
+	clearUserProfile,
+	setMyProfile,
+} from './services/slices/profileSlice/profileSlice';
+import {
+	setAuthenticated,
+	setInitialized,
+} from './services/slices/authSlice/authSlice';
+import { getMyProfileApi } from './utils/api/ProfileApi';
 
 export function App() {
-	const [initialized, setInitialized] = useState(false);
+	const [initialized, setAppInitialized] = useState(false);
+	const dispatch = useDispatch();
 
 	useEffect(() => {
 		const init = async () => {
 			try {
-				if (getAccessToken()) {
-					const me = await authApi.getUser();
+				let me;
 
-					if (me.success) {
-						setInitialized(true);
-						return;
-					}
+				if (getAccessToken()) {
+					me = await authApi.getUser();
 				}
 
-				if (getRefreshToken()) {
+				if ((!me || !me.success) && getRefreshToken()) {
 					const refreshed = await authApi.refreshToken();
 
 					if (refreshed) {
-						await authApi.getUser();
-					} else {
-						clearTokens();
+						me = await authApi.getUser();
 					}
 				}
+
+				if (me?.success && me.data) {
+					const profile = await getMyProfileApi();
+
+					dispatch(setAuthenticated(true));
+
+					if (profile.success && profile.data) {
+						dispatch(setMyProfile(profile.data));
+					}
+				} else {
+					clearTokens();
+
+					dispatch(setAuthenticated(false));
+					dispatch(clearUserProfile());
+				}
 			} finally {
-				setInitialized(true);
+				dispatch(setInitialized(true));
+				setAppInitialized(true);
 			}
 		};
 
