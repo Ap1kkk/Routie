@@ -38,7 +38,7 @@ import {
 import { useEffect, useState } from 'react';
 import { routeApi } from './utils/api/RoutesApi';
 import { fileApi } from './utils/api/FileApi';
-import { refreshTokenApi } from './utils/api/AuthApi';
+import { authApi } from './utils/api/AuthApi';
 import { clearTokens, getAccessToken, getRefreshToken } from './utils/auth';
 import { Route } from './types/Route';
 
@@ -47,27 +47,28 @@ export function App() {
 
 	useEffect(() => {
 		const init = async () => {
-			const accessToken = getAccessToken();
+			try {
+				if (getAccessToken()) {
+					const me = await authApi.getUser();
 
-			if (accessToken) {
+					if (me.success) {
+						setInitialized(true);
+						return;
+					}
+				}
+
+				if (getRefreshToken()) {
+					const refreshed = await authApi.refreshToken();
+
+					if (refreshed) {
+						await authApi.getUser();
+					} else {
+						clearTokens();
+					}
+				}
+			} finally {
 				setInitialized(true);
-				return;
 			}
-
-			const refreshToken = getRefreshToken();
-
-			if (!refreshToken) {
-				setInitialized(true);
-				return;
-			}
-
-			const ok = await refreshTokenApi();
-
-			if (!ok) {
-				clearTokens();
-			}
-
-			setInitialized(true);
 		};
 
 		init();
