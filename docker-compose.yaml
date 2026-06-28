@@ -95,16 +95,44 @@ services:
       - "443:443"
     restart: unless-stopped
 
-  # ============== SSL-СЕРТИФИКАТ (Let's Encrypt) ==============
+  # ==================== АВТОПРОДЛЕНИЕ SSL ====================
   certbot:
     image: certbot/certbot
     container_name: two-steps-certbot
     volumes:
-      - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
-    # По умолчанию ничего не делает — команды запускаются вручную (см. инструкцию).
-    # Можно раскомментировать для авто-продления каждые 12 часов после первого выпуска сертификата:
-    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done"
+      - ./certbot/www:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/certbot --quiet
+        --deploy-hook 'touch /etc/letsencrypt/renewed';
+        sleep 12h & wait $${!};
+      done"
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+  # Перечитывает nginx-конфиг в контейнере frontend после продления сертификата
+  # (certbot/certbot не содержит docker CLI, поэтому reload делает отдельный sidecar с доступом к docker.sock)
+  nginx-reloader:
+    image: docker:cli
+    container_name: two-steps-nginx-reloader
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do
+        if [ -f /etc/letsencrypt/renewed ]; then
+          docker exec two-steps-frontend nginx -s reload && rm -f /etc/letsencrypt/renewed;
+        fi;
+        sleep 1h & wait $${!};
+      done"
+    depends_on:
+      - frontend
+      - certbot
+    restart: unless-stopped
 
   # ================ ЛОГИ (Loki + Vector) ================
 
