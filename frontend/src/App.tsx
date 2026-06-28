@@ -77,7 +77,7 @@ export const router = createBrowserRouter([
 		children: [
 			{
 				path: '/',
-				element: <Navigate to='/login' replace />,
+				element: <Navigate to='/routie' replace />,
 			},
 			{
 				path: '/login',

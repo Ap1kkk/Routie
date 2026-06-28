@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import mmrgl from 'mmr-gl';
+import { useNavigate } from 'react-router-dom';
 import { decodePolyline } from './map';
 import { useTheme } from '../../hooks/useTheme';
 import { createRoot } from 'react-dom/client';
@@ -25,12 +26,6 @@ function calculateDistance(
 	lat2: number,
 	lon2: number
 ): number {
-	console.log('[calculateDistance] Вызов с координатами:', {
-		lat1,
-		lon1,
-		lat2,
-		lon2,
-	});
 	const R = 6371000;
 	const dLat = ((lat2 - lat1) * Math.PI) / 180;
 	const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -50,6 +45,7 @@ const API_MAP_KEY =
 	'a47f57ddcdac37e56aa29e0001678c6f87e2ecbe91e52cc129eecbb01fd0d386';
 
 export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
+	const navigate = useNavigate();
 	const { isLight } = useTheme();
 	const mapRef = useRef<mmrgl.Map | null>(null);
 	const userMarkerRef = useRef<mmrgl.Marker | null>(null);
@@ -246,6 +242,23 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		}
 	};
 
+	const handleAbortSession = async () => {
+		if (!session) return;
+
+		const request: FinishSessionRequest = {
+			sessionId: session.id,
+			status: 'ABORTED',
+			totalDistanceMeters: 0,
+		};
+
+		const response = await sessionsApi.finish(request);
+
+		if (response.success && response.data) {
+			setSession(response.data);
+			stopUserLocationTracking();
+		}
+	};
+
 	useEffect(() => {
 		if (
 			session &&
@@ -347,10 +360,6 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	);
 
 	const updateMarkerTypes = useCallback((activeIdx: number) => {
-		console.log(
-			'[updateMarkerTypes] Обновление типов маркеров. Активный:',
-			activeIdx
-		);
 		markersDataRef.current.forEach(({ root }, idx) => {
 			const type: MarkerType =
 				idx < activeIdx
@@ -364,7 +373,6 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	}, []);
 
 	useEffect(() => {
-		console.log('[useEffect] routeData изменился → добавляем маркеры');
 		const map = mapRef.current;
 		if (map && routeData?.checkpoints?.length) {
 			addMarkers(map, routeData.checkpoints);
@@ -372,15 +380,10 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	}, [routeData, addMarkers]);
 
 	useEffect(() => {
-		console.log('[useEffect] activeCheckpointIndex изменился');
 		updateMarkerTypes(activeCheckpointIndex);
 	}, [activeCheckpointIndex]);
 
 	const updateControls = () => {
-		console.log(
-			'[updateControls] Обновление активной кнопки маршрута:',
-			routeType
-		);
 		if (!controlsContainerRef.current) return;
 
 		const selector = controlsContainerRef.current.querySelectorAll(
@@ -398,9 +401,7 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 	};
 
 	const focusOnUser = () => {
-		console.log('[focusOnUser] Фокус на пользователя');
 		if (!userMarkerRef.current) {
-			console.log('[focusOnUser] Маркер пользователя отсутствует');
 			return;
 		}
 
@@ -432,18 +433,18 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		const routeButtonsContainer = document.createElement('div');
 		routeButtonsContainer.className = styles.routeButtonsContainer;
 
-		const routeTypes: { type: RouteType; label: string; icon: string }[] = [
-			{ type: 'pedestrian', label: 'Пешком', icon: '🚶' },
-			{ type: 'bicycle', label: 'Велосипед', icon: '🚲' },
-			{ type: 'auto', label: 'Авто', icon: '🚗' },
+		const routeTypes: { type: RouteType; icon: string }[] = [
+			{ type: 'pedestrian', icon: '🚶' },
+			{ type: 'bicycle', icon: '🚲' },
+			{ type: 'auto', icon: '🚗' },
 		];
 
-		routeTypes.forEach(({ type, label, icon }) => {
+		routeTypes.forEach(({ type, icon }) => {
 			const button = document.createElement('button');
 			button.className = `${styles.controlsButtons} ${
 				styles.controlsButtonsMove
 			} ${routeType === type ? styles.active : ''}`;
-			button.innerHTML = `${icon} ${label}`;
+			button.innerHTML = `${icon}`;
 			button.setAttribute('data-type', type);
 			button.onclick = () => setRouteType(type);
 			routeButtonsContainer.appendChild(button);
@@ -684,6 +685,23 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				buildRoute(map, routeData.checkpoints, routeType);
 				fitBoundsToRoute();
 			}
+			navigator.geolocation.getCurrentPosition(
+				({ coords }) => {
+					updateUserPosition(coords.latitude, coords.longitude);
+					startUserLocationTracking();
+				},
+				(error) => {
+					console.error(error);
+					startUserLocationTracking();
+				},
+				{
+					enableHighAccuracy: true,
+					maximumAge: 0,
+					timeout: 10000,
+				}
+			);
+
+			addControls(map);
 			addControls(map);
 		};
 
@@ -724,8 +742,11 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 				progress={progress}
 				isStarted={!!session}
 				isFinished={session?.status === 'FINISHED'}
+				isAborted={session?.status === 'ABORTED'}
 				onStart={handleStartSession}
 				onFinish={handleFinishSession}
+				onAbort={handleAbortSession}
+				onBack={() => navigate('/routie')}
 			/>
 		</>
 	);

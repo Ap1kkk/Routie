@@ -10,9 +10,12 @@ interface Props {
 
 	isStarted: boolean;
 	isFinished: boolean;
+	isAborted: boolean;
 
 	onStart: () => void;
 	onFinish: () => void;
+	onAbort: () => void;
+	onBack: () => void;
 }
 
 export const RouteSessionPanel = ({
@@ -21,9 +24,14 @@ export const RouteSessionPanel = ({
 	progress,
 	isStarted,
 	isFinished,
+	isAborted,
 	onStart,
 	onFinish,
+	onAbort,
+	onBack,
 }: Props) => {
+	const isCompleted = current >= total;
+
 	return (
 		<div className={styles.panel}>
 			<div className={styles.progress}>
@@ -32,18 +40,50 @@ export const RouteSessionPanel = ({
 
 			<div className={styles.buttons}>
 				{!isStarted && (
-					<Button variant='primary' onClick={onStart}>
-						Начать маршрут
-					</Button>
+					<>
+						<Button
+							variant='primary'
+							onClick={onStart}
+							className={styles.buttonsControls}>
+							Начать маршрут
+						</Button>
+					</>
 				)}
 
-				{isStarted && !isFinished && (
-					<Button variant='secondary' onClick={onFinish}>
-						Завершить маршрут
-					</Button>
+				{isStarted &&
+					!isFinished &&
+					!isAborted &&
+					(isCompleted ? (
+						<Button
+							variant='secondary'
+							onClick={onFinish}
+							className={styles.buttonsControls}>
+							Завершить маршрут
+						</Button>
+					) : (
+						<Button
+							variant='secondary'
+							onClick={onAbort}
+							className={styles.buttonsControls}>
+							Прервать маршрут
+						</Button>
+					))}
+
+				{isFinished && (
+					<>
+						<Button disabled className={styles.buttonsControls}>
+							Маршрут завершён
+						</Button>
+					</>
 				)}
 
-				{isFinished && <Button disabled>Маршрут завершён</Button>}
+				{isAborted && (
+					<>
+						<Button disabled className={styles.buttonsControls}>
+							Маршрут прерван
+						</Button>
+					</>
+				)}
 			</div>
 		</div>
 	);

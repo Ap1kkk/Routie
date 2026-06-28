@@ -267,10 +267,6 @@ export const Profile: React.FC<ProfileProps> = ({
 												route={route}
 												imageUrl={routeImages[route.id]}
 											/>
-											<span
-												className={
-													styles.separator
-												}></span>
 										</div>
 									))
 								) : (
