@@ -24,8 +24,9 @@ export const MobileFooter = () => {
 	const indicatorRef = useRef<HTMLDivElement>(null);
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
-	const paths = ['/routie', '/routes', '/favorites-mobile', '/settings'];
+	const paths = ['/routie', '/routes', '/favorites', '/settings'];
 
+	// Скрываем footer на этих страницах
 	const hideOnPaths = [
 		'/login',
 		'/registration',
@@ -36,8 +37,12 @@ export const MobileFooter = () => {
 
 	const isMapRoute = location.pathname.startsWith('/map/');
 
-	const shouldHideFooter =
-		hideOnPaths.includes(location.pathname) || isMapRoute;
+	const shouldHideFooter = hideOnPaths.includes(location.pathname) || isMapRoute;
+
+	// Если нужно скрыть — не рендерим footer
+	if (shouldHideFooter) {
+		return null;
+	}
 
 	useEffect(() => {
 		if (isAuthenticated && !myProfile) {
@@ -80,13 +85,8 @@ export const MobileFooter = () => {
 	useEffect(() => {
 		updateIndicator();
 		window.addEventListener('resize', updateIndicator);
-
 		return () => window.removeEventListener('resize', updateIndicator);
 	}, [location.pathname]);
-
-	if (shouldHideFooter) {
-		return null;
-	}
 
 	return (
 		<footer className={styles.footer}>

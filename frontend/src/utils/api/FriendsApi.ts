@@ -164,6 +164,39 @@ export const acceptFriendRequestApi = async (
 	}
 };
 
+/** Получить входящие заявки в друзья */
+export const getIncomingFriendRequestsApi = async (params?: {
+	page?: number;
+	size?: number;
+}): Promise<ApiResponse<PaginatedFriends>> => {
+	try {
+		const queryParams = new URLSearchParams();
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_FRIENDS_URL}/requests/incoming${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedFriends>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_INCOMING_REQUESTS_ERROR',
+				message: error.message || 'Ошибка получения входящих заявок',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
 /**
  * Поиск пользователей для добавления в друзья
  */
