@@ -212,6 +212,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - ./grafana-data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
     ports:
       - "3000:3000"
     restart: unless-stopped
