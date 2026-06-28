@@ -73,14 +73,18 @@ const LandmarkPopupComponent = ({ landmark }: Props) => {
 					src={imageUrl}
 					alt={landmark.title || 'Landmark'}
 					className={styles.imagePopup}
-					loading="lazy"
-					decoding="async"
+					loading='lazy'
+					decoding='async'
 				/>
 			)}
 
 			<article className={styles.popupContainer}>
-				<h3>{landmark.title || 'Без названия'}</h3>
-				<p>{landmark.description || 'Описание отсутствует'}</p>
+				<h3 className={styles.textPopup}>
+					{landmark.title || 'Без названия'}
+				</h3>
+				<p className={styles.textPopup}>
+					{landmark.description || 'Описание отсутствует'}
+				</p>
 
 				{audioUrl && landmark.audioGuide?.file && (
 					<audio controls className={styles.audioControle}>

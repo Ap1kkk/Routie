@@ -79,7 +79,7 @@ export const MapComponent = ({ routeData }: RouteOnMapProps = {}) => {
 		activeIdxRef.current = activeCheckpointIndex;
 	}, [activeCheckpointIndex]);
 
-	const CHECKPOINT_RADIUS = 100;
+	const CHECKPOINT_RADIUS = 25;
 
 	const completed = Math.min(
 		activeCheckpointIndex,
