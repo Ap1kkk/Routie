@@ -299,7 +299,7 @@ export const RegistrationForm2 = ({
 					value={name}
 					onChange={handleNameChange}
 					onBlur={handleNameBlur}
-					placeholder='Введите имя (только буквы)'
+					placeholder='Введите имя (на русском)'
 					required={true}
 					error={
 						showNameError ? nameValidation.errorMessage : undefined

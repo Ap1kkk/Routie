@@ -1,8 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { RouteCard } from '@components';
 import { Button, Input } from '@ui';
-import { routeApi } from '../../utils/api/RoutesApi';
+
+import {
+	getFavoritesApi,
+	getRecommendedRoutesApi,
+	getPopularRoutesApi,
+	routeApi,
+	toggleFavoriteApi,
+	removeFromFavoritesApi,
+} from '../../utils/api/RoutesApi';
+
+import { downloadFileApi } from '../../utils/api/FileApi';
+
 import { Route } from '../../types/Route';
 
 import { ReactComponent as Filter } from '../../assets/icons/filter-square.svg';
@@ -10,66 +21,107 @@ import { ReactComponent as Search } from '../../assets/icons/search.svg';
 
 import styles from './RoutesMobilePage.module.scss';
 
-type LoaderData = {
-	routes: Route[];
-	routeImages: Record<string, string | null>;
-	title: string;
-	isFavoritesPage: boolean;
-};
-
 export const RoutesMobilePage = () => {
 	const navigate = useNavigate();
-	const loaderData = useLoaderData() as LoaderData;
+	const location = useLocation();
 
-	const {
-		routes: initialRoutes = [],
-		routeImages = {},
-		title = 'Маршруты',
-		isFavoritesPage = false,
-	} = loaderData;
-
-	const [localRoutes, setLocalRoutes] = useState<Route[]>(initialRoutes);
+	const [routes, setRoutes] = useState<Route[]>([]);
+	const [routeImages, setRouteImages] = useState<Record<string, string>>({});
 	const [searchQuery, setSearchQuery] = useState('');
 	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
+	const [loading, setLoading] = useState(true);
+	const [title, setTitle] = useState('Маршруты');
+	const [isFavoritesPage, setIsFavoritesPage] = useState(false);
 
-	useEffect(() => {
-		setLocalRoutes(initialRoutes);
-		setSearchQuery('');
-		setLikedRoutes({});
-	}, [initialRoutes]);
+	const pathname = location.pathname;
 
+	// Определяем тип страницы и загружаем данные
 	useEffect(() => {
-		const loadFavorites = async () => {
+		const loadData = async () => {
+			setLoading(true);
+			setSearchQuery('');
+
 			try {
-				const res = await routeApi.getFavorites({ page: 0, size: 100 });
-				if (res.success && res.data?.content) {
-					const favoriteIds = new Set(
-						res.data.content.map((r) => r.id)
-					);
+				let loadedRoutes: Route[] = [];
+				let pageTitle = 'Маршруты';
+				let isFav = false;
 
+				if (pathname.includes('/favorites')) {
+					const res = await getFavoritesApi({ page: 0, size: 20 });
+					if (res.success && res.data) {
+						loadedRoutes = res.data.content || [];
+					}
+					pageTitle = 'Избранное';
+					isFav = true;
+				} else if (pathname.includes('/recommended')) {
+					const res = await getRecommendedRoutesApi({ page: 0, size: 20 });
+					if (res.success && res.data) {
+						loadedRoutes = res.data.content || [];
+					}
+					pageTitle = 'Рекомендованные';
+				} else if (pathname.includes('/popular')) {
+					const res = await getPopularRoutesApi({ limit: 20 });
+					if (res.success && res.data) {
+						loadedRoutes = res.data;
+					}
+					pageTitle = 'Популярные';
+				} else {
+					const res = await routeApi.search({ page: 0, size: 20 });
+					if (res.success && res.data) {
+						loadedRoutes = res.data.content || [];
+					}
+					pageTitle = 'Маршруты';
+				}
+
+				setRoutes(loadedRoutes);
+				setTitle(pageTitle);
+				setIsFavoritesPage(isFav);
+
+				// Загружаем изображения
+				const images: Record<string, string> = {};
+				await Promise.all(
+					loadedRoutes.map(async (route) => {
+						if (!route.images?.length) return;
+						try {
+							const imgRes = await downloadFileApi(route.images[0].id);
+							if (imgRes.success && imgRes.data) {
+								images[route.id] = imgRes.data;
+							}
+						} catch (err) {
+							console.error(`Ошибка загрузки изображения ${route.id}`, err);
+						}
+					})
+				);
+				setRouteImages(images);
+
+				// Загружаем избранное
+				const favRes = await getFavoritesApi({ page: 0, size: 100 });
+				if (favRes.success && favRes.data?.content) {
+					const favIds = new Set(favRes.data.content.map(r => r.id));
 					const initialLiked: Record<string, boolean> = {};
-					initialRoutes.forEach((route) => {
-						initialLiked[route.id] = favoriteIds.has(route.id);
+					loadedRoutes.forEach(route => {
+						initialLiked[route.id] = favIds.has(route.id);
 					});
-
 					setLikedRoutes(initialLiked);
 				}
 			} catch (err) {
-				console.error('Не удалось загрузить избранное:', err);
+				console.error('Ошибка загрузки данных:', err);
+			} finally {
+				setLoading(false);
 			}
 		};
 
-		loadFavorites();
-	}, [initialRoutes]);
+		loadData();
+	}, [pathname]);
 
 	const filteredRoutes = useMemo(() => {
-		if (!searchQuery.trim()) return localRoutes;
+		if (!searchQuery.trim()) return routes;
 
 		const query = searchQuery.toLowerCase().trim();
-		return localRoutes.filter((route) =>
+		return routes.filter((route) =>
 			route.title.toLowerCase().includes(query)
 		);
-	}, [localRoutes, searchQuery]);
+	}, [routes, searchQuery]);
 
 	const handleToggleLike = async (routeId: string) => {
 		const isCurrentlyLiked = likedRoutes[routeId] || false;
@@ -82,9 +134,9 @@ export const RoutesMobilePage = () => {
 		try {
 			let response;
 			if (isCurrentlyLiked) {
-				response = await routeApi.removeFavorites(routeId);
+				response = await removeFromFavoritesApi(routeId);
 			} else {
-				response = await routeApi.toggleFavorite(routeId);
+				response = await toggleFavoriteApi(routeId);
 			}
 
 			if (!response.success) {
@@ -96,9 +148,7 @@ export const RoutesMobilePage = () => {
 			}
 
 			if (isFavoritesPage && isCurrentlyLiked) {
-				setLocalRoutes((prev) =>
-					prev.filter((route) => route.id !== routeId)
-				);
+				setRoutes((prev) => prev.filter((r) => r.id !== routeId));
 			}
 		} catch (error) {
 			setLikedRoutes((prev) => ({
@@ -132,7 +182,9 @@ export const RoutesMobilePage = () => {
 				</div>
 			</div>
 
-			{filteredRoutes.length > 0 ? (
+			{loading ? (
+				<div className={styles.loading}>Загрузка...</div>
+			) : filteredRoutes.length > 0 ? (
 				<div className={styles.routesContainer}>
 					<div className={styles.positionGrid}>
 						{filteredRoutes.map((route) => (
@@ -156,8 +208,8 @@ export const RoutesMobilePage = () => {
 						{searchQuery.trim()
 							? 'По вашему запросу ничего не найдено'
 							: isFavoritesPage
-							? 'В избранном пока пусто'
-							: 'Маршруты не найдены'}
+								? 'В избранном пока пусто'
+								: 'Маршруты не найдены'}
 					</h2>
 				</div>
 			)}

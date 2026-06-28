@@ -12,7 +12,7 @@ import {
 } from '../../utils/api/NotificationsApi';
 
 import {
-	getFriendsApi,
+	getIncomingFriendRequestsApi,
 	acceptFriendRequestApi,
 	rejectFriendRequestApi,
 } from '../../utils/api/FriendsApi';
@@ -22,14 +22,24 @@ import { downloadFileApi } from '../../utils/api/FileApi';
 import styles from './NotificationPage.module.scss';
 import { Button } from '@ui';
 
+interface IncomingFriendRequestItem {
+	friendshipId: string;
+	user: Friend;
+}
+
 export const NotificationPage: React.FC = () => {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [friendRequests, setFriendRequests] = useState<Friend[]>([]);
-	const [requestAvatars, setRequestAvatars] = useState<Record<string, string>>({});
-	const [friendshipIds, setFriendshipIds] = useState<Record<string, string>>({}); // friendshipId по userId
+	const [requestAvatars, setRequestAvatars] = useState<
+		Record<string, string>
+	>({});
+	const [friendshipIds, setFriendshipIds] = useState<Record<string, string>>(
+		{}
+	);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	// Загрузка уведомлений
 	useEffect(() => {
 		const loadNotifications = async () => {
 			try {
@@ -42,14 +52,20 @@ export const NotificationPage: React.FC = () => {
 					const notifs = response.data.content || [];
 					setNotifications(notifs);
 
-					// Извлекаем friendshipId из payload уведомлений
 					const idsMap: Record<string, string> = {};
 					notifs.forEach((notif) => {
-						if (notif.type === 'FRIEND_REQUEST_RECEIVED' && notif.payload) {
+						if (
+							notif.type === 'FRIEND_REQUEST_RECEIVED' &&
+							notif.payload
+						) {
 							try {
 								const payload = JSON.parse(notif.payload);
-								if (payload.friendshipId && payload.fromUserId) {
-									idsMap[payload.fromUserId] = payload.friendshipId;
+								if (
+									payload.friendshipId &&
+									payload.fromUserId
+								) {
+									idsMap[payload.fromUserId] =
+										payload.friendshipId;
 								}
 							} catch (e) {
 								console.error('Ошибка парсинга payload', e);
@@ -66,19 +82,31 @@ export const NotificationPage: React.FC = () => {
 		loadNotifications();
 	}, []);
 
+	// Загрузка входящих заявок
 	useEffect(() => {
 		const loadFriendRequests = async () => {
 			try {
-				const response = await getFriendsApi({
-					status: 'PENDING',
+				const response = await getIncomingFriendRequestsApi({
 					page: 0,
 					size: 20,
 				});
 
-				if (response.success && response.data) {
-					const requests = response.data.content || [];
-					setFriendRequests(requests);
-					loadRequestAvatars(requests);
+				if (response.success && response.data?.content) {
+					const rawItems = response.data
+						.content as unknown as IncomingFriendRequestItem[];
+
+					const mappedFriends: Friend[] = rawItems.map(
+						(item) => item.user
+					);
+
+					const idsMap: Record<string, string> = {};
+					rawItems.forEach((item) => {
+						idsMap[item.user.id] = item.friendshipId;
+					});
+
+					setFriendRequests(mappedFriends);
+					setFriendshipIds(idsMap);
+					loadRequestAvatars(mappedFriends);
 				}
 			} catch (err: any) {
 				console.error('Ошибка загрузки заявок в друзья:', err);
@@ -101,7 +129,10 @@ export const NotificationPage: React.FC = () => {
 						avatars[req.id] = result.data;
 					}
 				} catch (err) {
-					console.error(`Не удалось загрузить аватар для ${req.id}`, err);
+					console.error(
+						`Не удалось загрузить аватар для ${req.id}`,
+						err
+					);
 				}
 			}
 		}
@@ -146,7 +177,9 @@ export const NotificationPage: React.FC = () => {
 		try {
 			const response = await acceptFriendRequestApi(friendshipId);
 			if (response.success) {
-				setFriendRequests((prev) => prev.filter((f) => f.id !== userId));
+				setFriendRequests((prev) =>
+					prev.filter((f) => f.id !== userId)
+				);
 			}
 		} catch (err) {
 			console.error('Ошибка принятия запроса:', err);
@@ -160,7 +193,9 @@ export const NotificationPage: React.FC = () => {
 		try {
 			const response = await rejectFriendRequestApi(friendshipId);
 			if (response.success) {
-				setFriendRequests((prev) => prev.filter((f) => f.id !== userId));
+				setFriendRequests((prev) =>
+					prev.filter((f) => f.id !== userId)
+				);
 			}
 		} catch (err) {
 			console.error('Ошибка отклонения запроса:', err);
@@ -185,8 +220,8 @@ export const NotificationPage: React.FC = () => {
 							variant='standard'
 							showAddButton={true}
 							showRemoveButton={true}
-							onAddFriend={handleAcceptRequest}   // ← userId
-							onRemove={handleRejectRequest}      // ← userId
+							onAddFriend={handleAcceptRequest}
+							onRemove={handleRejectRequest}
 						/>
 					))
 				) : (
