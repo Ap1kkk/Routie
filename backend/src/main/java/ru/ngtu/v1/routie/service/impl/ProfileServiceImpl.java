@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.profile.FriendRequestResponse;
 import ru.ngtu.v1.routie.dto.profile.Gender;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
@@ -404,6 +405,55 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Пользователь {} удалён из друзей {}", friendId, currentUser.getId());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<FriendRequestResponse> getIncomingFriendRequests(int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Friendship> requests = friendshipRepository
+                .findAllByAddresseeAndStatus(currentUser, FriendshipStatus.PENDING, pageable);
+
+        List<FriendRequestResponse> content = requests.stream()
+                .map(f -> toFriendRequestResponse(f, f.getRequester()))
+                .toList();
+
+        return new PageResponse<>(content, requests.getTotalElements(), requests.getTotalPages(), page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<FriendRequestResponse> getOutgoingFriendRequests(int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Friendship> requests = friendshipRepository
+                .findAllByRequesterAndStatus(currentUser, FriendshipStatus.PENDING, pageable);
+
+        List<FriendRequestResponse> content = requests.stream()
+                .map(f -> toFriendRequestResponse(f, f.getAddressee()))
+                .toList();
+
+        return new PageResponse<>(content, requests.getTotalElements(), requests.getTotalPages(), page);
+    }
+
+    @Override
+    @Transactional
+    public void cancelFriendRequest(UUID friendshipId) {
+        User currentUser = getCurrentUser();
+        Friendship friendship = findFriendshipById(friendshipId);
+
+        if (!friendship.getRequester().getId().equals(currentUser.getId())) {
+            throw new ForbiddenException("Вы не являетесь отправителем этого запроса");
+        }
+        if (friendship.getStatus() != FriendshipStatus.PENDING) {
+            throw new BadRequestException("Запрос уже обработан");
+        }
+
+        friendshipRepository.delete(friendship);
+        log.info("Исходящий запрос в друзья отменён: {}", friendshipId);
+    }
+
 
     // ==================== Вспомогательные методы ====================
 
@@ -522,6 +572,15 @@ public class ProfileServiceImpl implements ProfileService {
                 .currentLevel(profile.getCurrentLevel())
                 .totalXp(profile.getTotalXp())
                 .isFriend(isFriend)
+                .build();
+    }
+
+    private FriendRequestResponse toFriendRequestResponse(Friendship friendship, User otherUser) {
+        UserProfile otherProfile = getOrCreateProfile(otherUser);
+        return FriendRequestResponse.builder()
+                .friendshipId(friendship.getId())
+                .user(toShortResponse(otherUser, otherProfile, false))
+                .createdAt(friendship.getCreatedAt())
                 .build();
     }
 

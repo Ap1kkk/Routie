@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.dto.common.ApiResponseVoid;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.profile.FriendRequestResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
 
@@ -49,6 +50,29 @@ public class FriendsControllerV1 {
   @Operation(summary = "Отправить запрос в друзья")
   public ApiResponseVoid sendFriendRequest(@PathVariable UUID friendId) {
     profileService.sendFriendRequest(friendId);
+    return ApiResponse.empty();
+  }
+
+  @GetMapping("/requests/incoming")
+  @Operation(summary = "Входящие запросы в друзья")
+  public ApiResponse<PageResponse<FriendRequestResponse>> getIncomingFriendRequests(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.of(profileService.getIncomingFriendRequests(page, size));
+  }
+
+  @GetMapping("/requests/outgoing")
+  @Operation(summary = "Исходящие запросы в друзья")
+  public ApiResponse<PageResponse<FriendRequestResponse>> getOutgoingFriendRequests(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.of(profileService.getOutgoingFriendRequests(page, size));
+  }
+
+  @DeleteMapping("/requests/{friendshipId}")
+  @Operation(summary = "Отменить свой исходящий запрос в друзья")
+  public ApiResponseVoid cancelFriendRequest(@PathVariable UUID friendshipId) {
+    profileService.cancelFriendRequest(friendshipId);
     return ApiResponse.empty();
   }
 

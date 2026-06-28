@@ -33,6 +33,12 @@ public interface FriendshipRepository extends JpaRepository<Friendship, UUID> {
 
     boolean existsByRequesterAndAddresseeAndStatus(User requester, User addressee, FriendshipStatus status);
 
+    /** Входящие запросы: текущий пользователь — адресат. */
+    Page<Friendship> findAllByAddresseeAndStatus(User addressee, FriendshipStatus status, Pageable pageable);
+
+    /** Исходящие запросы: текущий пользователь — отправитель. */
+    Page<Friendship> findAllByRequesterAndStatus(User requester, FriendshipStatus status, Pageable pageable);
+
     /** ID всех принятых друзей пользователя (без самого пользователя). */
     @Query("""
             SELECT CASE WHEN f.requester.id = :userId THEN f.addressee.id ELSE f.requester.id END

@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.profile.FriendRequestResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
 import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
 import ru.ngtu.v1.routie.service.ProfileService;
+
+import java.time.Instant;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -115,5 +118,36 @@ public class ProfileServiceStub implements ProfileService {
     @Override
     public void removeFriend(UUID friendId) {
         log.debug("[STUB] removeFriend: {}", friendId);
+    }
+
+    @Override
+    public PageResponse<FriendRequestResponse> getIncomingFriendRequests(int page, int size) {
+        log.debug("[STUB] getIncomingFriendRequests page={}, size={}", page, size);
+        long total = 3L;
+        List<FriendRequestResponse> content = fakeFriendRequests(size);
+        return FakeDataFactory.fakePage(content, page, size, total);
+    }
+
+    @Override
+    public PageResponse<FriendRequestResponse> getOutgoingFriendRequests(int page, int size) {
+        log.debug("[STUB] getOutgoingFriendRequests page={}, size={}", page, size);
+        long total = 2L;
+        List<FriendRequestResponse> content = fakeFriendRequests(size);
+        return FakeDataFactory.fakePage(content, page, size, total);
+    }
+
+    @Override
+    public void cancelFriendRequest(UUID friendshipId) {
+        log.debug("[STUB] cancelFriendRequest: {}", friendshipId);
+    }
+
+    private List<FriendRequestResponse> fakeFriendRequests(int size) {
+        return FakeDataFactory.fakeUserProfileShortList(size).stream()
+                .map(u -> FriendRequestResponse.builder()
+                        .friendshipId(UUID.randomUUID())
+                        .user(u)
+                        .createdAt(Instant.now())
+                        .build())
+                .toList();
     }
 }

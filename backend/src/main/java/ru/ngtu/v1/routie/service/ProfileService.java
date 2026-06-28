@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 import ru.ngtu.v1.routie.dto.common.MediaFileResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.profile.FriendRequestResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
@@ -37,4 +38,13 @@ public interface ProfileService {
   void acceptFriendRequest(UUID friendshipId);
   void rejectFriendRequest(UUID friendshipId);
   void removeFriend(UUID friendId);
+
+  /** Входящие запросы в друзья (текущий пользователь — адресат, статус PENDING). */
+  PageResponse<FriendRequestResponse> getIncomingFriendRequests(int page, int size);
+
+  /** Исходящие запросы в друзья (текущий пользователь — отправитель, статус PENDING). */
+  PageResponse<FriendRequestResponse> getOutgoingFriendRequests(int page, int size);
+
+  /** Отмена своего исходящего запроса в друзья. */
+  void cancelFriendRequest(UUID friendshipId);
 }
