@@ -90,24 +90,24 @@ export const loginUserApi = async (
 /** Выход из системы */
 export const logoutApi = async (): Promise<ApiResponse> => {
 	try {
-		const refreshToken = getRefreshToken();   // ← добавляем
+		const refreshToken = getRefreshToken();
 
 		const response = await fetch(
 			`${API_URL}/${API_AUTH_URL}/logout`,
 			{
 				method: 'POST',
 				headers: getHeaders(true),
-				body: JSON.stringify({ refreshToken }),   // ← отправляем refreshToken
+				body: JSON.stringify({ refreshToken }),
 			}
 		);
 
 		const result = await handleResponse(response);
 
-		clearTokens();   // очищаем токены после успешного запроса
+		clearTokens();
 
 		return result;
 	} catch (error: any) {
-		clearTokens();   // на всякий случай очищаем
+		clearTokens();
 		return {
 			success: false,
 			error: {
@@ -154,10 +154,13 @@ export const getUserRolesApi = async (): Promise<
 
 export const getActiveSessionsApi = async (): Promise<ApiResponse<any[]>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_AUTH_URL}/sessions`, {
-			method: 'GET',
-			headers: getHeaders(true),
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_AUTH_URL}/sessions`,
+			{
+				method: 'GET',
+				headers: getHeaders(true),
+			}
+		);
 
 		return await handleResponse(response);
 	} catch (error: any) {
@@ -210,13 +213,16 @@ export const refreshTokenApi = async (): Promise<boolean> => {
 			return false;
 		}
 
-		const response = await fetch(`${API_URL}/${API_AUTH_URL}/refresh`, {
-			method: 'POST',
-			headers: getHeaders(),
-			body: JSON.stringify({
-				refreshToken,
-			}),
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_AUTH_URL}/refresh`,
+			{
+				method: 'POST',
+				headers: getHeaders(),
+				body: JSON.stringify({
+					refreshToken,
+				}),
+			}
+		);
 
 		const result = await handleResponse<LoginResponseWithTokens>(response);
 
@@ -315,13 +321,11 @@ export const requestPasswordResetApi = async (
 };
 
 /** 2. Подтверждение кода и смена пароля */
-export const confirmPasswordResetApi = async (
-	data: {
-		email: string;
-		code: string;
-		newPassword: string;
-	}
-): Promise<ApiResponse<string>> => {
+export const confirmPasswordResetApi = async (data: {
+	email: string;
+	code: string;
+	newPassword: string;
+}): Promise<ApiResponse<string>> => {
 	try {
 		const response = await fetch(
 			`${API_URL}/${API_AUTH_URL}/password/reset/confirm`,
@@ -344,4 +348,17 @@ export const confirmPasswordResetApi = async (
 			timestamp: new Date().toISOString(),
 		};
 	}
+};
+
+export const authApi = {
+	register: registerUserApi,
+	login: loginUserApi,
+	logout: logoutApi,
+	getUser: getUserApi,
+	getUserRoles: getUserRolesApi,
+	getActiveSessions: getActiveSessionsApi,
+	terminateSession: terminateSessionApi,
+	refreshToken: refreshTokenApi,
+	requestPasswordReset: requestPasswordResetApi,
+	confirmPasswordReset: confirmPasswordResetApi,
 };

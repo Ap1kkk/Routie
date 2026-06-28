@@ -16,15 +16,19 @@ import {
 	GetRecommendedParams,
 	RouteImageUpload,
 } from '../../types/Route';
+import { fetchWithAuth } from './AuthApi';
 
 export const deleteRouteApi = async (
 	routeId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
-			method: 'DELETE',
-			headers: getHeaders(true),
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}`,
+			{
+				method: 'DELETE',
+				headers: getHeaders(true),
+			}
+		);
 
 		return await handleResponse<string>(response);
 	} catch (error: any) {
@@ -44,10 +48,13 @@ export const getRouteApi = async (
 	routeId: string
 ): Promise<ApiResponse<Route>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
-			method: 'GET',
-			headers: getHeaders(true),
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_ROUTES_URL}/${routeId}`,
+			{
+				method: 'GET',
+				headers: getHeaders(true),
+			}
+		);
 
 		return await handleResponse<Route>(response);
 	} catch (error: any) {
@@ -94,7 +101,7 @@ export const searchRoutesApi = async (
 
 		const url = `${API_URL}/${API_ROUTES_URL}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -117,7 +124,7 @@ export const getFullRouteApi = async (
 	routeId: string
 ): Promise<ApiResponse<FullRoute>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_ROUTES_URL}/${routeId}/full`,
 			{
 				method: 'GET',
@@ -157,7 +164,7 @@ export const getFavoritesApi = async (params?: {
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -196,7 +203,7 @@ export const getPopularRoutesApi = async (params?: {
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -230,7 +237,7 @@ export const getRecommendedRoutesApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -251,7 +258,7 @@ export const getRecommendedRoutesApi = async (
 
 export const getDailyRouteApi = async (): Promise<ApiResponse<Route>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_RECOMMENDATIONS_URL}/daily-route`,
 			{
 				method: 'GET',
@@ -277,7 +284,7 @@ export const publishRouteApi = async (
 	routeId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_ROUTES_URL}/${routeId}/publish`,
 			{
 				method: 'PATCH',
@@ -312,7 +319,7 @@ export const uploadRouteImagesApi = async (
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_ROUTES_URL}/${routeId}/images`,
 			{
 				method: 'PATCH',
@@ -340,7 +347,7 @@ export const createRouteApi = async (
 	data: RouteCreateRequest
 ): Promise<ApiResponse<Route>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_ROUTES_URL}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_ROUTES_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
@@ -369,7 +376,7 @@ export const toggleFavoriteApi = async (
 	routeId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_ROUTES_URL}/${routeId}/favorite`,
 			{
 				method: 'POST',
@@ -396,7 +403,7 @@ export const removeFromFavoritesApi = async (
 	routeId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_ROUTES_URL}/${routeId}/favorite`,
 			{
 				method: 'DELETE',           // ← DELETE для удаления
@@ -423,7 +430,7 @@ export const updateRouteApi = async (
 	data: RouteUpdateRequest
 ): Promise<ApiResponse<Route>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_ROUTES_URL}/${routeId}`, {
 			method: 'PUT',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),

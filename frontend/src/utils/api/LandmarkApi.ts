@@ -13,6 +13,7 @@ import {
 	LandmarkUpdateRequest,
 	PaginatedLandmarks,
 } from '../../types/Landmark';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удаление достопримечательности (только ADMIN)
@@ -21,7 +22,7 @@ export const deleteLandmarkApi = async (
 	landmarkId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_LANDMARKS_URL}/${landmarkId}`,
 			{
 				method: 'DELETE',
@@ -51,7 +52,7 @@ export const getLandmarkApi = async (
 	landmarkId: string
 ): Promise<ApiResponse<Landmark>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_LANDMARKS_URL}/${landmarkId}`,
 			{
 				method: 'GET',
@@ -93,7 +94,7 @@ export const searchLandmarksApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -131,7 +132,7 @@ export const uploadLandmarkImagesApi = async (
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_LANDMARKS_URL}/${landmarkId}/images`,
 			{
 				method: 'PATCH',
@@ -163,7 +164,7 @@ export const createLandmarkApi = async (
 	data: LandmarkCreateRequest
 ): Promise<ApiResponse<Landmark>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_LANDMARKS_URL}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_LANDMARKS_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
@@ -192,7 +193,7 @@ export const updateLandmarkApi = async (
 	data: LandmarkUpdateRequest
 ): Promise<ApiResponse<Landmark>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_LANDMARKS_URL}/${landmarkId}`,
 			{
 				method: 'PUT',

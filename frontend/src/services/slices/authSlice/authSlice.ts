@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../../../types/User';
 import { clearTokens } from '../../../utils/auth';
 import {
@@ -216,12 +216,12 @@ const authSlice = createSlice({
 			state.loginError = null;
 			state.registerError = null;
 		},
-		setInitialized: (state) => {
-			state.initialized = true;
-		},
 		resetAuthState: () => initialState,
-		clearSessionsError: (state) => {
-			state.sessionsError = null;
+		setAuthenticated(state, action: PayloadAction<boolean>) {
+			state.isAuthenticated = action.payload;
+		},
+		setInitialized(state, action: PayloadAction<boolean>) {
+			state.initialized = action.payload;
 		},
 	},
 	extraReducers: (builder) => {
@@ -309,6 +309,6 @@ const authSlice = createSlice({
 	},
 });
 
-export const { clearErrors, setInitialized, resetAuthState } =
+export const { clearErrors, setInitialized, resetAuthState, setAuthenticated } =
 	authSlice.actions;
 export default authSlice.reducer;

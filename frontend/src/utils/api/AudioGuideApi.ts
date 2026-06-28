@@ -13,6 +13,7 @@ import {
 	AudioGuideUpdateRequest,
 	PaginatedAudioGuides,
 } from '../../types/AudioGuide';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удаление аудиогида (только ADMIN)
@@ -21,7 +22,7 @@ export const deleteAudioGuideApi = async (
 	audioGuideId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_AUDIO_GUIDES_URL}/${audioGuideId}`,
 			{
 				method: 'DELETE',
@@ -50,7 +51,7 @@ export const getAudioGuideApi = async (
 	audioGuideId: string
 ): Promise<ApiResponse<AudioGuide>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_AUDIO_GUIDES_URL}/${audioGuideId}`,
 			{
 				method: 'GET',
@@ -91,7 +92,7 @@ export const searchAudioGuidesApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -126,7 +127,7 @@ export const uploadAudioGuideFileApi = async (
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_AUDIO_GUIDES_URL}/${audioGuideId}/file`,
 			{
 				method: 'PATCH',
@@ -156,7 +157,7 @@ export const createAudioGuideApi = async (
 	data: AudioGuideCreateRequest
 ): Promise<ApiResponse<AudioGuide>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_AUDIO_GUIDES_URL}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_AUDIO_GUIDES_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
@@ -184,7 +185,7 @@ export const updateAudioGuideApi = async (
 	data: AudioGuideUpdateRequest
 ): Promise<ApiResponse<AudioGuide>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_AUDIO_GUIDES_URL}/${audioGuideId}`,
 			{
 				method: 'PUT',

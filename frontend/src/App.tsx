@@ -35,33 +35,66 @@ import {
 	Terms,
 	Workbench,
 } from '@pages';
-import { useDispatch, useSelector } from '@store';
-import { useEffect } from 'react';
-import {
-	initAuth,
-	setInitialized,
-} from './services/slices/authSlice/authSlice';
-import { selectInitialized } from './services/selectors/userSelectors';
+import { useEffect, useState } from 'react';
 import { routeApi } from './utils/api/RoutesApi';
 import { fileApi } from './utils/api/FileApi';
-import { getAccessToken, getRefreshToken } from './utils/auth';
+import { authApi } from './utils/api/AuthApi';
+import { clearTokens, getAccessToken, getRefreshToken } from './utils/auth';
 import { Route } from './types/Route';
+import { useDispatch } from '@store';
+import {
+	clearUserProfile,
+	setMyProfile,
+} from './services/slices/profileSlice/profileSlice';
+import {
+	setAuthenticated,
+	setInitialized,
+} from './services/slices/authSlice/authSlice';
+import { getMyProfileApi } from './utils/api/ProfileApi';
 
 export function App() {
+	const [initialized, setAppInitialized] = useState(false);
 	const dispatch = useDispatch();
-	const initialized = useSelector(selectInitialized);
 
 	useEffect(() => {
-		const accessToken = getAccessToken();
-		const refreshToken = getRefreshToken();
+		const init = async () => {
+			try {
+				let me;
 
-		if (!accessToken && !refreshToken) {
-			dispatch(setInitialized());
-			return;
-		}
+				if (getAccessToken()) {
+					me = await authApi.getUser();
+				}
 
-		dispatch(initAuth());
-	}, [dispatch]);
+				if ((!me || !me.success) && getRefreshToken()) {
+					const refreshed = await authApi.refreshToken();
+
+					if (refreshed) {
+						me = await authApi.getUser();
+					}
+				}
+
+				if (me?.success && me.data) {
+					const profile = await getMyProfileApi();
+
+					dispatch(setAuthenticated(true));
+
+					if (profile.success && profile.data) {
+						dispatch(setMyProfile(profile.data));
+					}
+				} else {
+					clearTokens();
+
+					dispatch(setAuthenticated(false));
+					dispatch(clearUserProfile());
+				}
+			} finally {
+				dispatch(setInitialized(true));
+				setAppInitialized(true);
+			}
+		};
+
+		init();
+	}, []);
 
 	if (!initialized) {
 		return <div>Loading...</div>;

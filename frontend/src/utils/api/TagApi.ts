@@ -6,13 +6,14 @@ import {
 	API_TAGS_URL,
 } from './Api';
 import { Tags, TagCreateRequest, TagUpdateRequest } from '../../types/Tags';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удаление тега (только ADMIN)
  */
 export const deleteTagApi = async (tagId: string): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
 			method: 'DELETE',
 			headers: getHeaders(true),
 		});
@@ -36,7 +37,7 @@ export const deleteTagApi = async (tagId: string): Promise<ApiResponse<string>> 
  */
 export const getTagApi = async (tagId: string): Promise<ApiResponse<Tags>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -60,7 +61,7 @@ export const getTagApi = async (tagId: string): Promise<ApiResponse<Tags>> => {
  */
 export const getAllTagsApi = async (): Promise<ApiResponse<Tags[]>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_TAGS_URL}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_TAGS_URL}`, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -86,7 +87,7 @@ export const createTagApi = async (
 	data: TagCreateRequest
 ): Promise<ApiResponse<Tags>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_TAGS_URL}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_TAGS_URL}`, {
 			method: 'POST',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
@@ -114,7 +115,7 @@ export const updateTagApi = async (
 	data: TagUpdateRequest
 ): Promise<ApiResponse<Tags>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_TAGS_URL}/${tagId}`, {
 			method: 'PUT',
 			headers: getHeaders(true),
 			body: JSON.stringify(data),
