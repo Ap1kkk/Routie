@@ -10,3 +10,13 @@ scrape_configs:
     scrape_interval: 30s
     static_configs:
       - targets: ['localhost:8429']
+
+  # Срок действия TLS-сертификата сайта (метрика ssl_cert_not_after, секунды Unix-времени)
+  - job_name: 'ssl-exporter'
+    scrape_interval: 1h
+    metrics_path: /probe
+    params:
+      module: ['https']
+      target: ['routie-dev.ru:443']
+    static_configs:
+      - targets: ['ssl-exporter:9219']

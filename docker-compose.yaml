@@ -134,6 +134,12 @@ services:
       - certbot
     restart: unless-stopped
 
+  # Метрика срока действия TLS-сертификата для дашборда в Grafana
+  ssl-exporter:
+    image: ribbybibby/ssl-exporter:latest
+    container_name: two-steps-ssl-exporter
+    restart: unless-stopped
+
   # ================ ЛОГИ (Loki + Vector) ================
 
   vector:
