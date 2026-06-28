@@ -6,6 +6,7 @@ import {
 	API_FILE_URL,
 } from './Api';
 import { UploadedFile } from '../../types/File';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удаление файла
@@ -14,7 +15,7 @@ export const deleteFileApi = async (
 	fileId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_FILE_URL}/${fileId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_FILE_URL}/${fileId}`, {
 			method: 'DELETE',
 			headers: getHeaders(true),
 		});
@@ -48,7 +49,7 @@ export const uploadFileApi = async (
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
-		const response = await fetch(`${API_URL}/${API_FILE_URL}/upload`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_FILE_URL}/upload`, {
 			method: 'POST',
 			headers,
 			body: formData,
@@ -75,7 +76,7 @@ export const downloadFileApi = async (
 	fileId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FILE_URL}/download/${fileId}`,
 			{
 				method: 'GET',

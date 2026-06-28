@@ -8,8 +8,6 @@ type ProtectedRouteProps = {
 };
 
 export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-	const location = useLocation();
-
 	const [loading, setLoading] = useState(true);
 	const [roles, setRoles] = useState<string[]>([]);
 

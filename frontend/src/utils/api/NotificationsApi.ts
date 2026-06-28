@@ -6,6 +6,7 @@ import {
 	getHeaders,
 } from './Api';
 import { PaginatedNotifications, Notification } from '../../types/Notification';
+import { fetchWithAuth } from './AuthApi';
 
 /** Получить все уведомления */
 export const getNotificationsApi = async (params?: {
@@ -23,7 +24,7 @@ export const getNotificationsApi = async (params?: {
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -58,7 +59,7 @@ export const getUnreadNotificationsApi = async (params?: {
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -82,7 +83,7 @@ export const getUnreadNotificationsApi = async (params?: {
 /** Получить количество непрочитанных */
 export const getUnreadCountApi = async (): Promise<ApiResponse<number>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_NOTIFICATIONS_URL}/unread-count`,
 			{
 				method: 'GET',
@@ -111,7 +112,7 @@ export const markAsReadApi = async (
 	notificationId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_NOTIFICATIONS_URL}/${notificationId}/read`,
 			{
 				method: 'PATCH',
@@ -138,7 +139,7 @@ export const markAsReadApi = async (
 /** Пометить все уведомления как прочитанные */
 export const markAllAsReadApi = async (): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_NOTIFICATIONS_URL}/read-all`,
 			{
 				method: 'PATCH',

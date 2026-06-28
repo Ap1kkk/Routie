@@ -11,12 +11,13 @@ import {
 	getHeaders,
 	API_GAMIFICATION_URL,
 } from './Api';
+import { fetchWithAuth } from './AuthApi';
 
 export const getAchievementsApi = async (): Promise<
 	ApiResponse<AchievementsResponse>
 > => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_GAMIFICATION_URL}/achievements`,
 			{
 				method: 'GET',
@@ -41,7 +42,7 @@ export const getAllAchievementsApi = async (): Promise<
 	ApiResponse<AllAchievementsResponse>
 > => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_GAMIFICATION_URL}/achievements/all`,
 			{
 				method: 'GET',
@@ -79,7 +80,7 @@ export const getXpHistoryApi = async (params?: {
 			query.toString() ? `?${query.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -104,7 +105,7 @@ export const getLeaderboardApi = async (
 ): Promise<ApiResponse<LeaderboardResponse>> => {
 	try {
 		const query = new URLSearchParams({ period, limit: limit.toString() });
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_GAMIFICATION_URL}/leaderboard?${query.toString()}`,
 			{
 				method: 'GET',
@@ -140,7 +141,7 @@ export const getFriendsLeaderboardApi = async (
 			sort,
 		});
 
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_GAMIFICATION_URL}/leaderboard/friends?${query.toString()}`,
 			{
 				method: 'GET',

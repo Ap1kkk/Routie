@@ -13,10 +13,11 @@ import {
 	PaginatedRoutes,
 	GetFavoritesParams,
 } from '../../types/Profile';
+import { fetchWithAuth } from './AuthApi';
 
 export const getMyProfileApi = async (): Promise<ApiResponse<FullProfile>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/me`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_PROFILE_URL}/me`, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -39,7 +40,7 @@ export const getUserProfileApi = async (
 	userId: string
 ): Promise<ApiResponse<FullProfile>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_PROFILE_URL}/${userId}`,
 			{
 				method: 'GET',
@@ -65,7 +66,7 @@ export const getShortProfileApi = async (
 	userId: string
 ): Promise<ApiResponse<ShortProfile>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_PROFILE_URL}/short/${userId}`,
 			{
 				method: 'GET',
@@ -101,7 +102,7 @@ export const getUserStatisticsApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -130,7 +131,7 @@ export const getFavoritesApi = async (
 
 		const url = `${API_URL}/${API_PROFILE_URL}/favorites${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -162,7 +163,7 @@ export const uploadAvatarApi = async (
 			Authorization: token ? `Bearer ${token}` : '',
 		};
 
-		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/avatar`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_PROFILE_URL}/avatar`, {
 			method: 'PATCH', // ✅ исправили
 			headers,
 			body: formData,
@@ -218,7 +219,7 @@ export const updateProfileApi = async (
 			payload.preferredTags = data.preferredTags;
 		}
 
-		const response = await fetch(`${API_URL}/${API_PROFILE_URL}/me`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_PROFILE_URL}/me`, {
 			method: 'PUT',
 			headers: getHeaders(true),
 			body: JSON.stringify(payload),

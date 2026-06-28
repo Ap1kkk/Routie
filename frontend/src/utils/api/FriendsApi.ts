@@ -6,6 +6,7 @@ import {
 	API_FRIENDS_URL,
 } from './Api';
 import { FriendsSearchParams, PaginatedFriends } from '../../types/Friends';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удалить из друзей
@@ -14,7 +15,7 @@ export const removeFriendApi = async (
 	friendId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/${friendId}`,
 			{
 				method: 'DELETE',
@@ -58,7 +59,7 @@ export const getFriendsApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -84,7 +85,7 @@ export const sendFriendRequestApi = async (
 	friendId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/request/${friendId}`,
 			{
 				method: 'POST',
@@ -113,7 +114,7 @@ export const rejectFriendRequestApi = async (
 	friendshipId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/reject/${friendshipId}`,
 			{
 				method: 'POST',
@@ -142,7 +143,7 @@ export const acceptFriendRequestApi = async (
 	friendshipId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/accept/${friendshipId}`,
 			{
 				method: 'POST',
@@ -185,7 +186,7 @@ export const searchUsersApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
