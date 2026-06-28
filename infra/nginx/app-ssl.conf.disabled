@@ -1,6 +1,6 @@
 # Финальный конфиг с HTTPS. Применять ТОЛЬКО после успешного получения сертификата
 # (см. инструкцию в README/чате). До этого момента nginx не запустится — путей
-# /etc/letsencrypt/live/routie-nntu.ru/*.pem ещё не существует.
+# /etc/letsencrypt/live/routie-dev.ru/*.pem ещё не существует.
 #
 # Как применить:
 #   cp infra/nginx/app-ssl.conf infra/nginx/app.conf
@@ -10,7 +10,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name routie-nntu.ru www.routie-nntu.ru;
+    server_name routie-dev.ru www.routie-dev.ru;
 
     # Challenge остаётся доступным по HTTP — нужен для авто-продления сертификата
     location /.well-known/acme-challenge/ {
@@ -27,10 +27,10 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
 
-    server_name routie-nntu.ru www.routie-nntu.ru;
+    server_name routie-dev.ru www.routie-dev.ru;
 
-    ssl_certificate     /etc/letsencrypt/live/routie-nntu.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/routie-nntu.ru/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/routie-dev.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/routie-dev.ru/privkey.pem;
 
     charset utf-8;
 
