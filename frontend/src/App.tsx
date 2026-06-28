@@ -35,33 +35,43 @@ import {
 	Terms,
 	Workbench,
 } from '@pages';
-import { useDispatch, useSelector } from '@store';
-import { useEffect } from 'react';
-import {
-	initAuth,
-	setInitialized,
-} from './services/slices/authSlice/authSlice';
-import { selectInitialized } from './services/selectors/userSelectors';
+import { useEffect, useState } from 'react';
 import { routeApi } from './utils/api/RoutesApi';
 import { fileApi } from './utils/api/FileApi';
-import { getAccessToken, getRefreshToken } from './utils/auth';
+import { refreshTokenApi } from './utils/api/AuthApi';
+import { clearTokens, getAccessToken, getRefreshToken } from './utils/auth';
 import { Route } from './types/Route';
 
 export function App() {
-	const dispatch = useDispatch();
-	const initialized = useSelector(selectInitialized);
+	const [initialized, setInitialized] = useState(false);
 
 	useEffect(() => {
-		const accessToken = getAccessToken();
-		const refreshToken = getRefreshToken();
+		const init = async () => {
+			const accessToken = getAccessToken();
 
-		if (!accessToken && !refreshToken) {
-			dispatch(setInitialized());
-			return;
-		}
+			if (accessToken) {
+				setInitialized(true);
+				return;
+			}
 
-		dispatch(initAuth());
-	}, [dispatch]);
+			const refreshToken = getRefreshToken();
+
+			if (!refreshToken) {
+				setInitialized(true);
+				return;
+			}
+
+			const ok = await refreshTokenApi();
+
+			if (!ok) {
+				clearTokens();
+			}
+
+			setInitialized(true);
+		};
+
+		init();
+	}, []);
 
 	if (!initialized) {
 		return <div>Loading...</div>;

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '@store';
+import { fileApi } from '../../../utils/api/FileApi';
+import { authApi } from '../../../utils/api/AuthApi';
 
 import { Avatar, Button, Input } from '@ui';
 import { useTheme } from '../../../hooks/useTheme';
+import { FullProfile } from '../../../types/Profile';
 
 import { ReactComponent as Search } from '../../../assets/icons/search.svg';
 import { ReactComponent as Cross } from '../../../assets/icons/cross.svg';
@@ -14,19 +16,15 @@ import { ReactComponent as Heart } from '../../../assets/icons/like.svg';
 import { ReactComponent as Not } from '../../../assets/icons/notification.svg';
 
 import styles from './Header.module.scss';
-import { getMyProfile } from '../../../services/slices/profileSlice/profileSlice';
-import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
 
 export const Header = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
 	const { isLight, toggleTheme } = useTheme();
 
-	const { myProfile } = useSelector((state) => state.profile);
-	const { isAuthenticated, initialized } = useSelector((state) => state.auth);
-
+	const [myProfile, setMyProfile] = useState<FullProfile | null>(null);
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+	const [loading, setLoading] = useState(true);
 
 	const isAuthPage =
 		location.pathname === '/login' ||
@@ -34,21 +32,44 @@ export const Header = () => {
 		location.pathname === '/recovery-page';
 
 	useEffect(() => {
-		if (isAuthenticated && initialized && !myProfile) {
-			dispatch(getMyProfile());
-		}
-	}, [dispatch, isAuthenticated, initialized, myProfile]);
+		let mounted = true;
+
+		authApi
+			.getUser()
+			.then((result) => {
+				if (!mounted) return;
+
+				if (result.success && result.data) {
+					setMyProfile(result.data);
+				}
+			})
+			.finally(() => {
+				if (mounted) {
+					setLoading(false);
+				}
+			});
+
+		return () => {
+			mounted = false;
+		};
+	}, []);
 
 	useEffect(() => {
-		if (myProfile?.avatar?.id) {
-			dispatch(downloadFile(myProfile.avatar.id))
-				.unwrap()
-				.then((url) => setAvatarUrl(url))
-				.catch(() => setAvatarUrl(null));
-		} else {
+		if (!myProfile?.avatar?.id) {
 			setAvatarUrl(null);
+			return;
 		}
-	}, [myProfile, dispatch]);
+
+		fileApi.download(myProfile.avatar.id)
+			.then((result) => {
+				if (result.success && result.data) {
+					setAvatarUrl(result.data);
+				} else {
+					setAvatarUrl(null);
+				}
+			})
+			.catch(() => setAvatarUrl(null));
+	}, [myProfile]);
 
 	if (isAuthPage) {
 		return (
@@ -101,7 +122,7 @@ export const Header = () => {
 					<Not />
 				</div>
 
-				{isAuthenticated && myProfile ? (
+				{ myProfile ? (
 					<Button
 						type="button"
 						variant="tertiary"

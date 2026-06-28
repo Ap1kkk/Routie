@@ -315,13 +315,11 @@ export const requestPasswordResetApi = async (
 };
 
 /** 2. Подтверждение кода и смена пароля */
-export const confirmPasswordResetApi = async (
-	data: {
-		email: string;
-		code: string;
-		newPassword: string;
-	}
-): Promise<ApiResponse<string>> => {
+export const confirmPasswordResetApi = async (data: {
+	email: string;
+	code: string;
+	newPassword: string;
+}): Promise<ApiResponse<string>> => {
 	try {
 		const response = await fetch(
 			`${API_URL}/${API_AUTH_URL}/password/reset/confirm`,
@@ -344,4 +342,17 @@ export const confirmPasswordResetApi = async (
 			timestamp: new Date().toISOString(),
 		};
 	}
+};
+
+export const authApi = {
+	register: registerUserApi,
+	login: loginUserApi,
+	logout: logoutApi,
+	getUser: getUserApi,
+	getUserRoles: getUserRolesApi,
+	getActiveSessions: getActiveSessionsApi,
+	terminateSession: terminateSessionApi,
+	refreshToken: refreshTokenApi,
+	requestPasswordReset: requestPasswordResetApi,
+	confirmPasswordReset: confirmPasswordResetApi,
 };
