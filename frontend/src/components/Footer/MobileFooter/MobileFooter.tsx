@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import { Avatar } from '@ui';
@@ -25,6 +25,24 @@ export const MobileFooter = () => {
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
 	const paths = ['/routie', '/routes', '/favorites', '/settings'];
+
+	// Скрываем footer на этих страницах
+	const hideOnPaths = [
+		'/login',
+		'/registration',
+		'/recovery-page',
+		'/privacy',
+		'/terms',
+	];
+
+	const isMapRoute = location.pathname.startsWith('/map/');
+
+	const shouldHideFooter = hideOnPaths.includes(location.pathname) || isMapRoute;
+
+	// Если нужно скрыть — не рендерим footer
+	if (shouldHideFooter) {
+		return null;
+	}
 
 	useEffect(() => {
 		if (isAuthenticated && !myProfile) {
@@ -105,7 +123,6 @@ export const MobileFooter = () => {
 					<span className={styles.title}>Избранное</span>
 				</button>
 
-				{/* Кнопка профиля с реальным аватаром */}
 				<button
 					ref={(el) => {
 						buttonsRef.current[3] = el;
