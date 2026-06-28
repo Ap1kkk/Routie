@@ -29,7 +29,7 @@ interface ProfileProps {
 
 	birthday?: string;
 	friends?: Friend[];
-	friendAvatars?: Record<string, string>;   // ← новое
+	friendAvatars?: Record<string, string>;
 	recentRoutes?: Route[];
 	routeImages?: Record<string, string>;
 

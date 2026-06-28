@@ -1,17 +1,10 @@
-.whiteBox {
-  background-color: var(--blur-background);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-blur);
-  height: 100%;
-  z-index: 2;
-}
-
 .blurContainer {
   display: flex;
-  background: transparent;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: var(--border-radius);
   border: 1px solid var(--blur-border);
+  background-color: var(--blur-background);
+  box-shadow: var(--shadow-blur);
   z-index: 1;
 }

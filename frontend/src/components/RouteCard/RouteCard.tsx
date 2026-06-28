@@ -68,8 +68,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		return [];
 	};
 
-	const displayTags = getTagsToShow();
-
 	if (variant === 'compact') {
 		return (
 			<Blur
