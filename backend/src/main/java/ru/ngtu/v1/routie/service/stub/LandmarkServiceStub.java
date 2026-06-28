@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-landmark")
 @Primary
 public class LandmarkServiceStub implements LandmarkService {
 
@@ -65,5 +65,10 @@ public class LandmarkServiceStub implements LandmarkService {
     public List<MediaFileResponse> uploadImages(UUID landmarkId, List<MultipartFile> files) {
         log.debug("[STUB] uploadImages landmarkId={}, count={}", landmarkId, files.size());
         return FakeDataFactory.fakeMediaFiles(files.size());
+    }
+
+    @Override
+    public void deleteAllImages(UUID landmarkId) {
+        log.debug("[STUB] deleteAllImages landmarkId={}", landmarkId);
     }
 }

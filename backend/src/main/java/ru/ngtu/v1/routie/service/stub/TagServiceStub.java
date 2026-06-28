@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-tag")
 @Primary
 public class TagServiceStub implements TagService {
 

@@ -18,7 +18,8 @@ import ru.ngtu.v1.routie.dto.profile.Gender;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
+import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
 import ru.ngtu.v1.routie.dto.tag.TagResponse;
 import ru.ngtu.v1.routie.exception.BadRequestException;
 import ru.ngtu.v1.routie.exception.ConflictException;
@@ -26,18 +27,27 @@ import ru.ngtu.v1.routie.exception.EntityNotFoundException;
 import ru.ngtu.v1.routie.exception.ForbiddenException;
 import ru.ngtu.v1.routie.model.Friendship;
 import ru.ngtu.v1.routie.model.FriendshipStatus;
-import ru.ngtu.v1.routie.model.SportType;
+import ru.ngtu.v1.routie.model.NotificationType;
+import ru.ngtu.v1.routie.model.RouteSession;
 import ru.ngtu.v1.routie.model.Tag;
 import ru.ngtu.v1.routie.model.User;
 import ru.ngtu.v1.routie.model.UserProfile;
+import ru.ngtu.v1.routie.repository.CheckpointProgressRepository;
 import ru.ngtu.v1.routie.repository.FriendshipRepository;
 import ru.ngtu.v1.routie.repository.MediaFileRepository;
+import ru.ngtu.v1.routie.repository.RouteSessionRepository;
 import ru.ngtu.v1.routie.repository.TagRepository;
 import ru.ngtu.v1.routie.repository.UserProfileRepository;
 import ru.ngtu.v1.routie.repository.UserRepository;
 import ru.ngtu.v1.routie.security.CustomUserDetails;
 import ru.ngtu.v1.routie.service.FileService;
+import ru.ngtu.v1.routie.service.NotificationService;
 import ru.ngtu.v1.routie.service.ProfileService;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.OptionalDouble;
 
 @Slf4j
 @Service
@@ -50,6 +60,12 @@ public class ProfileServiceImpl implements ProfileService {
     private final MediaFileRepository mediaFileRepository;
     private final TagRepository tagRepository;
     private final FileService fileService;
+    private final RouteSessionRepository routeSessionRepository;
+    private final CheckpointProgressRepository checkpointProgressRepository;
+    private final NotificationService notificationService;
+
+    /** Средняя длина шага человека, используется для приблизительной оценки кол-ва шагов. */
+    private static final double AVG_STEP_LENGTH_METERS = 0.75;
 
     // ==================== Профиль ====================
 
@@ -67,6 +83,28 @@ public class ProfileServiceImpl implements ProfileService {
         User currentUser = getCurrentUser();
         UserProfile profile = getOrCreateProfile(currentUser);
 
+        boolean userDirty = false;
+
+        // Поля сущности User
+        if (request.getEmail() != null && !request.getEmail().equals(currentUser.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new ConflictException("Email уже занят");
+            }
+            currentUser.setEmail(request.getEmail());
+            userDirty = true;
+        }
+        if (request.getUsername() != null && !request.getUsername().equals(currentUser.getUsername())) {
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new ConflictException("Username уже занят");
+            }
+            currentUser.setUsername(request.getUsername());
+            userDirty = true;
+        }
+        if (userDirty) {
+            userRepository.save(currentUser);
+        }
+
+        // Поля UserProfile
         if (request.getName() != null) {
             profile.setName(request.getName());
         }
@@ -76,14 +114,11 @@ public class ProfileServiceImpl implements ProfileService {
         if (request.getGender() != null) {
             profile.setGender(mapGender(request.getGender()));
         }
-        if (request.getCity() != null) {
-            profile.setCity(request.getCity());
+        if (request.getHeight() != null) {
+            profile.setHeight(request.getHeight());
         }
-        if (request.getPreferredTransport() != null) {
-            profile.setPreferredTransport(request.getPreferredTransport());
-        }
-        if (request.getFavoriteSportType() != null) {
-            profile.setFavoriteSportType(parseSportType(request.getFavoriteSportType()));
+        if (request.getWeight() != null) {
+            profile.setWeight(request.getWeight());
         }
         if (request.getPreferredTags() != null) {
             validateTagsExist(request.getPreferredTags());
@@ -128,6 +163,100 @@ public class ProfileServiceImpl implements ProfileService {
         return response;
     }
 
+    // ==================== Статистика ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserStatisticsResponse getCurrentUserStatistics(LocalDate startDate, LocalDate endDate) {
+        User currentUser = getCurrentUser();
+        UUID userId = currentUser.getId();
+
+        boolean isAllTime = startDate == null && endDate == null;
+
+        if (!isAllTime) {
+            if (startDate == null || endDate == null) {
+                throw new BadRequestException("startDate и endDate должны быть переданы вместе");
+            }
+            if (startDate.isAfter(endDate)) {
+                throw new BadRequestException("startDate не может быть позже endDate");
+            }
+        }
+
+        List<RouteSession> finishedSessions;
+        int abortedCount;
+        long totalCheckpointsReached;
+
+        if (isAllTime) {
+            finishedSessions = routeSessionRepository
+                    .findAllByUserIdAndStatus(userId, RouteSessionStatus.FINISHED);
+            abortedCount = routeSessionRepository
+                    .findAllByUserIdAndStatus(userId, RouteSessionStatus.ABORTED)
+                    .size();
+            totalCheckpointsReached = checkpointProgressRepository.countByUserId(userId);
+        } else {
+            Instant since = startDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+            Instant until = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
+            finishedSessions = routeSessionRepository.findAllByUserIdAndStatusAndStartedAtBetween(
+                    userId, RouteSessionStatus.FINISHED, since, until);
+            abortedCount = routeSessionRepository
+                    .findAllByUserIdAndStatusAndStartedAtBetween(
+                            userId, RouteSessionStatus.ABORTED, since, until)
+                    .size();
+            totalCheckpointsReached = checkpointProgressRepository
+                    .countByUserIdAndSessionStartedAtBetween(userId, since, until);
+        }
+
+        long totalDurationSeconds = finishedSessions.stream()
+                .map(RouteSession::getTotalDurationSeconds)
+                .filter(java.util.Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        int totalDistanceMeters = finishedSessions.stream()
+                .map(RouteSession::getTotalDistanceMeters)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        OptionalDouble avgDuration = finishedSessions.stream()
+                .map(RouteSession::getTotalDurationSeconds)
+                .filter(java.util.Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .average();
+
+        OptionalDouble avgLength = finishedSessions.stream()
+                .map(RouteSession::getTotalDistanceMeters)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .average();
+
+        OptionalDouble avgSpeed = finishedSessions.stream()
+                .map(RouteSession::getAvgSpeedKmh)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .average();
+
+        return UserStatisticsResponse.builder()
+                .periodStart(startDate)
+                .periodEnd(endDate)
+                .totalRoutesCompleted(finishedSessions.size())
+                .totalSessionsAborted(abortedCount)
+                .totalDurationSeconds(totalDurationSeconds)
+                .totalDistanceMeters(totalDistanceMeters)
+                .estimatedTotalSteps(estimateSteps(totalDistanceMeters))
+                .totalCheckpointsReached(totalCheckpointsReached)
+                .avgSessionDurationSeconds(avgDuration.isPresent() ? avgDuration.getAsDouble() : null)
+                .avgRouteLengthMeters(avgLength.isPresent() ? avgLength.getAsDouble() : null)
+                .avgSpeedKmh(avgSpeed.isPresent() ? avgSpeed.getAsDouble() : null)
+                .build();
+    }
+
+    /** Приблизительная оценка кол-ва шагов по дистанции (точных данных о шагах система не собирает). */
+    private long estimateSteps(int distanceMeters) {
+        return Math.round(distanceMeters / AVG_STEP_LENGTH_METERS);
+    }
+
     // ==================== Друзья ====================
 
     @Override
@@ -159,6 +288,29 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<UserProfileShortResponse> searchUsers(String query, int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+
+        String normalizedQuery = query != null ? query.trim() : "";
+
+        Page<User> users = userRepository.searchByUsernameOrName(
+                currentUser.getId(), normalizedQuery, pageable);
+
+        List<UUID> friendIds = friendshipRepository.findAcceptedFriendIds(currentUser.getId());
+
+        List<UserProfileShortResponse> content = users.stream()
+                .map(user -> {
+                    UserProfile profile = getOrCreateProfile(user);
+                    return toShortResponse(user, profile, friendIds.contains(user.getId()));
+                })
+                .toList();
+
+        return new PageResponse<>(content, users.getTotalElements(), users.getTotalPages(), page);
+    }
+
+    @Override
     @Transactional
     public void sendFriendRequest(UUID friendId) {
         User currentUser = getCurrentUser();
@@ -180,8 +332,17 @@ public class ProfileServiceImpl implements ProfileService {
                 .status(FriendshipStatus.PENDING)
                 .build();
 
-        friendshipRepository.save(friendship);
+        friendship = friendshipRepository.save(friendship);
         log.info("Запрос в друзья отправлен: {} -> {}", currentUser.getId(), friendId);
+
+        String senderName = getDisplayName(currentUser);
+        notificationService.notify(
+                addressee.getId(),
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                senderName + " хочет добавить вас в друзья",
+                null,
+                "{\"friendshipId\":\"" + friendship.getId() + "\",\"fromUserId\":\"" + currentUser.getId() + "\"}"
+        );
     }
 
     @Override
@@ -200,6 +361,15 @@ public class ProfileServiceImpl implements ProfileService {
         friendship.setStatus(FriendshipStatus.ACCEPTED);
         friendshipRepository.save(friendship);
         log.info("Запрос в друзья принят: {}", friendshipId);
+
+        String accepterName = getDisplayName(currentUser);
+        notificationService.notify(
+                friendship.getRequester().getId(),
+                NotificationType.FRIEND_REQUEST_ACCEPTED,
+                accepterName + " принял ваш запрос в друзья",
+                null,
+                "{\"friendshipId\":\"" + friendship.getId() + "\",\"fromUserId\":\"" + currentUser.getId() + "\"}"
+        );
     }
 
     @Override
@@ -234,14 +404,6 @@ public class ProfileServiceImpl implements ProfileService {
         log.info("Пользователь {} удалён из друзей {}", friendId, currentUser.getId());
     }
 
-    // ==================== Избранное ====================
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<RouteShortResponse> getFavorites(int page, int size) {
-        // Route-сущность ещё не реализована — возвращаем пустую страницу
-        return new PageResponse<>(Collections.emptyList(), 0L, 0, page);
-    }
 
     // ==================== Вспомогательные методы ====================
 
@@ -262,6 +424,12 @@ public class ProfileServiceImpl implements ProfileService {
     private Friendship findFriendshipById(UUID friendshipId) {
         return friendshipRepository.findById(friendshipId)
                 .orElseThrow(() -> new EntityNotFoundException("Запрос в друзья", friendshipId));
+    }
+
+    /** Отображаемое имя пользователя для текстов уведомлений: name из профиля, либо username, если name не задано. */
+    private String getDisplayName(User user) {
+        UserProfile profile = getOrCreateProfile(user);
+        return profile.getName() != null ? profile.getName() : user.getUsername();
     }
 
     private UserProfile getOrCreateProfile(User user) {
@@ -327,15 +495,13 @@ public class ProfileServiceImpl implements ProfileService {
         return UserProfileFullResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .name(profile.getName())
                 .username(user.getUsername())
+                .name(profile.getName())
                 .avatar(buildAvatarResponse(profile.getAvatarFileId()))
                 .dateOfBirth(profile.getDateOfBirth())
                 .gender(mapGenderToDto(profile.getGender()))
-                .city(profile.getCity())
-                .favoriteSportType(profile.getFavoriteSportType() != null
-                        ? profile.getFavoriteSportType().name() : null)
-                .preferredTransport(profile.getPreferredTransport())
+                .height(profile.getHeight())
+                .weight(profile.getWeight())
                 .preferredTags(buildTagResponses(profile.getPreferredTagIds()))
                 .totalXp(profile.getTotalXp())
                 .currentLevel(profile.getCurrentLevel())
@@ -343,7 +509,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .totalRoutesCompleted(profile.getTotalRoutesCompleted())
                 .totalLandmarksVisited(profile.getTotalLandmarksVisited())
                 .isFriend(isFriend)
-                .createdAt(user.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
+                .createdAt(user.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDateTime())
                 .build();
     }
 
@@ -351,10 +517,10 @@ public class ProfileServiceImpl implements ProfileService {
         return UserProfileShortResponse.builder()
                 .id(user.getId())
                 .name(profile.getName())
+                .username(user.getUsername())
                 .avatar(buildAvatarResponse(profile.getAvatarFileId()))
                 .currentLevel(profile.getCurrentLevel())
                 .totalXp(profile.getTotalXp())
-                .city(profile.getCity())
                 .isFriend(isFriend)
                 .build();
     }
@@ -367,14 +533,6 @@ public class ProfileServiceImpl implements ProfileService {
     private Gender mapGenderToDto(ru.ngtu.v1.routie.model.Gender model) {
         if (model == null) return null;
         return Gender.valueOf(model.name());
-    }
-
-    private SportType parseSportType(String value) {
-        try {
-            return SportType.valueOf(value.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Неизвестный тип спорта: " + value);
-        }
     }
 
     private FriendshipStatus parseFriendshipStatus(String value) {

@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-audio-guide")
 @Primary
 public class AudioGuideServiceStub implements AudioGuideService {
 

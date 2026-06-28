@@ -6,19 +6,28 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.dto.common.PageResponse;
+import ru.ngtu.v1.routie.dto.gamification.AchievementResponse;
 import ru.ngtu.v1.routie.dto.gamification.AchievementsListResponse;
 import ru.ngtu.v1.routie.dto.gamification.AllAchievementsResponse;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardPeriod;
 import ru.ngtu.v1.routie.dto.gamification.LeaderboardResponse;
+import ru.ngtu.v1.routie.dto.gamification.LeaderboardSortField;
 import ru.ngtu.v1.routie.dto.gamification.XpTransactionResponse;
 import ru.ngtu.v1.routie.service.GamificationService;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/gamification")
@@ -38,18 +47,20 @@ public class GamificationControllerV1 {
     @Operation(summary = "Глобальный лидерборд")
     public ApiResponse<LeaderboardResponse> getLeaderboard(
             @RequestParam LeaderboardPeriod period,
-            @RequestParam(defaultValue = "100") @Max(100) int limit
+            @RequestParam(defaultValue = "100") @Max(100) int limit,
+            @RequestParam(defaultValue = "TOTAL_XP") LeaderboardSortField sort
     ) {
-        return ApiResponse.of(gamificationService.getLeaderboard(period, limit));
+        return ApiResponse.of(gamificationService.getLeaderboard(period, limit, sort));
     }
 
     @GetMapping("/leaderboard/friends")
-    @Operation(summary = "Лидерборд среди друзей")
+    @Operation(summary = "Лидерборд среди друзей (включая самого пользователя)")
     public ApiResponse<LeaderboardResponse> getFriendsLeaderboard(
             @RequestParam LeaderboardPeriod period,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(defaultValue = "TOTAL_XP") LeaderboardSortField sort
     ) {
-        return ApiResponse.of(gamificationService.getFriendsLeaderboard(period, limit));
+        return ApiResponse.of(gamificationService.getFriendsLeaderboard(period, limit, sort));
     }
 
     // -------------------------------------------------------------------------
@@ -66,6 +77,15 @@ public class GamificationControllerV1 {
     @Operation(summary = "Все достижения системы, включая неразблокированные")
     public ApiResponse<AllAchievementsResponse> getAllAchievements() {
         return ApiResponse.of(gamificationService.getAllAchievements());
+    }
+
+    @PatchMapping(value = "/achievements/{achievementId}/icon", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Замена иконки достижения (только ADMIN). Старая иконка удаляется, если была")
+    public ApiResponse<AchievementResponse> updateAchievementIcon(
+            @PathVariable UUID achievementId,
+            @RequestPart("file") MultipartFile file
+    ) {
+        return ApiResponse.of(gamificationService.updateAchievementIcon(achievementId, file));
     }
 
     // -------------------------------------------------------------------------

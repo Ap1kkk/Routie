@@ -15,9 +15,9 @@ public class UserProfileShortResponse {
 
     private UUID id;
     private String name;
+    private String username;
     private MediaFileResponse avatar;
     private Integer currentLevel;
     private Integer totalXp;
-    private String city;
     private Boolean isFriend;
 }

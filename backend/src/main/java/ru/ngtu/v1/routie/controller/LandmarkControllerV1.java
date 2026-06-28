@@ -1,6 +1,7 @@
 package ru.ngtu.v1.routie.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,12 +46,14 @@ public class LandmarkControllerV1 {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Создание достопримечательности (только ADMIN)")
     public ApiResponse<LandmarkResponse> createLandmark(@Valid @RequestBody LandmarkCreateRequest request) {
         return ApiResponse.of(landmarkService.createLandmark(request));
     }
 
     @PutMapping("/{landmarkId}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Обновление достопримечательности (только ADMIN)")
     public ApiResponse<LandmarkResponse> updateLandmark(
             @PathVariable UUID landmarkId,
@@ -60,6 +63,7 @@ public class LandmarkControllerV1 {
     }
 
     @DeleteMapping("/{landmarkId}")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Удаление достопримечательности (только ADMIN)")
     public ApiResponseVoid deleteLandmark(@PathVariable UUID landmarkId) {
         landmarkService.deleteLandmark(landmarkId);
@@ -67,11 +71,20 @@ public class LandmarkControllerV1 {
     }
 
     @PatchMapping(value = "/{landmarkId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Загрузка изображений для достопримечательности (только ADMIN)")
     public ApiResponse<List<MediaFileResponse>> uploadImages(
             @PathVariable UUID landmarkId,
             @RequestPart("files") List<MultipartFile> files
     ) {
         return ApiResponse.of(landmarkService.uploadImages(landmarkId, files));
+    }
+
+    @DeleteMapping("/{landmarkId}/images")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Удаление всех изображений достопримечательности (только ADMIN). Сама сущность не удаляется")
+    public ApiResponseVoid deleteAllImages(@PathVariable UUID landmarkId) {
+        landmarkService.deleteAllImages(landmarkId);
+        return ApiResponse.empty();
     }
 }

@@ -1,0 +1,64 @@
+# Финальный конфиг с HTTPS. Применять ТОЛЬКО после успешного получения сертификата
+# (см. инструкцию в README/чате). До этого момента nginx не запустится — путей
+# /etc/letsencrypt/live/routie-nntu.ru/*.pem ещё не существует.
+#
+# Как применить:
+#   cp infra/nginx/app-ssl.conf infra/nginx/app.conf
+#   docker compose restart frontend
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name routie-nntu.ru www.routie-nntu.ru;
+
+    # Challenge остаётся доступным по HTTP — нужен для авто-продления сертификата
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # Весь остальной HTTP-трафик редиректим на HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name routie-nntu.ru www.routie-nntu.ru;
+
+    ssl_certificate     /etc/letsencrypt/live/routie-nntu.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/routie-nntu.ru/privkey.pem;
+
+    charset utf-8;
+
+    client_max_body_size 20M;
+
+    root /usr/share/nginx/html;
+
+    location / {
+        try_files $uri$args $uri$args/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://backend:8080/api;
+    }
+
+    location /actuator {
+        proxy_pass http://backend:8080/actuator;
+    }
+
+    location /swagger-ui {
+        proxy_pass http://backend:8080/swagger-ui;
+    }
+
+    location /v3 {
+        proxy_pass http://backend:8080/v3;
+    }
+
+    location /be/static {
+        proxy_pass http://backend:8080/static;
+    }
+}

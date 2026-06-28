@@ -88,9 +88,23 @@ services:
     container_name: two-steps-frontend
     volumes:
       - ./infra/nginx:/etc/nginx/conf.d
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
     ports:
       - "80:80"
+      - "443:443"
     restart: unless-stopped
+
+  # ============== SSL-СЕРТИФИКАТ (Let's Encrypt) ==============
+  certbot:
+    image: certbot/certbot
+    container_name: two-steps-certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    # По умолчанию ничего не делает — команды запускаются вручную (см. инструкцию).
+    # Можно раскомментировать для авто-продления каждые 12 часов после первого выпуска сертификата:
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done"
 
   # ================ ЛОГИ (Loki + Vector) ================
 

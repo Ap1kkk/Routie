@@ -23,4 +23,10 @@ public interface LandmarkService {
     PageResponse<LandmarkResponse> searchLandmarks(LandmarkSearchFilter filter);
 
     List<MediaFileResponse> uploadImages(UUID landmarkId, List<MultipartFile> files);
+
+    /**
+     * Удаляет все изображения достопримечательности (физически из MinIO и из media_files),
+     * саму достопримечательность не трогает.
+     */
+    void deleteAllImages(UUID landmarkId);
 }

@@ -1,0 +1,82 @@
+asyncapi: 2.6.0
+info:
+  title: Routie — Notifications WebSocket API
+  version: 1.0.0
+  description: |
+    Сервер отправляет уведомления (достижения, начисление XP) в реальном времени
+    через STOMP по WebSocket (с фоллбэком на SockJS).
+
+    ## Подключение
+    1. Открыть SockJS/WebSocket-соединение на `/ws`.
+    2. Отправить STOMP-фрейм `CONNECT` с заголовком:
+       `Authorization: Bearer <accessToken>`
+       (тот же JWT access-токен, что используется для обычных REST-запросов).
+    3. Если токен валиден — соединение аутентифицируется, `Principal.name` = userId.
+       Если заголовка нет или токен невалиден — соединение останется неаутентифицированным
+       и адресные сообщения (`convertAndSendToUser`) до клиента не дойдут.
+    4. Подписаться (STOMP `SUBSCRIBE`) на топик `/user/queue/notifications`.
+
+    ## Топики
+    - `/user/queue/notifications` — приватная очередь текущего пользователя.
+      Spring транслирует `/user/...` в `/queue/notifications-userSESSIONID`,
+      это служебная деталь STOMP-релея, на стороне клиента подписываться нужно
+      именно на `/user/queue/notifications`.
+
+servers:
+  routie-ws:
+    url: '{protocol}://{host}/ws'
+    protocol: ws
+    description: SockJS/STOMP endpoint. protocol=wss и host подставляются в зависимости от окружения.
+    variables:
+      protocol:
+        enum: [ws, wss]
+        default: ws
+      host:
+        default: localhost:8080
+
+channels:
+  /user/queue/notifications:
+    description: >
+      Приватный топик уведомлений пользователя. Сообщение отправляется сразу после
+      создания уведомления на сервере (достижение разблокировано / начислен XP).
+    subscribe:
+      summary: Получение уведомления в реальном времени
+      message:
+        $ref: '#/components/messages/NotificationMessage'
+
+components:
+  messages:
+    NotificationMessage:
+      name: NotificationResponse
+      title: Уведомление
+      payload:
+        $ref: '#/components/schemas/NotificationResponse'
+
+  schemas:
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [ACHIEVEMENT_UNLOCKED, XP_AWARDED]
+        title:
+          type: string
+          example: "Первые шаги"
+        body:
+          type: string
+          nullable: true
+          example: "Завершите свой первый маршрут"
+        payload:
+          type: string
+          nullable: true
+          description: JSON-строка с деталями (achievementId/xpReward или amount/reason/totalXp)
+          example: "{\"achievementId\":\"10000000-0000-0000-0000-000000000001\",\"xpReward\":50}"
+        isRead:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time

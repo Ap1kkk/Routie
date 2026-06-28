@@ -14,6 +14,7 @@ public class AuthResponse {
 
     @Schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String accessToken;
+    @Builder.Default
     private String tokenType = "Bearer";
     private Integer expiresIn;
     private String refreshToken;

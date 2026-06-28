@@ -17,6 +17,16 @@ spring:
       port: 5432
       name: ${POSTGRES_DB:two-steps}
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:noreply@routie.local}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
   liquibase:
     enabled: true
     change-log: classpath:db/migration/db.changelog-main.yaml
@@ -57,6 +67,10 @@ springdoc:
     schemes:
       dev: http://localhost:${server.port}
       prod: https://${SERVER_HOST:localhost}
+
+routie:
+  password-reset:
+    code-ttl-seconds: 600   # 10 минут
 
 security:
   jwt:
@@ -99,3 +113,26 @@ logging:
   http-logging:
     enabled: true
     exclude: /actuator/prometheus,/actuator/health
+
+---
+# ============================================================
+# Профиль TEST — тестовые токены для разработки
+# Запуск: -Dspring.profiles.active=test
+# ============================================================
+spring:
+  config:
+    activate:
+      on-profile: test
+  liquibase:
+    # Активируем Liquibase-контекст test: вставятся тестовые пользователи
+    contexts: test
+
+routie:
+  test-tokens:
+    tokens:
+      # Токен для пользователя с ролью USER (userId = 00000000-0000-0000-0000-000000000001)
+      - token: test-token-user
+        user-id: 00000000-0000-0000-0000-000000000001
+      # Токен для пользователя с ролью ADMIN (userId = 00000000-0000-0000-0000-000000000002)
+      - token: test-token-admin
+        user-id: 00000000-0000-0000-0000-000000000002

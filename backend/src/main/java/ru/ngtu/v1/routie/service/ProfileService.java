@@ -8,7 +8,9 @@ import ru.ngtu.v1.routie.dto.common.PageResponse;
 import ru.ngtu.v1.routie.dto.profile.ProfileUpdateRequest;
 import ru.ngtu.v1.routie.dto.profile.UserProfileFullResponse;
 import ru.ngtu.v1.routie.dto.profile.UserProfileShortResponse;
-import ru.ngtu.v1.routie.dto.route.response.RouteShortResponse;
+import ru.ngtu.v1.routie.dto.profile.UserStatisticsResponse;
+
+import java.time.LocalDate;
 
 public interface ProfileService {
 
@@ -17,15 +19,22 @@ public interface ProfileService {
   UserProfileFullResponse getUserProfile(UUID userId);
   UserProfileShortResponse getShortUserProfile(UUID userId);
 
+  /**
+   * Статистика текущего пользователя за выбранный диапазон дат (для экрана профиля).
+   * Если оба параметра не переданы — статистика рассчитывается за всё время.
+   *
+   * @param startDate начало диапазона (включительно); либо оба параметра заданы, либо оба null
+   * @param endDate   конец диапазона (включительно); либо оба параметра заданы, либо оба null
+   */
+  UserStatisticsResponse getCurrentUserStatistics(LocalDate startDate, LocalDate endDate);
+
   MediaFileResponse uploadAvatar(MultipartFile file);
 
   // Друзья
   PageResponse<UserProfileShortResponse> getFriends(int page, int size, String sort, String search, String status);
+  PageResponse<UserProfileShortResponse> searchUsers(String query, int page, int size);
   void sendFriendRequest(UUID friendId);
   void acceptFriendRequest(UUID friendshipId);
   void rejectFriendRequest(UUID friendshipId);
   void removeFriend(UUID friendId);
-
-  // Избранное
-  PageResponse<RouteShortResponse> getFavorites(int page, int size);
 }

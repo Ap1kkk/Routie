@@ -21,7 +21,4 @@ public class GamificationStatisticsResponse {
 
     /** Ключ — номер уровня, значение — количество пользователей на этом уровне */
     private Map<Integer, Integer> usersByLevel;
-
-    /** Период наибольшей активности (например, "MONTH") */
-    private String mostPopularPeriod;
 }

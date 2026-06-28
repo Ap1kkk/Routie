@@ -36,6 +36,15 @@ public class FriendsControllerV1 {
     return ApiResponse.of(profileService.getFriends(page, size, sort, search, status));
   }
 
+  @GetMapping("/search")
+  @Operation(summary = "Поиск пользователей по имени или username для добавления в друзья")
+  public ApiResponse<PageResponse<UserProfileShortResponse>> searchUsers(
+      @RequestParam(required = false) String query,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ApiResponse.of(profileService.searchUsers(query, page, size));
+  }
+
   @PostMapping("/request/{friendId}")
   @Operation(summary = "Отправить запрос в друзья")
   public ApiResponseVoid sendFriendRequest(@PathVariable UUID friendId) {
