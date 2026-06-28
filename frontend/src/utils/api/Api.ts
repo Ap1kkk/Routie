@@ -1,6 +1,6 @@
 import { getAccessToken } from '../auth';
 
-export const API_URL = 'http://two-steps.duckdns.org:8080';
+export const API_URL = 'https://routie-dev.ru';
 export const API_AUTH_URL = 'api/v1/auth';
 export const API_PROFILE_URL = 'api/v1/profile';
 export const API_ROUTES_URL = 'api/v1/routes';
