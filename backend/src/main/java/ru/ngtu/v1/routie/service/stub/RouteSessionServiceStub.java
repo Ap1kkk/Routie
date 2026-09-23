@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-route-session")
 @Primary
 public class RouteSessionServiceStub implements RouteSessionService {
 

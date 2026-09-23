@@ -249,15 +249,21 @@ export const fetchWithAuth = async (
 ): Promise<Response> => {
 	let token = getAccessToken();
 
-	const doRequest = () =>
-		fetch(url, {
+	const doRequest = () => {
+		const headers: Record<string, string> = {
+			...(options.headers as Record<string, string>),
+			Authorization: `Bearer ${token}`,
+		};
+
+		if (!(options.body instanceof FormData)) {
+			headers['Content-Type'] = 'application/json';
+		}
+
+		return fetch(url, {
 			...options,
-			headers: {
-				...options.headers,
-				Authorization: `Bearer ${token}`,
-				'Content-Type': 'application/json',
-			},
+			headers,
 		});
+	};
 
 	let response = await doRequest();
 

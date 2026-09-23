@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("stub")
+@Profile("stub-route")
 @Primary
 public class RouteServiceStub implements RouteService {
 
@@ -66,14 +66,6 @@ public class RouteServiceStub implements RouteService {
         long total = 57L;
         List<RouteShortResponse> content = FakeDataFactory.fakeRouteShortList(filter.getSize());
         return FakeDataFactory.fakePage(content, filter.getPage(), filter.getSize(), total);
-    }
-
-    @Override
-    public PageResponse<RouteShortResponse> getRecommendedRoutes(int page, int size) {
-        log.debug("[STUB] getRecommendedRoutes page={}, size={}", page, size);
-        long total = 20L;
-        List<RouteShortResponse> content = FakeDataFactory.fakeRouteShortList(Math.min(size, (int) total));
-        return FakeDataFactory.fakePage(content, page, size, total);
     }
 
     @Override

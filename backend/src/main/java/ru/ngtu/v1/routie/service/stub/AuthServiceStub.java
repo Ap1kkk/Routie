@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.ngtu.v1.routie.dto.auth.*;
 import ru.ngtu.v1.routie.service.AuthService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,7 +55,6 @@ public class AuthServiceStub implements AuthService {
         return new UserMeResponse(
                 UUID.randomUUID(),
                 faker.internet().emailAddress(),
-                faker.name().fullName(),
                 faker.internet().username(),
                 List.of("USER")
         );
@@ -64,5 +64,39 @@ public class AuthServiceStub implements AuthService {
     public RolesResponse getCurrentUserRoles() {
         log.debug("[STUB] getCurrentUserRoles");
         return new RolesResponse(List.of("USER"));
+    }
+
+    @Override
+    public List<UserSessionResponse> getSessions() {
+        log.debug("[STUB] getSessions");
+        Instant now = Instant.now();
+        return List.of(
+                UserSessionResponse.builder()
+                        .id(UUID.randomUUID())
+                        .deviceId("stub-device-android")
+                        .deviceName("Pixel 7 / Android 14")
+                        .createdAt(now.minusSeconds(86400 * 5))
+                        .lastUsedAt(now.minusSeconds(3600))
+                        .expiresAt(now.plusSeconds(86400 * 25))
+                        .build(),
+                UserSessionResponse.builder()
+                        .id(UUID.randomUUID())
+                        .deviceId("stub-device-web")
+                        .deviceName("Chrome / Windows 11")
+                        .createdAt(now.minusSeconds(86400 * 2))
+                        .lastUsedAt(now.minusSeconds(600))
+                        .expiresAt(now.plusSeconds(86400 * 28))
+                        .build()
+        );
+    }
+
+    @Override
+    public void revokeSession(String deviceId) {
+        log.debug("[STUB] revokeSession deviceId={}", deviceId);
+    }
+
+    @Override
+    public void revokeAllSessions() {
+        log.debug("[STUB] revokeAllSessions");
     }
 }

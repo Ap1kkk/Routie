@@ -17,4 +17,11 @@ public class LoginRequest {
 
   @NotBlank(message = "Пароль обязателен")
   private String password;
+
+  /** Стабильный ID устройства, генерируется клиентом при первом запуске и хранится локально. */
+  @NotBlank(message = "deviceId обязателен")
+  private String deviceId;
+
+  /** Читаемое имя устройства (необязательно). */
+  private String deviceName;
 }

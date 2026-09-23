@@ -12,6 +12,8 @@ import ru.ngtu.v1.routie.dto.common.ApiResponse;
 import ru.ngtu.v1.routie.dto.common.ApiResponseVoid;
 import ru.ngtu.v1.routie.service.AuthService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -59,5 +61,30 @@ public class AuthControllerV1 {
     @SecurityRequirement(name = "bearerAuth")
     public ApiResponse<RolesResponse> getRoles() {
         return ApiResponse.of(authService.getCurrentUserRoles());
+    }
+
+    // ── Управление сессиями ──────────────────────────────────────────────────
+
+    @GetMapping("/sessions")
+    @Operation(summary = "Список активных сессий (устройств) текущего пользователя")
+    @SecurityRequirement(name = "bearerAuth")
+    public ApiResponse<List<UserSessionResponse>> getSessions() {
+        return ApiResponse.of(authService.getSessions());
+    }
+
+    @DeleteMapping("/sessions/{deviceId}")
+    @Operation(summary = "Отзыв сессии конкретного устройства по его deviceId")
+    @SecurityRequirement(name = "bearerAuth")
+    public ApiResponseVoid revokeSession(@PathVariable String deviceId) {
+        authService.revokeSession(deviceId);
+        return ApiResponse.empty();
+    }
+
+    @DeleteMapping("/sessions")
+    @Operation(summary = "Выход со всех устройств (отзыв всех сессий)")
+    @SecurityRequirement(name = "bearerAuth")
+    public ApiResponseVoid revokeAllSessions() {
+        authService.revokeAllSessions();
+        return ApiResponse.empty();
     }
 }

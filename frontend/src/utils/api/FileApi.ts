@@ -8,9 +8,6 @@ import {
 import { UploadedFile } from '../../types/File';
 import { fetchWithAuth } from './AuthApi';
 
-/**
- * Удаление файла
- */
 export const deleteFileApi = async (
 	fileId: string
 ): Promise<ApiResponse<string>> => {
@@ -34,9 +31,6 @@ export const deleteFileApi = async (
 	}
 };
 
-/**
- * Загрузка файла
- */
 export const uploadFileApi = async (
 	file: File
 ): Promise<ApiResponse<UploadedFile>> => {
@@ -44,16 +38,13 @@ export const uploadFileApi = async (
 		const formData = new FormData();
 		formData.append('file', file);
 
-		const token = localStorage.getItem('accessToken');
-		const headers: HeadersInit = {
-			Authorization: token ? `Bearer ${token}` : '',
-		};
-
-		const response = await fetchWithAuth(`${API_URL}/${API_FILE_URL}/upload`, {
-			method: 'POST',
-			headers,
-			body: formData,
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_FILE_URL}/upload`,
+			{
+				method: 'POST',
+				body: formData,
+			}
+		);
 
 		return await handleResponse<UploadedFile>(response);
 	} catch (error: any) {
@@ -69,9 +60,6 @@ export const uploadFileApi = async (
 	}
 };
 
-/**
- * Скачивание файла
- */
 export const downloadFileApi = async (
 	fileId: string
 ): Promise<ApiResponse<string>> => {

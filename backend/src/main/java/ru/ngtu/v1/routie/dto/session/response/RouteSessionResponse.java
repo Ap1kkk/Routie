@@ -1,6 +1,7 @@
 package ru.ngtu.v1.routie.dto.session.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.ngtu.v1.routie.dto.session.RouteSessionStatus;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RouteSessionResponse {
