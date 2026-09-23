@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
 import { Avatar } from '@ui';
@@ -17,7 +17,7 @@ export const MobileFooter = () => {
 	const dispatch = useDispatch();
 
 	const { myProfile } = useSelector((state) => state.profile);
-	const { isAuthenticated } = useSelector((state) => state.user);
+	const { isAuthenticated } = useSelector((state) => state.auth);
 
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -25,6 +25,18 @@ export const MobileFooter = () => {
 	const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
 	const paths = ['/routie', '/routes', '/favorites', '/settings'];
+
+	const hideOnPaths = [
+		'/login',
+		'/registration',
+		'/recovery-page',
+		'/privacy',
+		'/terms',
+	];
+
+	const isMapRoute = location.pathname.startsWith('/map/');
+
+	const shouldHideFooter = hideOnPaths.includes(location.pathname) || isMapRoute;
 
 	useEffect(() => {
 		if (isAuthenticated && !myProfile) {
@@ -70,6 +82,10 @@ export const MobileFooter = () => {
 		return () => window.removeEventListener('resize', updateIndicator);
 	}, [location.pathname]);
 
+	if (shouldHideFooter) {
+		return null;
+	}
+
 	return (
 		<footer className={styles.footer}>
 			<nav className={styles.navigation}>
@@ -105,7 +121,6 @@ export const MobileFooter = () => {
 					<span className={styles.title}>Избранное</span>
 				</button>
 
-				{/* Кнопка профиля с реальным аватаром */}
 				<button
 					ref={(el) => {
 						buttonsRef.current[3] = el;

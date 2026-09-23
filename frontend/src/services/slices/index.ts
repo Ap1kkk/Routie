@@ -1,5 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import userReducer from './userSlice/userSlice';
+import authReducer from './authSlice/authSlice';
 import routesReducer from './routeSlice/routeSlice';
 import tagReducer from './tagsSlice/tagsSlice'
 import landmarkReducer from './landmarkSlice/landmarkSlice';
@@ -7,10 +7,12 @@ import audioGuideReducer from './audioGuideSlice/audioGuideSlice';
 import fileReducer from './fileSlice/fileSlice';
 import friendsReducer from './friendsSlice/friendsSlice';
 import profileReducer from './profileSlice/profileSlice';
-import gamificationReducer from "./gamificationSlice/gamificationSlice";
+import gamificationReducer from './gamificationSlice/gamificationSlice';
+import routeDraftReducer from './routeDraftSlice/routeDraftSlice';
+import filterReducer from './filterSlice/filterSlice';
 
 export const rootReducer = combineReducers({
-	user: userReducer,
+	auth: authReducer,
 	routes: routesReducer,
 	tags: tagReducer,
 	landmarks: landmarkReducer,
@@ -19,4 +21,6 @@ export const rootReducer = combineReducers({
 	friends: friendsReducer,
 	profile: profileReducer,
 	gamification: gamificationReducer,
+	routeDraft: routeDraftReducer,
+	filters: filterReducer,
 });

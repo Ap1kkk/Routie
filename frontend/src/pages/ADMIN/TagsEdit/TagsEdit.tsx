@@ -1,30 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from '@store';
-import {
-	createTag,
-	deleteTag,
-	fetchAllTags,
-	updateTag,
-} from '../../../services/slices/tagsSlice/tagsSlice';
-import { Tags } from '../../../types/Tags';
+import { useNavigate } from 'react-router-dom';
+import { tagApi } from '../../../utils/api/TagApi';
 import { Button, Input, Modal } from '@ui';
+import { Tags } from '../../../types/Tags';
 
 import styles from './TagsEdit.module.scss';
 
 export const TagsEdit = () => {
-	const dispatch = useDispatch();
-	const { allTags, isLoading, error } = useSelector((state) => state.tags);
+	const navigate = useNavigate();
+
+	const [tags, setTags] = useState<Tags[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const [editingTag, setEditingTag] = useState<Tags | null>(null);
 	const [tagTitle, setTagTitle] = useState('');
+
+	const [tagSearch, setTagSearch] = useState('');
+
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
-		dispatch(fetchAllTags());
-	}, [dispatch]);
+		loadTags();
+	}, []);
+
+	const loadTags = async () => {
+		try {
+			setIsLoading(true);
+
+			const response = await tagApi.getAll();
+
+			if (!response.success || !response.data) {
+				setError(response.error?.message ?? 'Ошибка загрузки тегов');
+				return;
+			}
+
+			setTags(response.data);
+		} catch {
+			setError('Ошибка загрузки тегов');
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const filteredTags = tags.filter((tag) =>
+		tag.title.toLowerCase().includes(tagSearch.toLowerCase())
+	);
 
 	const handleDeleteTag = async (tagId: string) => {
-		await dispatch(deleteTag(tagId));
+		const response = await tagApi.delete(tagId);
+
+		if (!response.success) return;
+
+		loadTags();
 	};
 
 	const openCreateModal = () => {
@@ -47,23 +75,23 @@ export const TagsEdit = () => {
 
 	const handleSave = async () => {
 		if (!tagTitle.trim()) return;
+
 		if (editingTag) {
-			await dispatch(
-				updateTag({
-					tagId: editingTag.id,
-					data: {
-						title: tagTitle.trim(),
-					},
-				})
-			);
+			const response = await tagApi.update(editingTag.id, {
+				title: tagTitle.trim(),
+			});
+
+			if (!response.success) return;
 		} else {
-			await dispatch(
-				createTag({
-					title: tagTitle.trim(),
-				})
-			);
+			const response = await tagApi.create({
+				title: tagTitle.trim(),
+			});
+
+			if (!response.success) return;
 		}
+
 		closeModal();
+		loadTags();
 	};
 
 	return (
@@ -72,10 +100,23 @@ export const TagsEdit = () => {
 
 			<div className={styles.headerActions}>
 				<Button
-					variant='primary'
-					onClick={openCreateModal}
-					children={'Создать тег'}
+					variant='secondary'
+					onClick={() => navigate('/admin')}>
+					Назад
+				</Button>
+
+				<Input
+					className={styles.searchInput}
+					placeholder='Поиск тега...'
+					value={tagSearch}
+					onChange={(e) => setTagSearch(e.target.value)}
 				/>
+
+				<Button
+					variant='primary'
+					onClick={openCreateModal}>
+					Создать тег
+				</Button>
 			</div>
 
 			{isLoading && <p className={styles.loading}>Загрузка...</p>}
@@ -91,7 +132,7 @@ export const TagsEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{allTags?.map((tag) => (
+					{filteredTags?.map((tag) => (
 						<tr key={tag.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>{tag.title}</td>
 
@@ -115,7 +156,7 @@ export const TagsEdit = () => {
 						</tr>
 					))}
 
-					{allTags?.length === 0 && (
+					{tags.length === 0 && (
 						<tr className={styles.tableRow}>
 							<td colSpan={3} className={styles.emptyState}>
 								Теги отсутствуют

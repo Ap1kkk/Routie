@@ -11,17 +11,23 @@ import {
 	EditProfilePage,
 	Error500Page,
 	FilterDesktopPage,
-	FilterMobilePage, FriendsPage,
-	LandmarksEdit, LeaderBoardPage,
+	FilterMobilePage,
+	FindFriendPage,
+	FriendsPage,
+	LandmarksEdit,
+	LeaderBoardPage,
 	MainPage,
 	MapPage,
 	NotFoundPage,
+	NotificationPage,
 	Privacy,
 	ProfilePage,
 	RecoveryPasswordPage,
 	RegistrationPage,
 	RouteEdit,
+	RouteEditCheckpoints,
 	RoutesMobilePage,
+	SessionsPage,
 	SettingsPage,
 	Statistic,
 	StatisticPage,
@@ -29,30 +35,63 @@ import {
 	Terms,
 	Workbench,
 } from '@pages';
-import { useDispatch, useSelector } from '@store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { authApi } from './utils/api/AuthApi';
+import { clearTokens, getAccessToken, getRefreshToken } from './utils/auth';
+import { useDispatch } from '@store';
 import {
-	initAuth,
+	clearUserProfile,
+	setMyProfile,
+} from './services/slices/profileSlice/profileSlice';
+import {
+	setAuthenticated,
 	setInitialized,
-} from './services/slices/userSlice/userSlice';
-import { selectInitialized } from './services/selectors/userSelectors';
-import { getAccessToken, getRefreshToken } from './utils/auth';
+} from './services/slices/authSlice/authSlice';
+import { getMyProfileApi } from './utils/api/ProfileApi';
 
 export function App() {
+	const [initialized, setAppInitialized] = useState(false);
 	const dispatch = useDispatch();
-	const initialized = useSelector(selectInitialized);
 
 	useEffect(() => {
-		const accessToken = getAccessToken();
-		const refreshToken = getRefreshToken();
+		const init = async () => {
+			try {
+				let me;
 
-		if (!accessToken && !refreshToken) {
-			dispatch(setInitialized());
-			return;
-		}
+				if (getAccessToken()) {
+					me = await authApi.getUser();
+				}
 
-		dispatch(initAuth());
-	}, [dispatch]);
+				if ((!me || !me.success) && getRefreshToken()) {
+					const refreshed = await authApi.refreshToken();
+
+					if (refreshed) {
+						me = await authApi.getUser();
+					}
+				}
+
+				if (me?.success && me.data) {
+					const profile = await getMyProfileApi();
+
+					dispatch(setAuthenticated(true));
+
+					if (profile.success && profile.data) {
+						dispatch(setMyProfile(profile.data));
+					}
+				} else {
+					clearTokens();
+
+					dispatch(setAuthenticated(false));
+					dispatch(clearUserProfile());
+				}
+			} finally {
+				dispatch(setInitialized(true));
+				setAppInitialized(true);
+			}
+		};
+
+		init();
+	}, []);
 
 	if (!initialized) {
 		return <div>Loading...</div>;
@@ -98,8 +137,8 @@ export const router = createBrowserRouter([
 						element: <FriendsPage />,
 					},
 					{
-						path:'/leader-board',
-						element: <LeaderBoardPage />
+						path: '/friends/find',
+						element: <FindFriendPage />,
 					},
 					{
 						path: '/routie',
@@ -134,6 +173,10 @@ export const router = createBrowserRouter([
 						element: <RoutesMobilePage />,
 					},
 					{
+						path: '/routes',
+						element: <RoutesMobilePage />,
+					},
+					{
 						path: '/filter-mobile',
 						element: <FilterMobilePage />,
 					},
@@ -150,20 +193,32 @@ export const router = createBrowserRouter([
 						element: <FilterDesktopPage />,
 					},
 					{
-						path: '/routes',
-						element: <RoutesMobilePage />,
+						path: '/settings/sessions',
+						element: <SessionsPage />,
 					},
 					{
-						path: '/statistic',
+						path: '/settings/notifications',
+						element: <NotificationPage />,
+					},
+					{
+						path: '/settings/statistic',
 						element: <StatisticPage />,
+					},
+					{
+						path: '/settings/friends-leader-board',
+						element: <LeaderBoardPage />,
+					},
+					{
+						path: '/settings/all-leader-board',
+						element: <LeaderBoardPage />,
+					},
+					{
+						path: '/settings/achievements',
+						element: <AchievementPage />,
 					},
 					{
 						path: '/profile/edit',
 						element: <EditProfilePage />,
-					},
-					{
-						path: '/achievements',
-						element: <AchievementPage />,
 					},
 				],
 			},
@@ -181,6 +236,10 @@ export const router = createBrowserRouter([
 					{
 						path: '/admin/routes-edit',
 						element: <RouteEdit />,
+					},
+					{
+						path: '/admin/routes-edit/checkpoints',
+						element: <RouteEditCheckpoints />,
 					},
 					{
 						path: '/admin/tags-edit',

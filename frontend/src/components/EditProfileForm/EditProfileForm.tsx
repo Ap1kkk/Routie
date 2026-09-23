@@ -122,7 +122,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 		};
 	}, [avatarPreview, data.avatar]);
 
-	// ================= VALIDATION =================
 	const nameValidation = useMemo(
 		() =>
 			!name
@@ -214,7 +213,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 		]
 	);
 
-	// ================= HANDLERS =================
 	const handleAvatarClick = () => fileInputRef.current?.click();
 
 	const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -316,7 +314,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 		}
 	};
 
-	// ================= UI =================
 	return (
 		<div className={styles.container}>
 			<form className={styles.form} onSubmit={handleSubmit}>
@@ -372,22 +369,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 						error={
 							showUsernameError
 								? usernameValidation.errorMessage
-								: undefined
-						}
-					/>
-					<Input
-						id='email'
-						type='text'
-						label='Почта'
-						name='email'
-						value={email}
-						onChange={handleEmailChange}
-						onBlur={handleEmailBlur}
-						placeholder='Введите почту'
-						required
-						error={
-							showEmailError
-								? emailValidation.errorMessage
 								: undefined
 						}
 					/>

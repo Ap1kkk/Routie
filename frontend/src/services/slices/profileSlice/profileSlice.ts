@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import {
 	getMyProfileApi,
@@ -7,6 +7,7 @@ import {
 	getFavoritesApi,
 	updateProfileApi,
 	uploadAvatarApi,
+	getUserStatisticsApi,
 } from '../../../utils/api/ProfileApi';
 
 import {
@@ -23,6 +24,7 @@ interface ProfileState {
 	userProfile: FullProfile | null;
 	shortProfile: ShortProfile | null;
 	favorites: PaginatedRoutes | null;
+	statistics: any | null;
 	avatar: ProfileImage | null;
 	loading: boolean;
 	error: string | null;
@@ -33,6 +35,7 @@ const initialState: ProfileState = {
 	userProfile: null,
 	shortProfile: null,
 	favorites: null,
+	statistics: null,
 	avatar: null,
 	loading: false,
 	error: null,
@@ -82,8 +85,26 @@ export const getShortProfile = createAsyncThunk<
 
 	if (!response.success || !response.data) {
 		return rejectWithValue(
-			response.error?.message ||
-			'Ошибка получения краткого профиля'
+			response.error?.message || 'Ошибка получения краткого профиля'
+		);
+	}
+
+	return response.data;
+});
+
+export const getUserStatistics = createAsyncThunk<
+	any, // Можно создать отдельный интерфейс позже
+	{ startDate?: string; endDate?: string } | undefined,
+	{ rejectValue: string }
+>('profile/getUserStatistics', async (params, { rejectWithValue }) => {
+	const response = await getUserStatisticsApi(
+		params?.startDate,
+		params?.endDate
+	);
+
+	if (!response.success || !response.data) {
+		return rejectWithValue(
+			response.error?.message || 'Ошибка получения статистики'
 		);
 	}
 
@@ -141,30 +162,28 @@ export const uploadAvatar = createAsyncThunk<
 	return response.data;
 });
 
-// ==================== SLICE ====================
-
 const profileSlice = createSlice({
 	name: 'profile',
 	initialState,
-
 	reducers: {
 		clearProfileError(state) {
 			state.error = null;
 		},
-
 		clearUserProfile(state) {
 			state.userProfile = null;
 		},
-
 		resetProfileState() {
 			return initialState;
 		},
+		setMyProfile(state, action: PayloadAction<FullProfile>) {
+			state.myProfile = action.payload;
+		},
 	},
 
-	extraReducers: builder => {
+	extraReducers: (builder) => {
 		builder
 
-			.addCase(getMyProfile.pending, state => {
+			.addCase(getMyProfile.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -174,11 +193,10 @@ const profileSlice = createSlice({
 			})
 			.addCase(getMyProfile.rejected, (state, action) => {
 				state.loading = false;
-				state.error =
-					action.payload || 'Ошибка получения профиля';
+				state.error = action.payload || 'Ошибка получения профиля';
 			})
 
-			.addCase(getUserProfile.pending, state => {
+			.addCase(getUserProfile.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -189,11 +207,10 @@ const profileSlice = createSlice({
 			.addCase(getUserProfile.rejected, (state, action) => {
 				state.loading = false;
 				state.error =
-					action.payload ||
-					'Ошибка получения профиля пользователя';
+					action.payload || 'Ошибка получения профиля пользователя';
 			})
 
-			.addCase(getShortProfile.pending, state => {
+			.addCase(getShortProfile.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -204,11 +221,10 @@ const profileSlice = createSlice({
 			.addCase(getShortProfile.rejected, (state, action) => {
 				state.loading = false;
 				state.error =
-					action.payload ||
-					'Ошибка получения краткого профиля';
+					action.payload || 'Ошибка получения краткого профиля';
 			})
 
-			.addCase(getFavorites.pending, state => {
+			.addCase(getFavorites.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -219,11 +235,10 @@ const profileSlice = createSlice({
 			.addCase(getFavorites.rejected, (state, action) => {
 				state.loading = false;
 				state.error =
-					action.payload ||
-					'Ошибка получения избранных маршрутов';
+					action.payload || 'Ошибка получения избранных маршрутов';
 			})
 
-			.addCase(updateProfile.pending, state => {
+			.addCase(updateProfile.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -233,12 +248,23 @@ const profileSlice = createSlice({
 			})
 			.addCase(updateProfile.rejected, (state, action) => {
 				state.loading = false;
-				state.error =
-					action.payload ||
-					'Ошибка обновления профиля';
+				state.error = action.payload || 'Ошибка обновления профиля';
 			})
 
-			.addCase(uploadAvatar.pending, state => {
+			.addCase(getUserStatistics.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(getUserStatistics.fulfilled, (state, action) => {
+				state.loading = false;
+				state.statistics = action.payload;
+			})
+			.addCase(getUserStatistics.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload || 'Ошибка получения статистики';
+			})
+
+			.addCase(uploadAvatar.pending, (state) => {
 				state.loading = true;
 				state.error = null;
 			})
@@ -248,17 +274,12 @@ const profileSlice = createSlice({
 			})
 			.addCase(uploadAvatar.rejected, (state, action) => {
 				state.loading = false;
-				state.error =
-					action.payload ||
-					'Ошибка загрузки аватара';
+				state.error = action.payload || 'Ошибка загрузки аватара';
 			});
 	},
 });
 
-export const {
-	clearProfileError,
-	clearUserProfile,
-	resetProfileState,
-} = profileSlice.actions;
+export const { clearProfileError, clearUserProfile, resetProfileState, setMyProfile } =
+	profileSlice.actions;
 
 export default profileSlice.reducer;

@@ -1,45 +1,35 @@
 import { RouteType } from './Route';
 
-export interface DistanceFilter {
-	min: number;
-	max: number;
-}
-
-export interface CheckpointsFilter {
-	min: number;
-	max: number;
-}
-
-export interface DurationFilter {
-	min: number;
-	max: number;
-}
-
 export interface Filters {
 	search?: string;
-	distance: DistanceFilter;
-	checkpointsCount: CheckpointsFilter;
-	duration?: DurationFilter; // ← сделал опциональным
-	categoryIds: string[];
 	type?: RouteType;
+
 	difficultyMin?: number;
 	difficultyMax?: number;
+
+	lengthMin?: number;
+	lengthMax?: number;
+
+	estimatedTimeMin?: number;
+	estimatedTimeMax?: number;
+
 	city?: string;
-	favoriteOnly?: boolean;
+
+	tags?: string[];
+
 	hasAudioGuide?: boolean;
+	favoriteOnly?: boolean;
+
+	page?: number;
+	size?: number;
+	sort?: string;
 }
 
-/** Значения по умолчанию */
 export const defaultFilters: Filters = {
 	search: '',
-	distance: { min: 0, max: 10000 },
-	checkpointsCount: { min: 0, max: 50 },
-	duration: { min: 0, max: 24 },
-	categoryIds: [],
-	type: undefined,
-	difficultyMin: undefined,
-	difficultyMax: undefined,
-	city: undefined,
+	tags: [],
+	hasAudioGuide: false,
 	favoriteOnly: false,
-	hasAudioGuide: undefined,
+	page: 0,
+	size: 20,
 };

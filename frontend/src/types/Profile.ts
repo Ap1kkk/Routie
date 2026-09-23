@@ -1,17 +1,15 @@
-import { UUID } from './User';
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export interface Avatar {
-	id: UUID;
+	id: string;
 	filename: string;
 	contentType: string;
 	createTs: string;
 	sortOrder: number;
 }
 
-export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
-
 export interface FullProfile {
-	id: UUID;
+	id: string;
 	email: string;
 	name: string;
 	username: string;
@@ -36,7 +34,7 @@ export interface FullProfile {
 }
 
 export interface ShortProfile {
-	id: UUID;
+	id: string;
 	firstName?: string;
 	lastName?: string;
 	avatar?: Avatar;
@@ -59,7 +57,7 @@ export interface UpdateProfileRequest {
 }
 
 export interface ProfileImage {
-	id: UUID;
+	id: string;
 	filename: string;
 	contentType: string;
 	createTs: string;
@@ -67,12 +65,12 @@ export interface ProfileImage {
 }
 
 export interface Tag {
-	id: UUID;
+	id: string;
 	title: string;
 }
 
 export interface Route {
-	id: UUID;
+	id: string;
 	title: string;
 	description: string;
 	type: string;

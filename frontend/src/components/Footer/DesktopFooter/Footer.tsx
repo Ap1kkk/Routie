@@ -16,9 +16,7 @@ export const Footer = () => {
 			<div className={styles.container}>
 				<Link to='/routie' className={styles.logoContainer}>
 					<Compass
-						className={
-							theme ? styles.logoLight : styles.logoDark
-						}
+						className={theme ? styles.logoLight : styles.logoDark}
 					/>
 					<span className={styles.logoTitle}>Routie</span>
 				</Link>
@@ -29,7 +27,7 @@ export const Footer = () => {
 					<Link to='/contacts' className={styles.link}>
 						Контакты
 					</Link>
-					<Link to='/privacy' className={styles.link}>
+					<Link to='/terms' className={styles.link}>
 						Политика конфиденциальности
 					</Link>
 				</div>

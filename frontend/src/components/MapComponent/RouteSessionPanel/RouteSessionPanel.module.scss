@@ -2,7 +2,7 @@
   width: 90%;
   max-width: 800px;
   position: fixed;
-  bottom: 100px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -10,24 +10,23 @@
   justify-content: center;
   gap: 12px;
   padding: 12px;
-  background-color: var(--blur-background);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  box-shadow: var(--shadow-blur);
   border-radius: var(--border-radius);
   border: 1px solid var(--blur-border);
-  z-index: 12;
+  background-color: var(--blur-background);
+  box-shadow: var(--shadow-blur);
+  z-index: 5;
 }
 
 .progress {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-caption-size);
+  font-weight: var(--font-medium);
   text-align: center;
-  padding: 6px 10px;
-  border-radius: 10px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius);
   background: var(--color-accent);
-  border: 1px solid var(--blur-border);
-  letter-spacing: 0.2px;
+  letter-spacing: var(--letter-spacing);
 }
 
 .buttons {
@@ -35,4 +34,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+
+.buttonsControls {
+  padding: 6px 12px;
 }

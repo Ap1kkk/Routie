@@ -1,5 +1,3 @@
-import { UUID } from './User';
-
 export interface LoginRequest {
 	email: string;
 	password: string;
@@ -8,7 +6,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-	id: UUID;
+	id: string;
 	email: string;
 	name: string;
 	username: string;
@@ -19,7 +17,8 @@ export interface RegisterRequest {
 	email: string;
 	password: string;
 	username: string;
-	name: string;
+	deviceId: string;
+	deviceName: string;
 }
 
 export interface AuthTokensResponse {
@@ -47,5 +46,14 @@ export interface RefreshTokenRequest {
 
 export interface LogoutRequest {
 	accessToken?: string;
+}
+
+export interface ActiveSession {
+	id: string;
+	deviceId: string;
+	deviceName: string;
+	createdAt: string;
+	lastUsedAt: string;
+	expiresAt: string;
 }
 

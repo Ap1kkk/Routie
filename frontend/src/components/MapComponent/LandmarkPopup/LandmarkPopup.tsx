@@ -1,69 +1,92 @@
 import { Landmark } from '../../../types/Landmark';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import { downloadFileApi } from '../../../utils/api/FileApi';
 
 import styles from './LandmarkPopup.module.scss';
 
 interface Props {
-	landmark: Landmark;
+	landmark: Landmark | null;
 }
 
-export const LandmarkPopup = ({ landmark }: Props) => {
-	const [imageUrl, setImageUrl] = useState('');
-	const [audioUrl, setAudioUrl] = useState('');
+const LandmarkPopupComponent = ({ landmark }: Props) => {
+	const [imageUrl, setImageUrl] = useState<string>('');
+	const [audioUrl, setAudioUrl] = useState<string>('');
+	const isLoadedRef = useRef(false);
+
+	if (!landmark) {
+		return (
+			<div className={styles.popup}>
+				<article className={styles.popupContainer}>
+					<h3>Информация отсутствует</h3>
+					<p>Данные о landmark не найдены.</p>
+				</article>
+			</div>
+		);
+	}
 
 	useEffect(() => {
-		const loadImage = async () => {
-			if (!landmark.images?.length) return;
+		if (isLoadedRef.current || !landmark.images?.length) return;
 
+		isLoadedRef.current = true;
+
+		const load = async () => {
 			try {
-				const url = await downloadFileApi(landmark.images[0].id);
-				setImageUrl(url);
+				const res = await downloadFileApi(landmark.images[0].id);
+				if (res.success && res.data) {
+					setImageUrl(res.data);
+				}
 			} catch (e) {
-				console.error(e);
+				console.error('Ошибка загрузки изображения:', e);
 			}
 		};
 
-		loadImage();
+		load();
 
 		return () => {
-			if (imageUrl) {
+			if (imageUrl?.startsWith('blob:')) {
 				URL.revokeObjectURL(imageUrl);
 			}
 		};
-	}, [landmark]);
+	}, [landmark.id]);
 
 	useEffect(() => {
+		if (!landmark.audioGuide?.file?.id) return;
+
 		const loadAudio = async () => {
-			if (!landmark.audioGuide?.file?.id) return;
-
 			try {
-				const url = await downloadFileApi(landmark.audioGuide.file.id);
-
-				setAudioUrl(url);
+				const res = await downloadFileApi(landmark.audioGuide!.file!.id);
+				if (res.success && res.data) {
+					setAudioUrl(res.data);
+				}
 			} catch (e) {
-				console.error(e);
+				console.error('Ошибка загрузки аудио:', e);
 			}
 		};
 
 		loadAudio();
-	}, [landmark]);
+	}, [landmark.audioGuide?.file?.id]);
 
 	return (
 		<div className={styles.popup}>
 			{imageUrl && (
 				<img
 					src={imageUrl}
-					alt={landmark.title}
+					alt={landmark.title || 'Landmark'}
 					className={styles.imagePopup}
+					loading='lazy'
+					decoding='async'
 				/>
 			)}
+
 			<article className={styles.popupContainer}>
-				<h3>{landmark.title}</h3>
+				<h3 className={styles.textPopup}>
+					{landmark.title || 'Без названия'}
+				</h3>
+				<p className={styles.textPopup}>
+					{landmark.description || 'Описание отсутствует'}
+				</p>
 
-				<p>{landmark.description}</p>
-
-				{audioUrl && landmark.audioGuide && (
+				{audioUrl && landmark.audioGuide?.file && (
 					<audio controls className={styles.audioControle}>
 						<source
 							src={audioUrl}
@@ -75,3 +98,6 @@ export const LandmarkPopup = ({ landmark }: Props) => {
 		</div>
 	);
 };
+
+export const LandmarkPopup = memo(LandmarkPopupComponent);
+LandmarkPopup.displayName = 'LandmarkPopup';

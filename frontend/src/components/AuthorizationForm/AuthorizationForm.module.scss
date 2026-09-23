@@ -11,6 +11,7 @@
 	font-weight: var(--font-medium);
 	letter-spacing: var(--letter-spacing);
 	text-align: center;
+	margin-bottom: 10px;
 
 	@media (max-width: 925px) {
 		font-size: var(--text-h2-size-mobile);
@@ -50,6 +51,7 @@
 		font-size: var(--text-body-size-mobile);
 	}
 }
+
 
 .links {
 	display: flex;

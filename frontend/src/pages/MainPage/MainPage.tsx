@@ -1,161 +1,173 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '@store';
-
-import {
-	fetchDailyRoute,
-	fetchRecommendedRoutes,
-} from '../../services/slices/routeSlice/routeSlice';
-import { downloadFile } from '../../services/slices/fileSlice/fileSlice';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 import { Blur, Button, Slider } from '@ui';
 import { RouteCard, RouteOfTheDay } from '@components';
 
-import { mockRoutes, getRouteImage } from '../../mocks/route';
-import { useDeviceType } from '../../hooks/useDeviceType';
+import {
+	toggleFavoriteApi,
+	getFavoritesApi,
+	removeFromFavoritesApi,
+	getDailyRouteApi,
+	getRecommendedRoutesApi,
+	getPopularRoutesApi,
+} from '../../utils/api/RoutesApi';
+
+import { downloadFileApi } from '../../utils/api/FileApi';
+
+import { PaginatedRoutes, Route } from '../../types/Route';
 
 import lightImage from '../../assets/images/main-page.png';
 import blackImage from '../../assets/images/main-black.png';
 import { ReactComponent as RightIcon } from '../../assets/icons/chevron-right.svg';
 
 import styles from './MainPage.module.scss';
-import { Route } from '../../types/Route';
 
 export const MainPage: React.FC = () => {
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
 
-	// Redux
-	const {
-		dailyRoute,
-		recommendedRoutes: paginatedRecommended,
-		isLoading,
-		error,
-	} = useSelector((state) => state.routes);
-
-	const recommendedList = paginatedRecommended?.content || [];
-
+	const [dailyRoute, setDailyRoute] = useState<Route | null>(null);
+	const [recommendedRoutes, setRecommendedRoutes] = useState<PaginatedRoutes | null>(null);
 	const [popularRoutes, setPopularRoutes] = useState<Route[]>([]);
-	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
 	const [routeImages, setRouteImages] = useState<Record<string, string>>({});
-
-	const [theme] = useState<boolean>(() => {
-		const saved = localStorage.getItem('theme');
-		return saved === 'light';
-	});
+	const [likedRoutes, setLikedRoutes] = useState<Record<string, boolean>>({});
+	const [loading, setLoading] = useState(true);
 
 	// Загрузка данных
 	useEffect(() => {
-		dispatch(fetchDailyRoute());
-		dispatch(fetchRecommendedRoutes({ page: 0, size: 8 }));
-	}, [dispatch]);
+		const loadData = async () => {
+			try {
+				setLoading(true);
 
-	// Загрузка изображений для рекомендованных
-	useEffect(() => {
-		const loadImages = async () => {
-			const imageMap: Record<string, string> = { ...routeImages };
+				const [dailyRes, recommendedRes, popularRes] = await Promise.all([
+					getDailyRouteApi(),
+					getRecommendedRoutesApi({ page: 0, size: 8 }),
+					getPopularRoutesApi({ limit: 6 }),
+				]);
 
-			for (const route of recommendedList) {
-				if (route.images?.length > 0 && !imageMap[route.id]) {
-					const fileId = route.images[0].id;
-					try {
-						const imageUrl = await dispatch(
-							downloadFile(fileId)
-						).unwrap();
-						imageMap[route.id] = imageUrl;
-					} catch (err) {
-						console.error(
-							`Не удалось загрузить фото для маршрута ${route.id}`,
-							err
-						);
-					}
+				if (dailyRes.success && dailyRes.data) {
+					setDailyRoute(dailyRes.data);
 				}
+
+				if (recommendedRes.success && recommendedRes.data) {
+					setRecommendedRoutes(recommendedRes.data);
+				}
+
+				if (popularRes.success && popularRes.data) {
+					setPopularRoutes(popularRes.data);
+				}
+
+				// Загрузка избранного
+				const favRes = await getFavoritesApi({ page: 0, size: 100 });
+				if (favRes.success && favRes.data?.content) {
+					const initialLiked: Record<string, boolean> = {};
+					favRes.data.content.forEach(route => {
+						initialLiked[route.id] = true;
+					});
+					setLikedRoutes(initialLiked);
+				}
+
+				// Загрузка изображений
+				const allRoutes = [
+					...(recommendedRes.data?.content || []),
+					...(popularRes.data || []),
+				];
+
+				const imagesMap: Record<string, string> = {};
+
+				await Promise.all(
+					allRoutes.map(async (route) => {
+						if (!route.images?.length) return;
+
+						try {
+							const imgRes = await downloadFileApi(route.images[0].id);
+							if (imgRes.success && imgRes.data) {
+								imagesMap[route.id] = imgRes.data;
+							}
+						} catch (err) {
+							console.error(`Ошибка загрузки изображения ${route.id}`, err);
+						}
+					})
+				);
+
+				setRouteImages(imagesMap);
+			} catch (err) {
+				console.error('Ошибка загрузки данных главной страницы:', err);
+			} finally {
+				setLoading(false);
 			}
-			setRouteImages(imageMap);
 		};
 
-		if (recommendedList.length > 0) loadImages();
-
-		return () => {
-			Object.values(routeImages).forEach((url) =>
-				URL.revokeObjectURL(url)
-			);
-		};
-	}, [recommendedList, dispatch]);
-
-	// Моки для популярного
-	useEffect(() => {
-		setPopularRoutes(mockRoutes.slice(0, 6));
+		loadData();
 	}, []);
 
-	const handleToggleLike = (routeId: string) => {
+	const handleToggleLike = async (routeId: string) => {
+		const isCurrentlyLiked = likedRoutes[routeId] || false;
+
 		setLikedRoutes((prev) => ({
 			...prev,
-			[routeId]: !prev[routeId],
+			[routeId]: !isCurrentlyLiked,
 		}));
-	};
 
-	const handleCardClick = (index: number) => {
-		const route = popularRoutes[index];
-		if (route) navigate(`/map/${route.id}`);
-	};
-
-	const goToPopular = () => {
-		if (isMobile) {
-			navigate('/popular-mobile');
-		} else {
-			navigate('/popular');
+		try {
+			if (isCurrentlyLiked) {
+				const response = await removeFromFavoritesApi(routeId);
+				if (!response.success) {
+					setLikedRoutes((prev) => ({ ...prev, [routeId]: true }));
+				}
+			} else {
+				const response = await toggleFavoriteApi(routeId);
+				if (!response.success) {
+					setLikedRoutes((prev) => ({ ...prev, [routeId]: false }));
+				}
+			}
+		} catch (error) {
+			setLikedRoutes((prev) => ({ ...prev, [routeId]: isCurrentlyLiked }));
+			console.error('Ошибка изменения избранного:', error);
 		}
 	};
 
-	const goToRecommended = () => {
-		if (isMobile) {
-			navigate('/recommended-mobile');
-		} else {
-			navigate('/recommended');
-		}
+	const handleCardClick = (routeId: string) => {
+		navigate(`/map/${routeId}`);
 	};
+
+	const recommendedList = recommendedRoutes?.content ?? [];
+	const popularList = popularRoutes || [];
 
 	return (
 		<div>
 			<img
-				src={theme ? lightImage : blackImage}
+				src={localStorage.getItem('theme') === 'light' ? lightImage : blackImage}
 				alt='Фон'
 				className={styles.backgroundImage}
 			/>
 
 			<section className={styles.mainPageContainer}>
-				{/* Маршрут дня */}
-				<div className={styles.containerRouteOfTheDay}>
-					<div className={styles.routeContainer}>
-						{isLoading && <div>Загрузка маршрута дня...</div>}
-						{error && <div>Ошибка: {error}</div>}
-
-						{dailyRoute && !isLoading && (
+				{dailyRoute && (
+					<div className={styles.containerRouteOfTheDay}>
+						<div className={styles.routeContainer}>
 							<RouteOfTheDay
 								route={dailyRoute}
-								onNavigate={() =>
-									navigate(`/map/${dailyRoute.id}`)
-								}
+								onNavigate={() => navigate(`/map/${dailyRoute.id}`)}
 							/>
-						)}
+						</div>
 					</div>
-				</div>
+				)}
 
-				{/* Популярное */}
-				{popularRoutes.length > 0 && (
+				{popularList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
 							<Blur className={styles.containerBlur}>
-								<span className={styles.titlePopularRoutes}>
-									Популярное
-								</span>
+                         <span className={styles.titlePopularRoutes}>
+                            Популярное
+                         </span>
 							</Blur>
 							<Button
 								variant='blur'
-								onClick={goToPopular}
+								onClick={() => navigate(isMobile ? '/popular-mobile' : '/popular')}
 								iconRight={<RightIcon />}
 								children='Смотреть все'
 								className={styles.buttonWatchAll}
@@ -163,11 +175,11 @@ export const MainPage: React.FC = () => {
 						</div>
 
 						<Slider
-							cards={popularRoutes.map((route, index) => (
+							cards={popularList.map((route) => (
 								<RouteCard
 									key={route.id}
 									route={route}
-									imageUrl={getRouteImage(route.id)}
+									imageUrl={routeImages[route.id] || '/placeholder-route.jpg'}
 									isLiked={likedRoutes[route.id] || false}
 									onToggleLike={handleToggleLike}
 									variant='compact'
@@ -177,22 +189,22 @@ export const MainPage: React.FC = () => {
 							infinite={true}
 							showArrows={true}
 							showDots={true}
-							onCardClick={handleCardClick}
+							onCardClick={(index) => handleCardClick(popularList[index].id)}
 						/>
 					</article>
 				)}
 
-				{/* Рекомендованное */}
+				{recommendedList.length > 0 && (
 					<article className={styles.sectionPopRecRoutes}>
 						<div className={styles.headerOfSmallSection}>
 							<Blur className={styles.containerBlur}>
-								<span className={styles.titlePopularRoutes}>
-									Рекомендованное
-								</span>
+                         <span className={styles.titlePopularRoutes}>
+                            Рекомендованное
+                         </span>
 							</Blur>
 							<Button
 								variant='blur'
-								onClick={goToRecommended}
+								onClick={() => navigate(isMobile ? '/recommended-mobile' : '/recommended')}
 								iconRight={<RightIcon />}
 								children='Смотреть все'
 								className={styles.buttonWatchAll}
@@ -204,10 +216,7 @@ export const MainPage: React.FC = () => {
 								<RouteCard
 									key={route.id}
 									route={route}
-									imageUrl={
-										routeImages[route.id] ||
-										'/placeholder-route.jpg'
-									}
+									imageUrl={routeImages[route.id] || '/placeholder-route.jpg'}
 									isLiked={likedRoutes[route.id] || false}
 									onToggleLike={handleToggleLike}
 									variant='standard'
@@ -215,6 +224,7 @@ export const MainPage: React.FC = () => {
 							))}
 						</div>
 					</article>
+				)}
 			</section>
 		</div>
 	);

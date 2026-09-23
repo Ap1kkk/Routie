@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  height: 100%;
+  width: 100%;
+  gap: 20px;
+}
+
+.notificationListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.notificationList {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+}
+
+.notificationContentContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notificationBody {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}

@@ -12,7 +12,7 @@ export const deleteFileApi = async (
 	fileId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(`${API_URL}/${API_FILE_URL}/${fileId}`, {
+		const response = await fetchWithAuth(`${API_URL}/${API_FILE_URL}/${fileId}`, {
 			method: 'DELETE',
 			headers: getHeaders(true),
 		});
@@ -62,9 +62,9 @@ export const uploadFileApi = async (
 
 export const downloadFileApi = async (
 	fileId: string
-): Promise<string> => {
+): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FILE_URL}/download/${fileId}`,
 			{
 				method: 'GET',
@@ -73,17 +73,31 @@ export const downloadFileApi = async (
 		);
 
 		if (!response.ok) {
-			throw new Error(
-				`Ошибка скачивания файла: ${response.status}`
-			);
+			throw new Error(`Ошибка скачивания файла: ${response.status}`);
 		}
 
 		const blob = await response.blob();
 
-		return URL.createObjectURL(blob);
+		return {
+			success: true,
+			data: URL.createObjectURL(blob),
+			timestamp: new Date().toISOString(),
+		};
 	} catch (error: any) {
-		throw new Error(
-			error.message || 'Ошибка при скачивании файла'
-		);
+		return {
+			success: false,
+			error: {
+				code: 'DOWNLOAD_FILE_ERROR',
+				message: error.message || 'Ошибка скачивания файла',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
 	}
+};
+
+export const fileApi = {
+	upload: uploadFileApi,
+	download: downloadFileApi,
+	delete: deleteFileApi,
 };

@@ -103,12 +103,16 @@ export const fetchLeaderboard = createAsyncThunk<
 
 export const fetchFriendsLeaderboard = createAsyncThunk<
 	LeaderboardResponse,
-	{ period: 'WEEK' | 'MONTH' | 'SEASON'; limit?: number },
+	{
+		period: 'WEEK' | 'MONTH' | 'SEASON';
+		limit?: number;
+		sort?: 'TOTAL_XP' | 'TOTAL_DISTANCE_METERS' | 'TOTAL_ROUTES_COMPLETED';
+	},
 	{ rejectValue: string }
 >(
 	'achievements/fetchFriendsLeaderboard',
-	async ({ period, limit = 50 }, { rejectWithValue }) => {
-		const response = await getFriendsLeaderboardApi(period, limit);
+	async ({ period, limit = 50, sort = 'TOTAL_XP' }, { rejectWithValue }) => {
+		const response = await getFriendsLeaderboardApi(period, limit, sort);
 
 		if (!response.success || !response.data) {
 			return rejectWithValue(

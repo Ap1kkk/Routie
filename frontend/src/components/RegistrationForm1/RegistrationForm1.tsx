@@ -207,7 +207,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 							: undefined
 					}
 				/>
-
 				<Input
 					id='username'
 					type='text'
@@ -216,7 +215,7 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					value={username}
 					onChange={handleUsernameChange}
 					onBlur={handleUsernameBlur}
-					placeholder='your_username'
+					placeholder='Username (на англ)'
 					required
 					error={
 						showUsernameError
@@ -224,7 +223,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 							: undefined
 					}
 				/>
-
 				<Input
 					id='password'
 					type='password'
@@ -241,7 +239,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 							: undefined
 					}
 				/>
-
 				<Input
 					id='confirmPassword'
 					type='password'
@@ -258,15 +255,13 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 							: undefined
 					}
 				/>
-
 				<Checkbox
 					checked={agreements.terms}
 					onChange={handleAgreementChange('terms')}
 					label={
 						<div className={styles.containerAccess}>
-							Я принимаю &nbsp;
 							<Link
-								to='/terms'
+								to='/privacy'
 								target='_blank'
 								className={styles.link}>
 								Пользовательское соглашение
@@ -280,9 +275,8 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 					onChange={handleAgreementChange('privacy')}
 					label={
 						<div className={styles.containerAccess}>
-							Я ознакомился с &nbsp;
 							<Link
-								to='/privacy'
+								to='/terms'
 								target='_blank'
 								className={styles.link}>
 								Политикой конфиденциальности
@@ -290,7 +284,6 @@ export const RegistrationForm1: React.FC<RegistrationForm1Props> = ({
 						</div>
 					}
 				/>
-
 				<Button
 					variant='primary'
 					type='submit'

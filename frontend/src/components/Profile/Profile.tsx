@@ -29,37 +29,40 @@ interface ProfileProps {
 
 	birthday?: string;
 	friends?: Friend[];
+	friendAvatars?: Record<string, string>;
 	recentRoutes?: Route[];
+	routeImages?: Record<string, string>;
 
-	/** Обработчики для друзей */
 	onFriendClick?: (friendId: string) => void;
 	onRemoveFriend?: (friendId: string) => void;
 }
 
 export const Profile: React.FC<ProfileProps> = ({
-	username,
-	name,
-	email,
-	phone,
-	avatar,
+													username,
+													name,
+													email,
+													phone,
+													avatar,
 
-	city,
-	gender,
+													city,
+													gender,
 
-	level,
-	totalXp,
+													level,
+													totalXp,
 
-	routesCounter,
-	totalDistanceMeters,
-	totalLandmarksVisited,
+													routesCounter,
+													totalDistanceMeters,
+													totalLandmarksVisited,
 
-	birthday,
-	friends = [], // по умолчанию пустой массив
-	recentRoutes = [],
+													birthday,
+													friends = [],
+													friendAvatars = {},          // ← новое
+													recentRoutes = [],
+													routeImages = {},
 
-	onFriendClick,
-	onRemoveFriend,
-}) => {
+													onFriendClick,
+													onRemoveFriend,
+												}) => {
 	const navigate = useNavigate();
 	const deviceType = useDeviceType();
 	const isMobile = deviceType === 'mobile';
@@ -75,7 +78,6 @@ export const Profile: React.FC<ProfileProps> = ({
 		setShowMenu(!showMenu);
 	};
 
-	// Закрытие меню при клике вне
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
 			if (
@@ -110,16 +112,12 @@ export const Profile: React.FC<ProfileProps> = ({
 						<Avatar src={avatar} size='large' />
 						<h4 className={styles.profileName}>
 							{name}
-							<Circle
-								level={level}
-								size='small'
-							/>
+							<Circle level={level} size='small' />
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
 
 					<div className={styles.containerMenu}>
-						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -131,7 +129,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
-						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<div className={styles.containerContextHeader}>
 								<h5 className={styles.containerContextTitle}>
@@ -145,31 +142,35 @@ export const Profile: React.FC<ProfileProps> = ({
 										<FriendCard
 											key={friend.id}
 											friend={friend}
+											avatarSrc={friendAvatars[friend.id]}   // ← добавили
 											variant='compact'
+											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет друзей
-									</span>
+                               Нет друзей
+                            </span>
 								)}
 							</div>
 						</div>
 
-						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
-							<span className={styles.containerContextTittle}>
-								Последние маршруты
-							</span>
+                      <span className={styles.containerContextTittle}>
+                         Последние маршруты
+                      </span>
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
 										<div
 											key={route.id}
 											className={styles.routeCards}>
-											<RouteCard route={route} />
+											<RouteCard
+												route={route}
+												imageUrl={routeImages[route.id]}
+											/>
 											<span
 												className={
 													styles.separator
@@ -178,15 +179,14 @@ export const Profile: React.FC<ProfileProps> = ({
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет пройденных маршрутов
-									</span>
+                               Нет пройденных маршрутов
+                            </span>
 								)}
 							</div>
 						</div>
 					</div>
 				</div>
 			) : (
-				/* ===================== ДЕСКТОП ===================== */
 				<div className={styles.containerMobile}>
 					<div className={styles.headerMobile}>
 						<Avatar src={avatar} size='large' />
@@ -196,7 +196,7 @@ export const Profile: React.FC<ProfileProps> = ({
 								ref={levelRef}
 								className={styles.profileLevel}
 								onClick={handleLevelClick}>
-								{level}
+                         {level}
 								{showMenu && (
 									<div
 										className={styles.levelMenu}
@@ -205,19 +205,18 @@ export const Profile: React.FC<ProfileProps> = ({
 										<span>Ваш текущий уровень</span>
 									</div>
 								)}
-							</span>
+                      </span>
 						</h4>
 						<p className={styles.profileUsername}>{username}</p>
 					</div>
 
 					<Button
 						variant='primary'
-						onClick={() => navigate('/Admin')}>
+						onClick={() => navigate('/admin')}>
 						Панель администратора
 					</Button>
 
 					<div className={styles.containerMenu}>
-						{/* Информация */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Информация
@@ -229,7 +228,6 @@ export const Profile: React.FC<ProfileProps> = ({
 							<p>Пройдено маршрутов: {routesCounter}</p>
 						</div>
 
-						{/* Друзья */}
 						<div className={styles.containerContext}>
 							<h5 className={styles.containerContextTitle}>
 								Друзья ({friends.length})
@@ -240,41 +238,41 @@ export const Profile: React.FC<ProfileProps> = ({
 										<FriendCard
 											key={friend.id}
 											friend={friend}
+											avatarSrc={friendAvatars[friend.id]}   // ← добавили
 											variant='standard'
+											showRemoveButton={true}
 											onCardClick={handleFriendCardClick}
 											onRemove={handleFriendRemove}
 										/>
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет друзей
-									</span>
+                               Нет друзей
+                            </span>
 								)}
 							</div>
 						</div>
 
-						{/* Последние маршруты */}
 						<div className={styles.containerContext}>
-							<span className={styles.containerContextTittle}>
-								Последние маршруты
-							</span>
+                      <span className={styles.containerContextTittle}>
+                         Последние маршруты
+                      </span>
 							<div className={styles.routesList}>
 								{recentRoutes.length > 0 ? (
 									recentRoutes.map((route) => (
 										<div
 											key={route.id}
 											className={styles.routeCards}>
-											<RouteCard route={route} />
-											<span
-												className={
-													styles.separator
-												}></span>
+											<RouteCard
+												route={route}
+												imageUrl={routeImages[route.id]}
+											/>
 										</div>
 									))
 								) : (
 									<span className={styles.emptyText}>
-										Нет пройденных маршрутов
-									</span>
+                               Нет пройденных маршрутов
+                            </span>
 								)}
 							</div>
 						</div>

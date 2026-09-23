@@ -1,0 +1,1 @@
+export { FindFriendPage } from './FindFriendPage';

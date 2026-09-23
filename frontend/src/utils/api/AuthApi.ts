@@ -90,14 +90,14 @@ export const loginUserApi = async (
 /** Выход из системы */
 export const logoutApi = async (): Promise<ApiResponse> => {
 	try {
-		const refreshToken = getRefreshToken();   // ← добавляем
+		const refreshToken = getRefreshToken();
 
 		const response = await fetch(
 			`${API_URL}/${API_AUTH_URL}/logout`,
 			{
 				method: 'POST',
 				headers: getHeaders(true),
-				body: JSON.stringify({ refreshToken }),   // ← отправляем refreshToken
+				body: JSON.stringify({ refreshToken }),
 			}
 		);
 
@@ -152,6 +152,57 @@ export const getUserRolesApi = async (): Promise<
 	return handleResponse(response);
 };
 
+export const getActiveSessionsApi = async (): Promise<ApiResponse<any[]>> => {
+	try {
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_AUTH_URL}/sessions`,
+			{
+				method: 'GET',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_SESSIONS_ERROR',
+				message: error.message || 'Ошибка получения активных сессий',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Завершение сессии по deviceId */
+export const terminateSessionApi = async (
+	deviceId: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/sessions/${deviceId}`,
+			{
+				method: 'DELETE',
+				headers: getHeaders(true),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'TERMINATE_SESSION_ERROR',
+				message: error.message || 'Ошибка завершения сессии',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
 /** Обновление access токена с использованием refresh токена */
 export const refreshTokenApi = async (): Promise<boolean> => {
 	try {
@@ -162,13 +213,16 @@ export const refreshTokenApi = async (): Promise<boolean> => {
 			return false;
 		}
 
-		const response = await fetch(`${API_URL}/${API_AUTH_URL}/refresh`, {
-			method: 'POST',
-			headers: getHeaders(),
-			body: JSON.stringify({
-				refreshToken,
-			}),
-		});
+		const response = await fetchWithAuth(
+			`${API_URL}/${API_AUTH_URL}/refresh`,
+			{
+				method: 'POST',
+				headers: getHeaders(),
+				body: JSON.stringify({
+					refreshToken,
+				}),
+			}
+		);
 
 		const result = await handleResponse<LoginResponseWithTokens>(response);
 
@@ -239,4 +293,78 @@ export const fetchWithAuth = async (
 	token = getAccessToken();
 
 	return doRequest();
+};
+
+/** 1. Запрос кода восстановления на почту */
+export const requestPasswordResetApi = async (
+	email: string
+): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/password/reset/request`,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email }),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		console.error('Request password reset error:', error);
+		return {
+			success: false,
+			error: {
+				code: 'PASSWORD_RESET_REQUEST_ERROR',
+				message: error.message || 'Не удалось отправить код',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** 2. Подтверждение кода и смена пароля */
+export const confirmPasswordResetApi = async (data: {
+	email: string;
+	code: string;
+	newPassword: string;
+}): Promise<ApiResponse<string>> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/${API_AUTH_URL}/password/reset/confirm`,
+			{
+				method: 'POST',
+				headers: getHeaders(),
+				body: JSON.stringify(data),
+			}
+		);
+
+		return await handleResponse<string>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'PASSWORD_RESET_CONFIRM_ERROR',
+				message: error.message || 'Ошибка подтверждения кода',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+export const authApi = {
+	register: registerUserApi,
+	login: loginUserApi,
+	logout: logoutApi,
+	getUser: getUserApi,
+	getUserRoles: getUserRolesApi,
+	getActiveSessions: getActiveSessionsApi,
+	terminateSession: terminateSessionApi,
+	refreshToken: refreshTokenApi,
+	requestPasswordReset: requestPasswordResetApi,
+	confirmPasswordReset: confirmPasswordResetApi,
 };

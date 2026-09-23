@@ -4,26 +4,35 @@ import { useNavigate } from 'react-router-dom';
 
 import { FriendCard } from '@components';
 import { Friend } from '../../types/Friends';
-import { fetchFriends, removeFriend } from '../../services/slices/friendsSlice/friendsSlice';
+import {
+	fetchFriends,
+	removeFriend,
+} from '../../services/slices/friendsSlice/friendsSlice';
+import { sendFriendRequestApi } from '../../utils/api/FriendsApi';
+import { downloadFileApi } from '../../utils/api/FileApi';
 
 import styles from './FriendPage.module.scss';
 import { Button, Input } from '@ui';
 
 import { ReactComponent as Search } from '../../assets/icons/search.svg';
-import { ReactComponent as Dumbels } from '../../assets/icons/dumbells.svg';
+import { ReactComponent as User } from '../../assets/icons/user.svg';
 
 export const FriendsPage: React.FC = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
-	const { friendsList, isLoading, error } = useSelector((state) => state.friends);
+	const { friendsList, isLoading, error } = useSelector(
+		(state) => state.friends
+	);
 
 	const [searchValue, setSearchValue] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
+	const [friendAvatars, setFriendAvatars] = useState<Record<string, string>>(
+		{}
+	);
 
-	const friends = friendsList?.content || [];
+	const realFriends = friendsList?.content || [];
 
-	// Debounce поиска
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearch(searchValue);
@@ -32,14 +41,43 @@ export const FriendsPage: React.FC = () => {
 		return () => clearTimeout(timer);
 	}, [searchValue]);
 
-	// Загрузка друзей
 	useEffect(() => {
-		dispatch(fetchFriends({
-			page: 0,
-			size: 50,
-			search: debouncedSearch || undefined,
-		}));
+		dispatch(
+			fetchFriends({
+				page: 0,
+				size: 50,
+				search: debouncedSearch || undefined,
+			})
+		);
 	}, [dispatch, debouncedSearch]);
+
+	useEffect(() => {
+		const loadAvatars = async () => {
+			const avatars: Record<string, string> = { ...friendAvatars };
+
+			for (const friend of realFriends) {
+				if (friend.avatar?.id && !avatars[friend.id]) {
+					try {
+						const result = await downloadFileApi(friend.avatar.id);
+						if (result.success && result.data) {
+							avatars[friend.id] = result.data;
+						}
+					} catch (err) {
+						console.error(
+							`Не удалось загрузить аватар для ${friend.id}`,
+							err
+						);
+					}
+				}
+			}
+
+			setFriendAvatars(avatars);
+		};
+
+		if (realFriends.length > 0) {
+			loadAvatars();
+		}
+	}, [realFriends]);
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchValue(e.target.value);
@@ -49,51 +87,66 @@ export const FriendsPage: React.FC = () => {
 		navigate(`/profile/${friendId}`);
 	};
 
-	const handleRemove = useCallback((friendId: string) => {
-		if (window.confirm('Вы действительно хотите удалить друга?')) {
+	const handleRemove = useCallback(
+		(friendId: string) => {
 			dispatch(removeFriend(friendId));
+		},
+		[dispatch]
+	);
+
+	const handleAddFriend = async (friendId: string) => {
+		try {
+			const response = await sendFriendRequestApi(friendId);
+		} catch (err) {
+			console.error(err);
 		}
-	}, [dispatch]);
+	};
 
 	return (
 		<section className={styles.container}>
 			<div className={styles.headerTitle}>
-				<h2>Мои друзья ({friendsList?.totalElements || 0})</h2>
+				<h2>Мои друзья ({realFriends.length})</h2>
 			</div>
 
 			<div className={styles.headerFriends}>
 				<Input
 					className={styles.search}
-					placeholder="Введите имя друга..."
+					placeholder='Введите имя друга...'
 					iconLeft={<Search />}
 					value={searchValue}
 					onChange={handleSearchChange}
-					inputPadding="5px 10px"
+					inputPadding='5px 10px'
 				/>
 				<Button
-					variant="tertiary"
+					variant='tertiary'
 					iconRight={
-						<Dumbels
-							onClick={() => navigate('/leader-board')}
+						<User
+							onClick={() => navigate('/friends/find')}
 							style={{ cursor: 'pointer' }}
 						/>
 					}
 				/>
 			</div>
 
-			{isLoading && <div className={styles.loading}>Загрузка друзей...</div>}
+			{isLoading && (
+				<div className={styles.loading}>Загрузка друзей...</div>
+			)}
 			{error && <div className={styles.error}>Ошибка: {error}</div>}
 
-			{!isLoading && !error && friends.length > 0 ? (
+			{!isLoading && !error && realFriends.length > 0 ? (
 				<div className={styles.friendsContainer}>
 					<div className={styles.friendsGrid}>
-						{friends.map((friend: Friend) => (
+						{realFriends.map((friend: Friend) => (
 							<FriendCard
 								key={friend.id}
 								friend={friend}
-								variant="standard"
+								avatarSrc={friendAvatars[friend.id]}
+								variant='standard'
 								onCardClick={handleCardClick}
 								onRemove={handleRemove}
+								onAddFriend={handleAddFriend}
+								showRemoveButton={true}
+								showAddButton={!friend.isFriend}
 							/>
 						))}
 					</div>

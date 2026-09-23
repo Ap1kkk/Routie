@@ -18,12 +18,14 @@ import {
 	createRouteApi,
 	updateRouteApi,
 	getDailyRouteApi,
+	getPopularRoutesApi,
 } from '../../../utils/api/RoutesApi';
 
 type TRouteState = {
 	currentRoute: FullRoute | null;
 	searchResults: PaginatedRoutes | null;
 	recommendedRoutes: PaginatedRoutes | null;
+	popularRoutes: Route[] | null;
 	dailyRoute: Route | null;
 	isLoading: boolean;
 	error: string | null;
@@ -33,6 +35,7 @@ const initialState: TRouteState = {
 	currentRoute: null,
 	searchResults: null,
 	recommendedRoutes: null,
+	popularRoutes: null,
 	dailyRoute: null,
 	isLoading: false,
 	error: null,
@@ -91,7 +94,8 @@ export const fetchRecommendedRoutes = createAsyncThunk<
 	const response = await getRecommendedRoutesApi(params);
 	if (!response.success || response.error)
 		return rejectWithValue(
-			response.error?.message || 'Ошибка получения рекомендуемых маршрутов'
+			response.error?.message ||
+				'Ошибка получения рекомендуемых маршрутов'
 		);
 
 	if (!response.data)
@@ -99,6 +103,30 @@ export const fetchRecommendedRoutes = createAsyncThunk<
 
 	return response.data;
 });
+
+export const fetchPopularRoutes = createAsyncThunk<
+	Route[],
+	{ limit?: number } | undefined,
+	{ rejectValue: string }
+>(
+	'route/fetchPopularRoutes',
+	async (params = { limit: 6 }, { rejectWithValue }) => {
+		const response = await getPopularRoutesApi(params);
+
+		if (!response.success || !response.data) {
+			return rejectWithValue(
+				response.error?.message ||
+					'Ошибка получения популярных маршрутов'
+			);
+		}
+
+		if (Array.isArray(response.data)) {
+			return response.data;
+		}
+
+		return response.data || [];
+	}
+);
 
 export const createNewRoute = createAsyncThunk<
 	Route,
@@ -235,6 +263,19 @@ const routeSlice = createSlice({
 				state.recommendedRoutes = action.payload;
 			})
 			.addCase(fetchRecommendedRoutes.rejected, (state, action) => {
+				state.isLoading = false;
+				state.error = action.payload as string;
+			})
+
+			.addCase(fetchPopularRoutes.pending, (state) => {
+				state.isLoading = true;
+				state.error = null;
+			})
+			.addCase(fetchPopularRoutes.fulfilled, (state, action) => {
+				state.isLoading = false;
+				state.popularRoutes = action.payload;   // ← массив
+			})
+			.addCase(fetchPopularRoutes.rejected, (state, action) => {
 				state.isLoading = false;
 				state.error = action.payload as string;
 			})

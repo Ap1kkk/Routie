@@ -1,45 +1,61 @@
-import { forwardRef, useId, type ReactNode, type TextareaHTMLAttributes } from 'react';
-import s from './Textarea.module.scss';
+import React, { ReactNode, TextareaHTMLAttributes } from 'react';
+import styles from './Textarea.module.scss';
 import clsx from 'clsx';
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 	error?: string;
 	label?: string;
 	icon?: ReactNode;
+	inputPadding?: string;
+	className?: string;
 }
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-	({ error, label, icon, className, id, ...props }, ref) => {
-		const generatedId = useId();
-		const textareaId = id || generatedId;
-		const errorId = `${textareaId}-error`;
+export const Textarea: React.FC<TextareaProps> = ({
+	error,
+	label,
+	icon,
+	inputPadding = '14px 16px',
+	className,
+	id,
+	...props
+}) => {
+	const textareaId = id || label?.toLowerCase().replace(/\s/g, '-');
 
-		return (
-			<div className={s.container}>
-				{label && (
-					<label htmlFor={textareaId} className={clsx(s.label)}>
-						{label}
-					</label>
-				)}
-				<div className={s.wrapper}>
-					<textarea
-						ref={ref}
-						id={textareaId}
-						aria-invalid={!!error}
-						aria-describedby={error ? errorId : undefined}
-						className={clsx(s.textarea, error && s.errorField, icon && s.withIcon, className)}
-						{...props}
-					/>
-					{icon && <div className={s.iconWrapper}>{icon}</div>}
-				</div>
-				{error && (
-					<span id={errorId} className={s.errorMessage}>
-						{error}
-					</span>
-				)}
+	return (
+		<div className={`${styles.wrapper} ${className}`}>
+			{label && (
+				<label htmlFor={textareaId} className={styles.label}>
+					{label}
+				</label>
+			)}
+
+			<div
+				className={`${styles['textarea-wrapper']} ${
+					error ? styles.error : ''
+				}`}
+				style={inputPadding ? { padding: inputPadding } : undefined}>
+				<textarea
+					id={textareaId}
+					aria-invalid={!!error}
+					aria-describedby={error}
+					className={clsx(
+						styles.textarea,
+						error && styles.errorField,
+						icon && styles.withIcon,
+						className
+					)}
+					{...props}
+				/>
+				{icon && <div className={styles.iconWrapper}>{icon}</div>}
 			</div>
-		);
-	},
-);
+
+			{error && (
+				<div className={styles['message-container']}>
+					{error && <p className={styles.errorText}>{error}</p>}
+				</div>
+			)}
+		</div>
+	);
+};
 
 Textarea.displayName = 'Textarea';

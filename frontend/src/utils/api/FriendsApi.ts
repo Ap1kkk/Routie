@@ -6,6 +6,7 @@ import {
 	API_FRIENDS_URL,
 } from './Api';
 import { FriendsSearchParams, PaginatedFriends } from '../../types/Friends';
+import { fetchWithAuth } from './AuthApi';
 
 /**
  * Удалить из друзей
@@ -14,7 +15,7 @@ export const removeFriendApi = async (
 	friendId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/${friendId}`,
 			{
 				method: 'DELETE',
@@ -58,7 +59,7 @@ export const getFriendsApi = async (
 			queryParams.toString() ? `?${queryParams.toString()}` : ''
 		}`;
 
-		const response = await fetch(url, {
+		const response = await fetchWithAuth(url, {
 			method: 'GET',
 			headers: getHeaders(true),
 		});
@@ -84,7 +85,7 @@ export const sendFriendRequestApi = async (
 	friendId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/request/${friendId}`,
 			{
 				method: 'POST',
@@ -113,7 +114,7 @@ export const rejectFriendRequestApi = async (
 	friendshipId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/reject/${friendshipId}`,
 			{
 				method: 'POST',
@@ -142,7 +143,7 @@ export const acceptFriendRequestApi = async (
 	friendshipId: string
 ): Promise<ApiResponse<string>> => {
 	try {
-		const response = await fetch(
+		const response = await fetchWithAuth(
 			`${API_URL}/${API_FRIENDS_URL}/accept/${friendshipId}`,
 			{
 				method: 'POST',
@@ -157,6 +158,79 @@ export const acceptFriendRequestApi = async (
 			error: {
 				code: 'ACCEPT_FRIEND_REQUEST_ERROR',
 				message: error.message || 'Ошибка принятия запроса в друзья',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/** Получить входящие заявки в друзья */
+export const getIncomingFriendRequestsApi = async (params?: {
+	page?: number;
+	size?: number;
+}): Promise<ApiResponse<PaginatedFriends>> => {
+	try {
+		const queryParams = new URLSearchParams();
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_FRIENDS_URL}/requests/incoming${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedFriends>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'GET_INCOMING_REQUESTS_ERROR',
+				message: error.message || 'Ошибка получения входящих заявок',
+				timestamp: new Date().toISOString(),
+			},
+			timestamp: new Date().toISOString(),
+		};
+	}
+};
+
+/**
+ * Поиск пользователей для добавления в друзья
+ */
+export const searchUsersApi = async (
+	params?: {
+		query?: string;
+		page?: number;
+		size?: number;
+	}
+): Promise<ApiResponse<PaginatedFriends>> => {
+	try {
+		const queryParams = new URLSearchParams();
+
+		if (params?.query !== undefined) queryParams.append('query', params.query);
+		if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+		if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+		const url = `${API_URL}/${API_FRIENDS_URL}/search${
+			queryParams.toString() ? `?${queryParams.toString()}` : ''
+		}`;
+
+		const response = await fetchWithAuth(url, {
+			method: 'GET',
+			headers: getHeaders(true),
+		});
+
+		return await handleResponse<PaginatedFriends>(response);
+	} catch (error: any) {
+		return {
+			success: false,
+			error: {
+				code: 'SEARCH_USERS_ERROR',
+				message: error.message || 'Ошибка поиска пользователей',
 				timestamp: new Date().toISOString(),
 			},
 			timestamp: new Date().toISOString(),

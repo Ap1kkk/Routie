@@ -68,8 +68,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 		return [];
 	};
 
-	const displayTags = getTagsToShow();
-
 	if (variant === 'compact') {
 		return (
 			<Blur
@@ -77,11 +75,11 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				onClick={() => navigate(`/map/${route.id}`)}>
 				<img
 					src={imageUrl}
-					// alt={route.name}
+					alt={route.title}
 					className={styles.imageContainerCompact}
 					loading='lazy'
 				/>
-				{/*<span className={styles.compactRouteName}>{route.name}</span>*/}
+				<span className={styles.compactRouteName}>{route.title}</span>
 			</Blur>
 		);
 	}
@@ -99,17 +97,14 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 				/>
 
 				<div className={styles.standartContent}>
-					{/* Название маршрута */}
 					<h3 className={styles.standartCardTitle}>{route.title}</h3>
 
-					{/* Длительность + дистанция */}
 					<div className={styles.routeInfo}>
 						<span className={styles.standartDistance}>
 							{formatDistance(route.lengthMeters)}
 						</span>
 					</div>
 
-					{/* Теги */}
 					{route.tags && route.tags.length > 0 && (
 						<div className={styles.compactTags}>
 							<Tag
@@ -120,7 +115,6 @@ export const RouteCard: React.FC<RouteCardProps> = ({
 						</div>
 					)}
 
-					{/* Кнопка лайка */}
 					{onToggleLike && (
 						<button
 							className={`${styles.standartLike} ${

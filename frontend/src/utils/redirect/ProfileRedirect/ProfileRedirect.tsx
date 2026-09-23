@@ -1,17 +1,36 @@
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSelector } from '@store';
-import {
-	selectIsAuthenticated,
-	selectUser,
-} from '../../../services/selectors/userSelectors';
+import { authApi } from '../../api/AuthApi';
 
 export const ProfileRedirect = () => {
-	const user = useSelector(selectUser);
-	const isAuth = useSelector(selectIsAuthenticated);
+	const [loading, setLoading] = useState(true);
+	const [user, setUser] = useState<any>(null);
 
-	if (!isAuth) return <Navigate to='/login' />;
+	useEffect(() => {
+		let mounted = true;
 
-	if (!user) return null;
+		authApi.getUser().then((result) => {
+			if (!mounted) return;
+
+			if (result.success) {
+				setUser(result.data);
+			}
+
+			setLoading(false);
+		});
+
+		return () => {
+			mounted = false;
+		};
+	}, []);
+
+	if (loading) {
+		return null;
+	}
+
+	if (!user) {
+		return <Navigate to='/login' replace />;
+	}
 
 	return <Navigate to={`/profile/${user.username}`} replace />;
 };

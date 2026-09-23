@@ -1,28 +1,51 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector } from '@store';
-import {
-	selectInitialized,
-	selectIsAuthenticated,
-	selectUserRoles,
-} from '../../../services/selectors/userSelectors';
+import { getAccessToken } from '../../auth';
+import { authApi } from '../../api/AuthApi';
+import { useEffect, useState } from 'react';
 
 type ProtectedRouteProps = {
 	allowedRoles: string[];
 };
 
 export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-	const initialized = useSelector(selectInitialized);
-	const isAuth = useSelector(selectIsAuthenticated);
-	const roles = useSelector(selectUserRoles);
+	const [loading, setLoading] = useState(true);
+	const [roles, setRoles] = useState<string[]>([]);
 
-	const location = useLocation();
+	useEffect(() => {
+		if (!getAccessToken()) {
+			setLoading(false);
+			return;
+		}
 
-	if (!initialized) {
-		return null;
+		let mounted = true;
+
+		Promise.all([authApi.getUser(), authApi.getUserRoles()])
+			.then(([userResult, rolesResult]) => {
+				if (!mounted) return;
+
+				if (!userResult.success) return;
+
+				if (rolesResult.success && rolesResult.data) {
+					setRoles(rolesResult.data.roles);
+				}
+			})
+			.finally(() => {
+				if (mounted) {
+					setLoading(false);
+				}
+			});
+
+		return () => {
+			mounted = false;
+		};
+	}, []);
+
+	if (!getAccessToken()) {
+		return <Navigate to='/login' replace />;
 	}
 
-	if (!isAuth) {
-		return <Navigate to='/login' state={{ from: location }} replace />;
+	if (loading) {
+		return null;
 	}
 
 	const hasRole = allowedRoles.some((role) => roles.includes(role));

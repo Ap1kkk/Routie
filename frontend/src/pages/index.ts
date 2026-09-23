@@ -5,6 +5,7 @@ export * from './ADMIN/RouteEdit';
 export * from './ADMIN/TagsEdit';
 export * from './ADMIN/AudioGuidesEdit'
 export * from './ADMIN/Statistic'
+export * from './ADMIN/RouteEdit/RouteEditCheckpoints'
 
 // User
 export * from './AchievementPage';
@@ -14,13 +15,16 @@ export * from './Error400Page';
 export * from './Error500Page';
 export * from './FilterDesktopPage';
 export * from './FilterMobilePage';
+export * from './FindFriendPage'
 export * from './FriendsPage';
 export * from './LeaderBoardPage';
 export * from './MainPage';
 export * from './MapPage';
+export * from './NotificationPage'
 export * from './ProfilePage';
 export * from './RegistrationPage';
 export * from './RoutesMobilePage';
+export * from './SessionsPage';
 export * from './SettingsPage';
 export * from './StatisticPage';
 export * from './RecoveryPasswordPage';

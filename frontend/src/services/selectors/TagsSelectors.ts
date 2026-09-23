@@ -1,10 +1,10 @@
 import { RootState } from '@store';
 
 export const selectAllTags = (state: RootState) =>
-	state.tag.allTags;
+	state.tags.allTags;
 export const selectCurrentTag = (state: RootState) =>
-	state.tag.currentTag;
+	state.tags.currentTag;
 export const selectTagLoading = (state: RootState) =>
-	state.tag.isLoading;
+	state.tags.isLoading;
 export const selectTagError = (state: RootState) =>
-	state.tag.error;
+	state.tags.error;

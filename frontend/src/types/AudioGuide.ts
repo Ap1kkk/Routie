@@ -10,7 +10,7 @@ export interface AudioGuide {
 	id: string;
 	title: string;
 	durationSeconds: number;
-	file: AudioGuideFile;
+	file: AudioGuideFile | null;
 }
 
 export interface AudioGuideCreateRequest {

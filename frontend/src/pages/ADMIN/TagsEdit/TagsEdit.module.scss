@@ -11,9 +11,13 @@
 }
 
 .headerActions {
-  width: 100%;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchInput {
+  flex: 1;
 }
 
 .loading {

@@ -2,19 +2,32 @@
   width: 30px;
   height: 30px;
   border-radius: 50% 50% 50% 0;
-  background: var(--color-text);
   position: absolute;
   transform: rotate(-45deg);
   left: 50%;
   top: 50%;
   margin: -20px 0 0 -20px;
 }
+
+.default {
+  background: var(--color-text);
+}
+
+.active {
+  background: var(--color-accent);
+  transform: scale(1.1);
+}
+
+.completed {
+  background: var(--color-disabled);
+}
+
 .pin:after {
   content: "";
   width: 14px;
   height: 14px;
   margin: 8px 0 0 8px;
-  background: #e6e6e6;
+  background: var(--color-card);
   position: absolute;
   border-radius: 50%;
 }
@@ -26,7 +39,7 @@
 }
 
 .pulse {
-  background: #d6d4d4;
+  background: var(--color-text);
   border-radius: 50%;
   height: 14px;
   width: 14px;

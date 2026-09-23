@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import styles from './RegistrationPage.module.scss';
+import { useDispatch } from '@store';
 
 import { RegistrationForm1 } from '../../components/RegistrationForm1';
 import { RegistrationForm2 } from '../../components/RegistrationForm2';
-
-import { registerUserApi } from '../../utils/api/AuthApi';
-import { updateProfileApi, uploadAvatarApi } from '../../utils/api/ProfileApi';
 import { RegistrationForm3 } from '../../components/RegistrationForm3';
+
+import { register } from '../../services/slices/authSlice/authSlice';
+import { updateProfileApi, uploadAvatarApi } from '../../utils/api/ProfileApi';
+import { getDeviceId, getDeviceName } from '../../utils/UserAgent';
+
+import styles from './RegistrationPage.module.scss';
 
 interface RegistrationData {
 	email: string;
@@ -38,36 +40,59 @@ const defaultData: RegistrationData = {
 
 export const RegistrationPage: React.FC = () => {
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
 
 	const [step, setStep] = useState<number>(1);
 	const [formData, setFormData] = useState<RegistrationData>(defaultData);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [visibleError, setVisibleError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (error) {
+			setVisibleError(error);
+			const timer = setTimeout(() => setVisibleError(null), 50000);
+			return () => clearTimeout(timer);
+		} else {
+			setVisibleError(null);
+		}
+	}, [error]);
 
 	const handleNextStep1 = async (data: {
 		email: string;
 		password: string;
 		username: string;
 	}) => {
-		setIsLoading(true);
-		setError(null);
+		try {
+			setIsLoading(true);
+			setError(null);
 
-		const result = await registerUserApi({
-			email: data.email,
-			password: data.password,
-			username: data.username,
-			name: 'temp_name',
-		});
+			await dispatch(
+				register({
+					email: data.email,
+					password: data.password,
+					username: data.username,
+					deviceId: getDeviceId(),
+					deviceName: getDeviceName(),
+				})
+			).unwrap();
 
-		setIsLoading(false);
+			setFormData((prev) => ({ ...prev, ...data }));
+			setStep(2);
+		} catch (err: any) {
+			// ← Улучшенная обработка ошибки
+			const errorMessage =
+				typeof err === 'string'
+					? err
+					: err?.message ||
+					  err?.error?.message ||
+					  'Ошибка регистрации';
 
-		if (!result.success) {
-			setError(result.error?.message || 'Ошибка регистрации');
-			return;
+			setError(errorMessage);
+			console.error('Registration error:', err);
+		} finally {
+			setIsLoading(false);
 		}
-
-		setFormData((prev) => ({ ...prev, ...data }));
-		setStep(2);
 	};
 
 	const handleUpdateData = (key: string, value: unknown) => {
@@ -83,27 +108,26 @@ export const RegistrationPage: React.FC = () => {
 				name: formData.name,
 				dateOfBirth: formData.birthDate,
 				gender: formData.gender as 'MALE' | 'FEMALE' | 'OTHER',
-				city: 'Нижний Новгород',        // можно убрать или сделать динамическим
-				height: Number(formData.height), // ← добавлено
-				weight: Number(formData.weight), // ← добавлено
+				city: 'Нижний Новгород',
+				height: Number(formData.height),
+				weight: Number(formData.weight),
 			});
 
 			if (!profileResult.success) {
-				throw new Error(profileResult.error?.message || 'Ошибка обновления профиля');
+				throw new Error(
+					profileResult.error?.message || 'Ошибка обновления профиля'
+				);
 			}
 
-			// Загрузка аватара (если есть)
 			if (formData.avatar) {
-				const avatarResult = await uploadAvatarApi(formData.avatar);
-				if (!avatarResult.success) {
-					console.warn('Аватар не загрузился, но профиль сохранён');
-				}
+				await uploadAvatarApi(formData.avatar).catch(() => {
+					console.warn('Аватар не загрузился');
+				});
 			}
 
 			setStep(3);
 		} catch (err: any) {
-			console.error('❌ Ошибка обновления профиля:', err);
-			setError(err.message || 'Ошибка обновления профиля');
+			setError(err?.message || 'Ошибка обновления профиля');
 		} finally {
 			setIsLoading(false);
 		}
@@ -113,18 +137,23 @@ export const RegistrationPage: React.FC = () => {
 		setIsLoading(true);
 		setError(null);
 
-		const result = await updateProfileApi({
-			preferredTags: data.tags,
-		});
+		try {
+			const result = await updateProfileApi({
+				preferredTags: data.tags,
+			});
 
-		setIsLoading(false);
+			if (!result.success) {
+				throw new Error(
+					result.error?.message || 'Ошибка сохранения предпочтений'
+				);
+			}
 
-		if (!result.success) {
-			setError(result.error?.message || 'Ошибка сохранения предпочтений');
-			return;
+			navigate('/routie');
+		} catch (err: any) {
+			setError(err?.message || 'Ошибка завершения регистрации');
+		} finally {
+			setIsLoading(false);
 		}
-
-		navigate('/routie');
 	};
 
 	const handleBack = () => {
@@ -133,8 +162,10 @@ export const RegistrationPage: React.FC = () => {
 
 	return (
 		<section className={styles.container}>
-			{isLoading && <div>Загрузка...</div>}
-			{error && <div className={styles.error}>Ошибка: {error}</div>}
+
+			{visibleError && (
+				<div className={styles.error}>{visibleError}</div>
+			)}
 
 			{step === 1 && (
 				<RegistrationForm1

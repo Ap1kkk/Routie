@@ -40,6 +40,14 @@
   padding: 5px 15px;
 }
 
+.standardCardUsername {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  opacity: 0.85;
+}
+
 .standardContent {
   display: flex;
   align-items: center;

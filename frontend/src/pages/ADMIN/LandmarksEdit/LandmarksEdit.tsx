@@ -1,29 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import {
-	createLandmark,
-	deleteLandmark,
-	searchLandmarks,
-	updateLandmark,
-	uploadLandmarkImages,
-} from '../../../services/slices/landmarkSlice/landmarkSlice';
-import { searchAudioGuides } from '../../../services/slices/audioGuideSlice/audioGuideSlice';
-import { downloadFile } from '../../../services/slices/fileSlice/fileSlice';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { landmarkApi } from '../../../utils/api/LandmarkApi';
+import { audioGuideApi } from '../../../utils/api/AudioGuideApi';
+import { fileApi } from '../../../utils/api/FileApi';
+import { Button, Input, Modal, Textarea } from '@ui';
 import { Landmark } from '../../../types/Landmark';
-import { Button, Input, Modal, Select, Textarea } from '@ui';
-import { useDispatch, useSelector } from '@store';
+import { AudioGuide } from '../../../types/AudioGuide';
 
 import styles from './LandmarksEdit.module.scss';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 
 export const LandmarksEdit = () => {
-	const dispatch = useDispatch();
-	const {
-		searchResults: landmarkResults,
-		isLoading,
-		error,
-	} = useSelector((state) => state.landmarks);
-	const { searchResults: audioGuideResults } = useSelector(
-		(state) => state.audioGuides
-	);
+	const navigate = useNavigate();
+	const [audioGuides, setAudioGuides] = useState<AudioGuide[]>([]);
+	const [error, setError] = useState<string | null>(null);
+
 	const [editingLandmark, setEditingLandmark] = useState<Landmark | null>(
 		null
 	);
@@ -31,153 +22,199 @@ export const LandmarksEdit = () => {
 	const [title, setTitle] = useState('');
 	const [description, setDescription] = useState('');
 	const [audioGuideId, setAudioGuideId] = useState('');
+	const [audioGuideSearch, setAudioGuideSearch] = useState('');
+	const [isGuideDropdownOpen, setIsGuideDropdownOpen] = useState(false);
 	const [imageUrls, setImageUrls] = useState<Record<string, string[]>>({});
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [audioUrls, setAudioUrls] = useState<Record<string, string>>({});
 	const [images, setImages] = useState<File[]>([]);
+	const [search, setSearch] = useState('');
+
+	const {
+		items: landmarks,
+		loading: isLoading,
+		reset,
+		loaderRef,
+	} = useInfiniteScroll<Landmark>({
+		loadPage: async (page, size) => {
+			const response = await landmarkApi.search({
+				page,
+				size,
+			});
+
+			if (!response.success || !response.data) {
+				return {
+					content: [],
+					totalPages: 0,
+				};
+			}
+
+			return response.data;
+		},
+	});
+
+	const loadAudioGuides = async () => {
+		try {
+			const response = await audioGuideApi.search({
+				page: 0,
+				size: 100,
+			});
+
+			if (response.success && response.data) {
+				setAudioGuides(response.data.content);
+			}
+		} catch {
+			setError('Ошибка загрузки аудиогидов');
+		}
+	};
 
 	useEffect(() => {
-		loadData();
+		loadAudioGuides();
 	}, []);
-
-	const loadData = () => {
-		dispatch(searchLandmarks({ page: 0, size: 100 }));
-		dispatch(searchAudioGuides({ page: 0, size: 100 }));
-	};
 
 	const resetForm = () => {
 		setEditingLandmark(null);
 		setTitle('');
 		setDescription('');
 		setAudioGuideId('');
+		setAudioGuideSearch('');
 		setImages([]);
 	};
 
 	const handleCreate = async () => {
-		const result = await dispatch(
-			createLandmark({
-				title,
-				description,
-				audioGuideId: audioGuideId || undefined,
-			})
-		);
+		const response = await landmarkApi.create({
+			title,
+			description,
+			audioGuideId: audioGuideId || undefined,
+		});
 
-		if (createLandmark.fulfilled.match(result)) {
-			if (images.length) {
-				await dispatch(
-					uploadLandmarkImages({
-						landmarkId: result.payload.id,
-						files: images,
-					})
-				);
-			}
-			closeModal();
-			loadData();
+		if (!response.success || !response.data) return;
+
+		if (images.length) {
+			await landmarkApi.uploadImages(response.data.id, images);
 		}
+
+		reset();
+		closeModal();
 	};
 
 	const handleUpdate = async () => {
 		if (!editingLandmark) return;
 
-		await dispatch(
-			updateLandmark({
-				landmarkId: editingLandmark.id,
-				data: {
-					title,
-					description,
-					audioGuideId: audioGuideId || undefined,
-				},
-			})
-		);
+		const response = await landmarkApi.update(editingLandmark.id, {
+			title,
+			description,
+			audioGuideId: audioGuideId || undefined,
+		});
+
+		if (!response.success) return;
 
 		if (images.length) {
-			await dispatch(
-				uploadLandmarkImages({
-					landmarkId: editingLandmark.id,
-					files: images,
-				})
-			);
+			await landmarkApi.uploadImages(editingLandmark.id, images);
 		}
 
+		reset();
 		closeModal();
-		loadData();
 	};
 
 	const handleDelete = async (id: string) => {
 		if (!window.confirm('Удалить достопримечательность?')) return;
-		await dispatch(deleteLandmark(id));
-		loadData();
+		const response = await landmarkApi.delete(id);
+		if (!response.success) return;
+		reset();
 	};
+
+	const filteredLandmarks = landmarks.filter((landmark) =>
+		landmark.title.toLowerCase().includes(search.toLowerCase())
+	);
+
+	const filteredGuides =
+		audioGuideSearch.trim().length > 0
+			? audioGuides.filter((guide) =>
+					guide.title
+						.toLowerCase()
+						.includes(audioGuideSearch.toLowerCase())
+			  ) ?? []
+			: [];
 
 	const startEdit = async (landmark: Landmark) => {
 		setEditingLandmark(landmark);
 		setTitle(landmark.title);
 		setDescription(landmark.description);
 		setAudioGuideId(landmark.audioGuide?.id ?? '');
-
-		if (landmark.images && landmark.images.length > 0) {
-			const imagesWithUrls = [];
-			for (const image of landmark.images) {
-				const result = await dispatch(downloadFile(image.id));
-				if (downloadFile.fulfilled.match(result)) {
-					imagesWithUrls.push({ id: image.id, url: result.payload });
-				}
-			}
-		}
-
+		setAudioGuideSearch(landmark.audioGuide?.title ?? '');
 		setImages([]);
 		setIsModalOpen(true);
 	};
 
 	useEffect(() => {
 		const loadImages = async () => {
-			if (!landmarkResults?.content) return;
+			const unloaded = landmarks.filter((l) => !imageUrls[l.id]);
 
-			const urls: Record<string, string[]> = {};
+			if (!unloaded.length) return;
 
-			for (const landmark of landmarkResults.content) {
-				const images: string[] = [];
+			const entries = await Promise.all(
+				unloaded.map(async (landmark) => {
+					const images = await Promise.all(
+						(landmark.images ?? []).map(async (image) => {
+							const response = await fileApi.download(image.id);
 
-				for (const image of landmark.images || []) {
-					const result = await dispatch(downloadFile(image.id));
+							return response.success && response.data
+								? response.data
+								: null;
+						})
+					);
 
-					if (downloadFile.fulfilled.match(result)) {
-						images.push(result.payload);
-					}
-				}
+					return [
+						landmark.id,
+						images.filter((url): url is string => url !== null),
+					] as const;
+				})
+			);
 
-				urls[landmark.id] = images;
-			}
-
-			setImageUrls(urls);
+			setImageUrls((prev) => ({
+				...prev,
+				...Object.fromEntries(entries),
+			}));
 		};
 
 		loadImages();
-	}, [landmarkResults, dispatch]);
+	}, [landmarks]);
 
 	useEffect(() => {
 		const loadAudio = async () => {
-			if (!landmarkResults?.content) return;
+			if (!landmarks.length) return;
 
-			const urls: Record<string, string> = {};
+			const entries = await Promise.all(
+				landmarks.map(async (landmark) => {
+					const fileId = landmark.audioGuide?.file?.id;
 
-			for (const landmark of landmarkResults.content) {
-				const fileId = landmark.audioGuide?.file?.id;
+					if (!fileId) {
+						return null;
+					}
 
-				if (!fileId) continue;
+					const response = await fileApi.download(fileId);
 
-				const result = await dispatch(downloadFile(fileId));
+					if (!response.success || !response.data) {
+						return null;
+					}
 
-				if (downloadFile.fulfilled.match(result)) {
-					urls[landmark.id] = result.payload;
-				}
-			}
+					return [landmark.id, response.data] as const;
+				})
+			);
 
-			setAudioUrls(urls);
+			setAudioUrls(
+				Object.fromEntries(
+					entries.filter(
+						(entry): entry is readonly [string, string] =>
+							entry !== null
+					)
+				)
+			);
 		};
 
 		loadAudio();
-	}, [landmarkResults]);
+	}, [landmarks]);
 
 	const openCreateModal = () => {
 		resetForm();
@@ -194,11 +231,20 @@ export const LandmarksEdit = () => {
 			<h3 className={styles.title}>Управление достопримечательностями</h3>
 
 			<div className={styles.headerActions}>
-				<Button
-					variant='primary'
-					onClick={openCreateModal}
-					children={'Создать достопримечательность'}
+				<Button variant='secondary' onClick={() => navigate('/admin')}>
+					Назад
+				</Button>
+
+				<Input
+					placeholder='Поиск достопримечательностей...'
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className={styles.searchInput}
 				/>
+
+				<Button variant='primary' onClick={openCreateModal}>
+					Создать достопримечательность
+				</Button>
 			</div>
 
 			{isLoading && <p className={styles.loading}>Загрузка...</p>}
@@ -217,7 +263,7 @@ export const LandmarksEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{landmarkResults?.content.map((landmark) => (
+					{filteredLandmarks.map((landmark) => (
 						<tr key={landmark.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>
 								{landmark.title}
@@ -276,6 +322,10 @@ export const LandmarksEdit = () => {
 				</tbody>
 			</table>
 
+			<div ref={loaderRef} className={styles.loader}>
+				{isLoading && <p>Загрузка...</p>}
+			</div>
+
 			<Modal
 				isOpen={isModalOpen}
 				onClose={closeModal}
@@ -304,22 +354,45 @@ export const LandmarksEdit = () => {
 						/>
 					</div>
 
-					<Select
-						label={'Аудиогид'}
-						className={styles.select}
-						value={audioGuideId}
-						onChange={setAudioGuideId}
-						options={[
-							{
-								value: '',
-								label: 'Без аудиогида',
-							},
-							...(audioGuideResults?.content.map((guide) => ({
-								value: guide.id,
-								label: guide.title,
-							})) ?? []),
-						]}
-					/>
+					<div className={styles.autocomplete}>
+						<Input
+							label={'Аудиогид'}
+							value={audioGuideSearch}
+							placeholder='Начните вводить название...'
+							onChange={(e) => {
+								setAudioGuideSearch(e.target.value);
+								setIsGuideDropdownOpen(true);
+							}}
+							onFocus={() => setIsGuideDropdownOpen(true)}
+						/>
+
+						{isGuideDropdownOpen && (
+							<div className={styles.dropdown}>
+								<div
+									className={styles.option}
+									onClick={() => {
+										setAudioGuideId('');
+										setAudioGuideSearch('');
+										setIsGuideDropdownOpen(false);
+									}}>
+									Без аудиогида
+								</div>
+
+								{filteredGuides.map((guide) => (
+									<div
+										key={guide.id}
+										className={styles.option}
+										onClick={() => {
+											setAudioGuideId(guide.id);
+											setAudioGuideSearch(guide.title);
+											setIsGuideDropdownOpen(false);
+										}}>
+										{guide.title}
+									</div>
+								))}
+							</div>
+						)}
+					</div>
 
 					{!!editingLandmark?.audioGuide &&
 						audioUrls[editingLandmark.id] && (
@@ -342,7 +415,7 @@ export const LandmarksEdit = () => {
 							const files = Array.from(e.dataTransfer.files);
 							setImages((prev) => [...prev, ...files]);
 						}}>
-						Перетащите изображения сюда или нажмите для выбора
+						Перетащите изображения сюда
 					</div>
 
 					{images.length > 0 && (

@@ -1,294 +1,200 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '@store';
-import './RouteEdit.module.scss';
-import { CheckpointCreate, Route, RouteType } from '../../../types/Route';
-import {
-	createNewRoute,
-	fetchRoute,
-	routeDelete,
-	routeImagesUpload,
-	routePublish,
-	routeUpdate,
-	searchRoutes,
-} from '../../../services/slices/routeSlice/routeSlice';
-import { fetchAllTags } from '../../../services/slices/tagsSlice/tagsSlice';
-import { searchLandmarks } from '../../../services/slices/landmarkSlice/landmarkSlice';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { routeApi } from '../../../utils/api/RoutesApi';
+import { tagApi } from '../../../utils/api/TagApi';
+import { landmarkApi } from '../../../utils/api/LandmarkApi';
+import { clearDraft, setDraft, setModalOpen, } from '../../../services/slices/routeDraftSlice/routeDraftSlice';
 import { Button, Input, Modal, Select, Tag, Textarea } from '@ui';
+import { Route, RouteType } from '../../../types/Route';
+import { Tags } from '../../../types/Tags';
+import { Landmark } from '../../../types/Landmark';
 
 import styles from './RouteEdit.module.scss';
 
-type TCheckpointForm = {
-	latitude: number;
-	longitude: number;
-	landmarkId: string;
-};
-
 export const RouteEdit = () => {
+	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
-	const { searchResults, isLoading } = useSelector((state) => state.routes);
-
-	const { allTags } = useSelector((state) => state.tags);
-
-	const { searchResults: landmarks } = useSelector(
-		(state) => state.landmarks
-	);
-
 	const [editingRoute, setEditingRoute] = useState<Route | null>(null);
-
-	const [title, setTitle] = useState('');
-	const [description, setDescription] = useState('');
-	const [type, setType] = useState<RouteType>('TOURIST');
-	const [difficulty, setDifficulty] = useState(1);
-	const [lengthMeters, setLengthMeters] = useState(0);
-	const [estimatedTimeMinutes, setEstimatedTimeMinutes] = useState(0);
-	const [city, setCity] = useState('');
-
-	const [checkpoints, setCheckpoints] = useState<TCheckpointForm[]>([]);
 	const [images, setImages] = useState<FileList | null>(null);
-	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const [routeSearch, setRouteSearch] = useState('');
+	const [allTags, setAllTags] = useState<Tags[]>([]);
+	const [landmarks, setLandmarks] = useState<Landmark[]>([]);
 
-	const [isModalOpen, setIsModalOpen] = useState(false);
+	const draft = useSelector((state) => state.routeDraft);
+
+	const {
+		items: routes,
+		loading: isLoading,
+		loaderRef,
+		reset,
+	} = useInfiniteScroll<Route>({
+		loadPage: async (page, size) => {
+			const response = await routeApi.search({
+				page,
+				size,
+			});
+
+			if (!response.success || !response.data) {
+				return {
+					content: [],
+					totalPages: 0,
+				};
+			}
+
+			return response.data;
+		},
+		pageSize: 10,
+	});
 
 	useEffect(() => {
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
-
-		dispatch(fetchAllTags());
-
-		dispatch(
-			searchLandmarks({
-				page: 0,
-				size: 100,
-			})
-		);
+		loadInitialData();
 	}, []);
 
+	const loadInitialData = async () => {
+		const [tagsResponse, landmarksResponse] = await Promise.all([
+			tagApi.getAll(),
+			landmarkApi.search({
+				page: 0,
+				size: 15,
+			}),
+		]);
+
+		if (tagsResponse.success && tagsResponse.data) {
+			setAllTags(tagsResponse.data);
+		}
+
+		if (landmarksResponse.success && landmarksResponse.data) {
+			setLandmarks(landmarksResponse.data.content);
+		}
+	};
+
+	const filteredRoutes = routeSearch.trim()
+		? routes.filter((route) =>
+				route.title.toLowerCase().includes(routeSearch.toLowerCase())
+		  )
+		: routes;
+
 	const openCreateModal = () => {
-		resetForm();
-		setIsModalOpen(true);
+		dispatch(clearDraft());
+		dispatch(
+			setDraft({
+				editingRouteId: null
+			})
+		);
+		dispatch(setModalOpen(true));
 	};
 
 	const closeModal = () => {
-		resetForm();
-		setIsModalOpen(false);
-	};
-
-	const resetForm = () => {
+		dispatch(clearDraft());
+		dispatch(setModalOpen(false));
 		setEditingRoute(null);
-
-		setTitle('');
-		setDescription('');
-		setType('TOURIST');
-
-		setDifficulty(1);
-		setLengthMeters(0);
-		setEstimatedTimeMinutes(0);
-
-		setCity('');
-
-		setSelectedTags([]);
-		setCheckpoints([]);
-
-		setImages(null);
 	};
 
-	const addCheckpoint = () => {
-		setCheckpoints((prev) => [
-			...prev,
-			{
-				latitude: 0,
-				longitude: 0,
-				landmarkId: '',
-			},
-		]);
-	};
-
-	const removeCheckpoint = (index: number) => {
-		setCheckpoints((prev) => prev.filter((_, i) => i !== index));
-	};
-
-	const updateCheckpoint = (
-		index: number,
-		field: keyof TCheckpointForm,
-		value: string | number
-	) => {
-		setCheckpoints((prev) =>
-			prev.map((cp, i) =>
-				i === index
-					? {
-							...cp,
-							[field]: value,
-					  }
-					: cp
-			)
-		);
-	};
-
-	const preparedCheckpoints: CheckpointCreate[] = checkpoints.map(
-		(cp, index) => ({
-			latitude: cp.latitude,
-			longitude: cp.longitude,
-			landmarkId: cp.landmarkId,
-			sortOrder: index,
-		})
-	);
+	const preparedCheckpoints = draft.checkpoints.map((cp, index) => ({
+		latitude: cp.latitude,
+		longitude: cp.longitude,
+		landmarkId: cp.landmarkId,
+		sortOrder: index,
+	}));
 
 	const handleCreate = async () => {
-		console.log(
-			JSON.stringify(
-				{
-					title,
-					description,
-					type,
-					difficulty,
-					lengthMeters,
-					estimatedTimeMinutes,
-					city,
-					tagIds: selectedTags,
-					checkpoints: preparedCheckpoints,
-				},
-				null,
-				2
-			)
-		);
+		const result = await routeApi.create({
+			title: draft.title,
+			description: draft.description,
+			type: draft.type,
+			difficulty: draft.difficulty,
+			lengthMeters: draft.lengthMeters,
+			estimatedTimeMinutes: draft.estimatedTimeMinutes,
+			city: draft.city,
+			tagIds: draft.selectedTags,
+			checkpoints: preparedCheckpoints,
+		});
 
-		const result = await dispatch(
-			createNewRoute({
-				title,
-				description,
-				type,
-				difficulty,
-				lengthMeters,
-				estimatedTimeMinutes,
-				city,
-				tagIds: selectedTags,
-				checkpoints: preparedCheckpoints,
-			})
-		);
-
-		if (!createNewRoute.fulfilled.match(result)) return;
+		if (!result.success || !result.data) return;
 
 		if (images) {
 			for (const file of Array.from(images)) {
-				await dispatch(
-					routeImagesUpload({
-						routeId: result.payload.id,
-						file,
-					})
-				);
+				await routeApi.uploadImages(result.data.id, file);
 			}
 		}
 
-		closeModal();
-
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
+		setEditingRoute(null);
+		dispatch(clearDraft());
+		dispatch(setModalOpen(false));
+		reset();
 	};
 
 	const handleUpdate = async () => {
-		if (!editingRoute) return;
+		if (!draft.editingRouteId) return;
 
-		await dispatch(
-			routeUpdate({
-				routeId: editingRoute.id,
-				data: {
-					title,
-					description,
-					type,
-					difficulty,
-					lengthMeters,
-					estimatedTimeMinutes,
-					city,
-					tagIds: selectedTags,
-					checkpoints: preparedCheckpoints,
-				},
-			})
-		);
+		await routeApi.update(draft.editingRouteId, {
+			title: draft.title,
+			description: draft.description,
+			type: draft.type,
+			difficulty: draft.difficulty,
+			lengthMeters: draft.lengthMeters,
+			estimatedTimeMinutes: draft.estimatedTimeMinutes,
+			city: draft.city,
+			tagIds: draft.selectedTags,
+			checkpoints: preparedCheckpoints,
+		});
 
 		if (images) {
 			for (const file of Array.from(images)) {
-				await dispatch(
-					routeImagesUpload({
-						routeId: editingRoute.id,
-						file,
-					})
-				);
+				await routeApi.uploadImages(draft.editingRouteId, file);
 			}
 		}
 
-		closeModal();
-
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
+		dispatch(clearDraft());
+		dispatch(setModalOpen(false));
+		reset();
 	};
 
 	const handleDelete = async (routeId: string) => {
-		if (!window.confirm('Удалить маршрут?')) return;
-
-		await dispatch(routeDelete(routeId));
-
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
+		const response = await routeApi.delete(routeId);
+		if (!response.success) return;
+		reset();
 	};
 
 	const handlePublish = async (routeId: string) => {
-		await dispatch(routePublish(routeId));
-
-		dispatch(
-			searchRoutes({
-				page: 0,
-				size: 100,
-			})
-		);
+		const response = await routeApi.publish(routeId);
+		if (!response.success) return;
+		reset();
 	};
 
 	const startEdit = async (route: Route) => {
-		const result = await dispatch(fetchRoute(route.id));
-
-		if (!fetchRoute.fulfilled.match(result)) return;
-
-		const fullRoute = result.payload;
+		const result = await routeApi.getFull(route.id);
+		if (!result.success || !result.data) return;
+		const fullRoute = result.data;
 
 		setEditingRoute(route);
 
-		setTitle(fullRoute.title);
-		setDescription(fullRoute.description);
-		setType(fullRoute.type as RouteType);
+		dispatch(
+			setDraft({
+				editingRouteId: route.id,
+				title: fullRoute.title,
+				description: fullRoute.description,
+				type: fullRoute.type as RouteType,
+				difficulty: fullRoute.difficulty,
+				lengthMeters: fullRoute.lengthMeters,
+				estimatedTimeMinutes: fullRoute.estimatedTimeMinutes,
+				city: fullRoute.city,
 
-		setDifficulty(fullRoute.difficulty);
-		setLengthMeters(fullRoute.lengthMeters);
-		setEstimatedTimeMinutes(fullRoute.estimatedTimeMinutes);
+				selectedTags: fullRoute.tags.map((tag) => tag.id),
 
-		setCity(fullRoute.city);
-
-		setCheckpoints(
-			fullRoute.checkpoints.map((cp) => ({
-				latitude: cp.latitude,
-				longitude: cp.longitude,
-				landmarkId: cp.landmark.id,
-			}))
+				checkpoints: fullRoute.checkpoints.map((cp) => ({
+					latitude: cp.latitude,
+					longitude: cp.longitude,
+					landmarkId: cp.landmark?.id ?? '',
+					landmarkSearch: cp.landmark?.title ?? '',
+				})),
+			})
 		);
 
-		setSelectedTags(fullRoute.tags.map((tag) => tag.id));
-
-		setIsModalOpen(true);
+		dispatch(setModalOpen(true));
 	};
 
 	return (
@@ -296,12 +202,21 @@ export const RouteEdit = () => {
 			<h3 className={styles.title}>Управление маршрутами</h3>
 
 			<div className={styles.headerActions}>
+				<Button variant='secondary' onClick={() => navigate('/admin')}>
+					Назад
+				</Button>
+
+				<Input
+					className={styles.searchInput}
+					placeholder='Поиск маршрута...'
+					value={routeSearch}
+					onChange={(e) => setRouteSearch(e.target.value)}
+				/>
+
 				<Button variant='primary' onClick={openCreateModal}>
 					Создать маршрут
 				</Button>
 			</div>
-
-			{isLoading && <p>Загрузка...</p>}
 
 			<table className={styles.table}>
 				<thead className={styles.tableHead}>
@@ -317,7 +232,7 @@ export const RouteEdit = () => {
 				</thead>
 
 				<tbody className={styles.tableBody}>
-					{searchResults?.content.map((route) => (
+					{filteredRoutes.map((route) => (
 						<tr key={route.id} className={styles.tableRow}>
 							<td className={styles.tableCell}>{route.title}</td>
 
@@ -334,7 +249,14 @@ export const RouteEdit = () => {
 							</td>
 
 							<td className={styles.tableCell}>
-								{route.isActive ? 'Опубликован' : 'Черновик'}
+								<span
+									className={
+										route.isActive
+											? styles.statusPublished
+											: styles.statusDraft
+									}>
+									{route.isActive ? '✅' : '❌'}
+								</span>
 							</td>
 
 							<td className={styles.tableCell}>
@@ -366,8 +288,13 @@ export const RouteEdit = () => {
 					))}
 				</tbody>
 			</table>
+
+			<div ref={loaderRef} className={styles.loader}>
+				{isLoading && <p>Загрузка...</p>}
+			</div>
+
 			<Modal
-				isOpen={isModalOpen}
+				isOpen={draft.isModalOpen}
 				onClose={closeModal}
 				className={styles.modal}>
 				<div className={styles.modalContent}>
@@ -379,21 +306,41 @@ export const RouteEdit = () => {
 
 					<Input
 						label={'Название'}
-						value={title}
+						value={draft.title}
 						inputPadding={'5px 10px'}
-						onChange={(e) => setTitle(e.target.value)}
+						onChange={(e) =>
+							dispatch(
+								setDraft({
+									title: e.target.value,
+								})
+							)
+						}
 					/>
 
 					<Textarea
 						label={'Описание'}
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
+						value={draft.description}
+						className={styles.textareaForm}
+						inputPadding={'5px 10px'}
+						onChange={(e) =>
+							dispatch(
+								setDraft({
+									description: e.target.value,
+								})
+							)
+						}
 					/>
 
 					<Select
 						label='Тип маршрута'
-						value={type}
-						onChange={(value) => setType(value as RouteType)}
+						value={draft.type}
+						onChange={(value) =>
+							dispatch(
+								setDraft({
+									type: value as RouteType,
+								})
+							)
+						}
 						options={[
 							{ value: 'TOURIST', label: 'TOURIST' },
 							{ value: 'SPORT', label: 'SPORT' },
@@ -405,31 +352,33 @@ export const RouteEdit = () => {
 						<Input
 							label={'Сложность'}
 							type='number'
-							value={difficulty}
+							value={draft.difficulty}
 							inputPadding={'5px 10px'}
 							onChange={(e) =>
-								setDifficulty(Number(e.target.value))
+								dispatch(
+									setDraft({
+										difficulty: Number(e.target.value),
+									})
+								)
 							}
 						/>
 
 						<Input
 							label={'Длина'}
 							type='number'
-							value={lengthMeters}
+							value={draft.lengthMeters}
 							inputPadding={'5px 10px'}
-							onChange={(e) =>
-								setLengthMeters(Number(e.target.value))
-							}
+							showNumberArrows={false}
+							readOnly
 						/>
 
 						<Input
 							label={'Время в минутах'}
 							type='number'
-							value={estimatedTimeMinutes}
+							value={draft.estimatedTimeMinutes}
 							inputPadding={'5px 10px'}
-							onChange={(e) =>
-								setEstimatedTimeMinutes(Number(e.target.value))
-							}
+							showNumberArrows={false}
+							readOnly
 						/>
 					</div>
 
@@ -437,90 +386,27 @@ export const RouteEdit = () => {
 						<div className={styles.sectionHeader}>
 							<label>Чекпоинты маршрута</label>
 
-							<Button variant='primary' onClick={addCheckpoint}>
-								Добавить точку
+							<Button
+								variant='primary'
+								onClick={() =>
+									navigate('/admin/routes-edit/checkpoints')
+								}>
+								Редактировать точки ({draft.checkpoints.length})
 							</Button>
-						</div>
-						<div className={styles.checkpointsArea}>
-							{checkpoints.map((checkpoint, index) => (
-								<div
-									key={index}
-									className={styles.checkpointCard}>
-									<span>Точка №{index + 1}</span>
-									<div className={styles.formRow}>
-										<div className={styles.formColumn}>
-											<Input
-												type='number'
-												showNumberArrows={false}
-												placeholder='Широта'
-												value={checkpoint.latitude}
-												inputPadding={'3px 12px'}
-												onChange={(e) =>
-													updateCheckpoint(
-														index,
-														'latitude',
-														Number(e.target.value)
-													)
-												}
-											/>
-
-											<Input
-												type='number'
-												showNumberArrows={false}
-												placeholder='Долгота'
-												value={checkpoint.longitude}
-												inputPadding={'3px 12px'}
-												onChange={(e) =>
-													updateCheckpoint(
-														index,
-														'longitude',
-														Number(e.target.value)
-													)
-												}
-											/>
-										</div>
-										<Select
-											className={styles.selectLand}
-											value={checkpoint.landmarkId}
-											onChange={(value: string) =>
-												updateCheckpoint(
-													index,
-													'landmarkId',
-													value
-												)
-											}
-											options={[
-												{
-													value: '',
-													label: 'Без достопримечательности',
-												},
-												...(landmarks?.content?.map(
-													(landmark) => ({
-														value: landmark.id,
-														label: landmark.title,
-													})
-												) || []),
-											]}
-										/>
-
-										<Button
-											variant='secondary'
-											onClick={() =>
-												removeCheckpoint(index)
-											}
-											children={'Удалить'}
-										/>
-									</div>
-								</div>
-							))}
 						</div>
 					</div>
 
 					<Input
 						label={'Город'}
-						value={city}
+						value={draft.city}
 						inputPadding={'5px 10px'}
-						onChange={(e) => setCity(e.target.value)}
+						onChange={(e) =>
+							dispatch(
+								setDraft({
+									city: e.target.value,
+								})
+							)
+						}
 					/>
 
 					<div>
@@ -531,17 +417,27 @@ export const RouteEdit = () => {
 									id: tag.id,
 									label: tag.title,
 								}))}
-								wrap={false}
-								selectedIds={selectedTags}
+								wrap={true}
+								selectedIds={draft.selectedTags}
 								onTagClick={(id) => {
 									if (!id) return;
 
 									const tagId = String(id);
 
-									setSelectedTags((prev) =>
-										prev.includes(tagId)
-											? prev.filter((x) => x !== tagId)
-											: [...prev, tagId]
+									dispatch(
+										setDraft({
+											selectedTags:
+												draft.selectedTags.includes(
+													tagId
+												)
+													? draft.selectedTags.filter(
+															(x) => x !== tagId
+													  )
+													: [
+															...draft.selectedTags,
+															tagId,
+													  ],
+										})
 									);
 								}}
 							/>
@@ -567,10 +463,14 @@ export const RouteEdit = () => {
 						<Button
 							variant='primary'
 							onClick={
-								editingRoute ? handleUpdate : handleCreate
-							}>
-							{editingRoute ? 'Сохранить' : 'Создать'}
-						</Button>
+								draft.editingRouteId
+									? handleUpdate
+									: handleCreate
+							}
+							children={
+								draft.editingRouteId ? 'Сохранить' : 'Создать'
+							}
+						/>
 					</div>
 				</div>
 			</Modal>

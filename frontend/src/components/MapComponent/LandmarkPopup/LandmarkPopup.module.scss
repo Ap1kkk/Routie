@@ -1,6 +1,7 @@
 .popup {
   display: flex;
   flex-direction: column;
+  color: var(--color-text);
 }
 
 .imagePopup {
@@ -15,10 +16,16 @@
   flex-direction: column;
   gap: 12px;
   padding: 12px;
+  background: var(--color-background);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
 .audioControle {
   display: block;
   width: 100%;
   padding: 0;
+}
+
+.textPopup {
+  color: var(--color-text);
 }

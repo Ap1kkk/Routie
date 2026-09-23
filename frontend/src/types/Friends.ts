@@ -9,7 +9,8 @@ export interface FriendAvatar {
 export interface Friend {
 	id: string;
 	name: string;
-	avatar?: string;
+	username?: string;
+	avatar?: FriendAvatar;
 	currentLevel: number;
 	totalXp: number;
 	isFriend: boolean;
@@ -27,5 +28,5 @@ export interface FriendsSearchParams {
 	size?: number;
 	sort?: string;
 	search?: string;
-	status?: 'ALL' | 'FRIENDS' | 'INCOMING' | 'OUTGOING';
+	status?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 }

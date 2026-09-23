@@ -12,12 +12,15 @@ export * from './Layout';
 export * from './Profile';
 export * from '../utils/redirect/ProtectedRoute';
 export * from '../utils/redirect/ProfileRedirect';
+export * from './RecoveryPasswordForm1';
+export * from './RecoveryPasswordForm2';
 export * from './RegistrationForm';
 export * from './RouteCard';
 export * from './RouteOfDay';
+export * from './SessionCard'
 export * from './MapComponent';
+export * from './NotificationCard'
 export * from './Settings';
 export * from './Statistic';
 export * from './StatisticCard';
 
-export * from './RecoveryPasswordForm';
